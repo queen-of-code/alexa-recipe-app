@@ -7,9 +7,9 @@ using Xunit;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.TestUtilities;
 
-using API;
+using RecipeApp.API;
 
-namespace API.Tests
+namespace RecipeApp.API.Tests
 {
     public class FunctionTest
     {

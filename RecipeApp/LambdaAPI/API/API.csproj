@@ -1,18 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <AWSProjectType>Lambda</AWSProjectType>
+    <ProjectGuid>65f37c68-748c-4df8-a6c8-f28bc6847096</ProjectGuid>
   </PropertyGroup>
-
   <ItemGroup>
-    <DotNetCliToolReference Include="Amazon.Lambda.Tools" Version="2.2.0" />
+    <DotNetCliToolReference Include="Amazon.Lambda.Tools" Version="2.2.0"/>
   </ItemGroup>
-  
   <ItemGroup>
-    <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0" />
-    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.4.0" />
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0"/>
+    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.4.0"/>
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.17.2"/>
   </ItemGroup>
-
 </Project>
