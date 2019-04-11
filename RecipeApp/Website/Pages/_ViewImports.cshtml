@@ -3,3 +3,6 @@
 @using Website.Data
 @namespace Website.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Website.Authorization;
+@inject IAuthorizationService AuthorizationService
+@using Microsoft.AspNetCore.Authorization

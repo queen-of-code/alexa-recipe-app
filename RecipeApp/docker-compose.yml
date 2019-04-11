@@ -1,0 +1,43 @@
+version: '3.1'
+services:
+  mysql:
+    image: mysql:latest
+#    build:
+#      context: SQL
+#      dockerfile: Dockerfile
+    ports:
+      - "8001:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'test_pass' # TODO: Change this
+      MYSQL_USER: recipeuser
+      MYSQL_PASSWORD: testpassword123
+      MYSQL_DATABASE: recipes
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      #- ./SQL:/docker-entrypoint-initdb.d/:ro
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8002:9090"
+  recipeui:
+    #image: "queenofcode/alexa-recipe-app:latest"
+    environment:
+      ASPNETCORE_ENVIRONMENT: 'development'
+    secrets:
+      - Authentication.Microsoft.ApplicationId
+      - Authentication.Microsoft.Password
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "5000:80"
+ 
+#volumes:
+# - ./mysql_data:/initialized-db
+  
+secrets:
+  Authentication.Microsoft.ApplicationId:
+    file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
+  Authentication.Microsoft.Password:
+    file: ~/.docker/secrets/Authentication.Microsoft.Password.txt

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 
 namespace RecipeApp.Core.ExternalModels
@@ -7,8 +9,9 @@ namespace RecipeApp.Core.ExternalModels
     public class RecipeModel
     {
         [JsonProperty("user_id")]
-        public long UserId { get; set; }
+        public string UserId { get; set; }
 
+        [Key]
         [JsonProperty("recipe_id")]
         public long RecipeId { get; set; }
 
@@ -18,9 +21,11 @@ namespace RecipeApp.Core.ExternalModels
         [JsonProperty("last_updated")]
         public DateTime LastUpdateTime { get; set; }
 
+        [NotMapped]
         [JsonProperty("ingredients")]
         public List<string> Ingredients { get; private set; } = new List<string>();
 
+        [NotMapped]
         [JsonProperty("steps")]
         public List<string> Steps { get; private set; } = new List<string>();
 

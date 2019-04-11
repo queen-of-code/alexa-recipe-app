@@ -15,7 +15,7 @@ namespace RecipeApp.API.DynamoModels
     public sealed class Recipe : IEquatable<Recipe>
     {
         [DynamoDBHashKey]
-        public long UserId { get; set; }
+        public string UserId { get; set; }
 
         [DynamoDBRangeKey]
         public long RecipeId { get; set; }
@@ -66,7 +66,7 @@ namespace RecipeApp.API.DynamoModels
 
         public bool IsValid()
         {
-            if (this.UserId == default(long) || this.RecipeId == default(long))
+            if (String.IsNullOrWhiteSpace(this.UserId) || this.RecipeId == default(long))
             {
                 return false;
             }
@@ -101,7 +101,7 @@ namespace RecipeApp.API.DynamoModels
         /// <summary>
         /// Retrieves a recipe from the database. Returns null if nothing could be found.
         /// </summary>
-        public static async Task<Recipe> RetrieveRecipe(long userId, long recipeId)
+        public static async Task<Recipe> RetrieveRecipe(string userId, long recipeId)
         {
             var context = new DynamoDBContext(client);
 
@@ -119,7 +119,7 @@ namespace RecipeApp.API.DynamoModels
         /// Deletes a recipe from the database. Returns false if something went wrong, or
         /// true if it was deleted successfully.
         /// </summary>
-        public static async Task<bool> DeleteRecipe(long userId, long recipeId)
+        public static async Task<bool> DeleteRecipe(string userId, long recipeId)
         {
             var recipe = await RetrieveRecipe(userId, recipeId);
 

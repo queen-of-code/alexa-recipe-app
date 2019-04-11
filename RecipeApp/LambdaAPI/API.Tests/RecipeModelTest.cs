@@ -22,7 +22,7 @@ namespace RecipeApp.API.Tests
             {
                 Name = "Test Recipe",
                 LastUpdateTime = DateTime.UtcNow,
-                UserId = 123,
+                UserId = "123",
                 RecipeId = 456,
                 CookTimeMins = 11,
                 PrepTimeMins = 22,
