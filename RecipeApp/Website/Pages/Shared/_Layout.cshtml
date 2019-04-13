@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<IdentityUser> SignInManager
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -26,7 +29,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a asp-page="/Index" class="navbar-brand">Website</a>
+                <a asp-page="/Index" class="navbar-brand">Alexa Recipe Website</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -34,6 +37,12 @@
                     <li><a asp-page="/About">About</a></li>
                     <li><a asp-page="/Contact">Contact</a></li>
                 </ul>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <ul class="nav navbar-nav">
+                        <li><a asp-page="/Recipes">Recipes</a></li>
+                    </ul>
+                }
                 <partial name="_LoginPartial" />
             </div>
         </div>

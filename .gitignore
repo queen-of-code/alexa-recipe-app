@@ -85,9 +85,6 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
-# Chutzpah Test files
-_Chutzpah*
-
 # Visual C++ cache files
 ipch/
 *.aps
@@ -110,9 +107,6 @@ ipch/
 
 # TFS 2012 Local Workspace
 $tf/
-
-# Guidance Automation Toolkit
-*.gpState
 
 # ReSharper is a .NET coding add-in
 _ReSharper*/
@@ -263,15 +257,6 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# Visual Studio 6 build log
-*.plg
-
-# Visual Studio 6 workspace options file
-*.opt
-
-# Visual Studio 6 auto-generated workspace file (contains which files were open etc.)
-*.vbw
-
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -328,3 +313,7 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+#Local Docker artifacts
+mysql_data/
+out/

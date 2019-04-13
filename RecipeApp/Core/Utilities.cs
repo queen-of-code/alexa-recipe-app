@@ -5,7 +5,7 @@ namespace RecipeApp.Core
 {
     public static class Utilities
     {
-        private static RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
+        private static readonly RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
 
         public static Int64 NextInt64()
         {

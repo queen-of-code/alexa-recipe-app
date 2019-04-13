@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RecipeApp.Core.ExternalModels;
 using System.Threading.Tasks;
 using Website.Authorization;
@@ -9,23 +8,26 @@ using Website.Data;
 
 namespace Website.Pages.Recipes
 {
-    #region snippet
     public class DetailsModel : DI_BasePageModel
     {
+        private readonly RecipeService RecipeService;
+
         public DetailsModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            RecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
+            this.RecipeService = recipeService;
         }
 
         public RecipeModel Recipe { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Recipe = await Context.Recipe.FirstOrDefaultAsync(m => m.RecipeId == id);
-
+            var userId = UserManager.GetUserId(this.User);
+            Recipe = await RecipeService.GetRecipe(userId, id.ToString());
             if (Recipe == null)
             {
                 return NotFound();
@@ -45,23 +47,13 @@ namespace Website.Pages.Recipes
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
-            var contact = await Context.Recipe.FirstOrDefaultAsync(m => m.RecipeId == id);
-            if (contact == null)
+            var result = await RecipeService.SaveRecipe(Recipe);
+            if (result)
             {
                 return NotFound();
             }
 
-            var isAuthorized = await AuthorizationService.AuthorizeAsync(User, contact, RecipeOperations.Update);
-            if (!isAuthorized.Succeeded)
-            {
-                return new ChallengeResult();
-            }
-
-            Context.Recipe.Update(contact);
-            await Context.SaveChangesAsync();
-
             return RedirectToPage("./Index");
         }
     }
-    #endregion
 }

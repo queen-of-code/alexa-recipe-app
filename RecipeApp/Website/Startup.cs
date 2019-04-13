@@ -1,24 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Website.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.IO;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using System;
+using System.IO;
 using Website.Authorization;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Website.Data;
 
 namespace Website
 {
@@ -48,9 +43,11 @@ namespace Website
 
             services.AddHttpClient("RecipeAPI", client =>
             {
-                client.BaseAddress = new Uri("https://mycustomapiuri/");
+                client.BaseAddress = new Uri(Configuration.GetConnectionString("RecipeAPIConnection"));
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
+
+            services.AddSingleton<RecipeService>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(

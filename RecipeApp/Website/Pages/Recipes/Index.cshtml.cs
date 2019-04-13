@@ -1,46 +1,42 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using RecipeApp.Core.ExternalModels;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Website.Data;
-using Website.Authorization;
-using RecipeApp.Core.ExternalModels;
 
 namespace Website.Pages.Recipes
 {
-    #region snippet
     public class IndexModel : DI_BasePageModel
     {
+        private readonly RecipeService RecipeService;
+
         public IndexModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            RecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
+            this.RecipeService = recipeService;
         }
 
         public IList<RecipeModel> Recipe { get; set; }
 
         public async Task OnGetAsync()
         {
-            var recipes = from c in Context.Recipe
-                           select c;
-
-            var isAuthorized = User.IsInRole(Constants.RecipeAdministratorsRole);
-
             var currentUserId = UserManager.GetUserId(User);
 
-            // Only approved recipes are shown UNLESS you're authorized to see them
-            // or you are the owner.
-            if (!isAuthorized)
+            var recipes = await RecipeService.GetAllRecipes(currentUserId);
+            if (recipes == null)
             {
-                recipes = recipes.Where(c => c.UserId == currentUserId);
+                Recipe = new List<RecipeModel>(0);
             }
-
-            Recipe = await recipes.ToListAsync();
+            else
+            {
+                Recipe = new List<RecipeModel>(recipes);
+            }
         }
     }
-    #endregion
 }

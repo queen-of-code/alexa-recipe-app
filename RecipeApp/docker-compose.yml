@@ -18,21 +18,45 @@ services:
       #- ./SQL:/docker-entrypoint-initdb.d/:ro
   dynamodb:
     image: amazon/dynamodb-local:latest
+    environment:
+      DYNAMO_ACCESS_KEY: whatever
+      DYNAMO_SECRET_KEY: whocares
+      AWS_REGION: us-west-2
     ports:
-      - "8002:9090"
-  recipeui:
+      - "8000:8000"
+    volumes:
+      - dynamodata:/home/dynamodblocal
+    working_dir: /home/dynamodblocal
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
+  website:
     #image: "queenofcode/alexa-recipe-app:latest"
     environment:
-      ASPNETCORE_ENVIRONMENT: 'development'
+      ASPNETCORE_ENVIRONMENT: 'Development'
     secrets:
       - Authentication.Microsoft.ApplicationId
       - Authentication.Microsoft.Password
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Website/Dockerfile.dev
     ports:
      - "5000:80"
- 
+  recipeapi:
+#    container_name: recipeapi
+    build:
+      context: .
+      dockerfile: ./RecipeAPI/Dockerfile.dev
+    environment:
+      ASPNETCORE_ENVIRONMENT: 'Development'
+      AWS_ACCESS_KEY_ID: 'whatever'
+      AWS_SECRET_ACCESS_KEY: 'whocares'
+    secrets:
+      - AWS.Access.KeyId
+      - AWS.Access.Secret
+    ports:
+     - "8080:80"
+
+volumes:
+  dynamodata: {}
 #volumes:
 # - ./mysql_data:/initialized-db
   
@@ -41,3 +65,7 @@ secrets:
     file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
   Authentication.Microsoft.Password:
     file: ~/.docker/secrets/Authentication.Microsoft.Password.txt
+  AWS.Access.KeyId:
+     file: ~/.docker/secrets/AWS.Access.KeyId
+  AWS.Access.Secret:
+     file: ~/.docker/secrets/AWS.Access.Secret

@@ -27,7 +27,7 @@ namespace Website.Pages.Recipes
         public async Task<IActionResult> OnGetAsync(int id)
         {
             Recipe = await Context.Recipe.FirstOrDefaultAsync(
-                                                 m => m.RecipeId == id);
+                               m => m.RecipeId == id && m.UserId == UserManager.GetUserId(this.User));
 
             if (Recipe == null)
             {

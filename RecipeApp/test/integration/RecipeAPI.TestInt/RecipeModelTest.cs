@@ -4,11 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Xunit;
-using Amazon.Lambda.Core;
-using Amazon.Lambda.TestUtilities;
-
-using RecipeApp.API;
-using RecipeApp.API.DynamoModels;
+using RecipeAPI.DynamoModels;
+using RecipeAPI;
+using Amazon.DynamoDBv2;
 
 namespace RecipeApp.API.Tests
 {
@@ -18,6 +16,9 @@ namespace RecipeApp.API.Tests
         [Trait("Category","Integration")]
         public async void TestSave_Create_Delete()
         {
+            var moq = new Moq.Mock<IAmazonDynamoDB>();
+            var recipeService = new DynamoRecipeService(moq.Object);
+
             var recipe = new Recipe()
             {
                 Name = "Test Recipe",
@@ -31,16 +32,16 @@ namespace RecipeApp.API.Tests
 
             try
             {
-                var saved = await Recipe.SaveRecipe(recipe);
-                Assert.True(saved);
+                var saved = await recipeService.SaveRecipe(recipe);
+;                Assert.True(saved);
 
-                var retrieved = await Recipe.RetrieveRecipe(recipe.UserId, recipe.RecipeId);
+                var retrieved = await recipeService.RetrieveRecipe(recipe.UserId, recipe.RecipeId);
                 var equal = recipe.Equals(retrieved);
                 Assert.True(equal);
             }
             finally
             {
-                var deleted = await Recipe.DeleteRecipe(recipe);
+                var deleted = await recipeService.DeleteRecipe(recipe);
                 Assert.True(deleted);
             }
         }

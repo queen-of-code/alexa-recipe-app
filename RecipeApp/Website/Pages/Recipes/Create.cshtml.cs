@@ -9,24 +9,31 @@ using Website.Data;
 
 namespace Website.Pages.Recipes
 {
-    #region snippetCtor
     public class CreateModel : DI_BasePageModel
     {
+        private static readonly Random rand = new Random();
+
+        private readonly RecipeService RecipeService;
+
         public CreateModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            RecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
+            this.RecipeService = recipeService;
         }
-        #endregion
 
         public IActionResult OnGet()
         {
+            var userId = UserManager.GetUserId(this.User);
             Recipe = new RecipeModel
             {
                 Name = "Chicken Tikka",
-                CookTimeMins = 30,
+                UserId = userId,
+                RecipeId = rand.Next(),
+                CookTimeMins = 45,
                 LastUpdateTime = DateTime.UtcNow,
                 PrepTimeMins = 10,
                 Servings = 5
@@ -49,6 +56,10 @@ namespace Website.Pages.Recipes
             }
 
             Recipe.UserId = UserManager.GetUserId(User);
+            if (Recipe.RecipeId == default(long))
+            {
+                Recipe.RecipeId = rand.Next();
+            }
 
             // requires using ContactManager.Authorization;
             var isAuthorized = await AuthorizationService.AuthorizeAsync(
@@ -59,8 +70,11 @@ namespace Website.Pages.Recipes
                 return new ChallengeResult();
             }
 
-            Context.Recipe.Add(Recipe);
-            await Context.SaveChangesAsync();
+            var result = await this.RecipeService.SaveRecipe(Recipe);
+            if (!result)
+            {
+                return Page(); // Maybe return some error here instead?
+            }
 
             return RedirectToPage("./Index");
         }
