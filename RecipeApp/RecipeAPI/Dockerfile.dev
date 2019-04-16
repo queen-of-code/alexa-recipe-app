@@ -6,13 +6,12 @@ FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
 WORKDIR /src
 COPY ["RecipeAPI/RecipeAPI.csproj", "RecipeAPI/"]
 COPY ["Core/Core.csproj", "Core/"]
-RUN dotnet restore "RecipeAPI/RecipeAPI.csproj"
+RUN dotnet build "Core/Core.csproj" -c Release
 COPY . .
 WORKDIR "/src/RecipeAPI"
-RUN dotnet build "RecipeAPI.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "RecipeAPI.csproj" -c Release -o /app --no-restore --no-build
+RUN dotnet publish "RecipeAPI.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app

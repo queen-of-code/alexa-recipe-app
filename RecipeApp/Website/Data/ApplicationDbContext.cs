@@ -13,8 +13,6 @@ namespace Website.Data
             this.Database.EnsureCreated();   
         }
         
-        public DbSet<RecipeModel> Recipe { get; set; }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

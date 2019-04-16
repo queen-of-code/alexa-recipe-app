@@ -10,15 +10,18 @@ using Website.Data;
 
 namespace Website.Pages.Recipes
 {
-    #region snippet
     public class EditModel : DI_BasePageModel
     {
+        private readonly RecipeService RecipeService;
+
         public EditModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            RecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
+            this.RecipeService = recipeService;
         }
 
         [BindProperty]
@@ -26,9 +29,7 @@ namespace Website.Pages.Recipes
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Recipe = await Context.Recipe.FirstOrDefaultAsync(
-                               m => m.RecipeId == id && m.UserId == UserManager.GetUserId(this.User));
-
+            Recipe = await RecipeService.GetRecipe(UserManager.GetUserId(User), id.ToString());
             if (Recipe == null)
             {
                 return NotFound();
@@ -53,10 +54,7 @@ namespace Website.Pages.Recipes
             }
 
             // Fetch Recipe from DB to get OwnerID.
-            var recipe = await Context
-                .Recipe.AsNoTracking()
-                .FirstOrDefaultAsync(m => m.RecipeId == id);
-
+            var recipe = await RecipeService.GetRecipe(UserManager.GetUserId(User), id.ToString());
             if (recipe == null)
             {
                 return NotFound();
@@ -72,17 +70,10 @@ namespace Website.Pages.Recipes
 
             Recipe.UserId = recipe.UserId;
 
-            Context.Attach(Recipe).State = EntityState.Modified;
-
-            await Context.SaveChangesAsync();
+            var result = await RecipeService.SaveRecipe(Recipe);
 
             return RedirectToPage("./Index");
         }
 
-        private bool RecipeExists(int id)
-        {
-            return Context.Recipe.Any(e => e.RecipeId == id);
-        }
     }
-    #endregion
 }

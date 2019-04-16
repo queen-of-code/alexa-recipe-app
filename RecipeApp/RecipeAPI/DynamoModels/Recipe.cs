@@ -1,4 +1,3 @@
-
 using Amazon.DynamoDBv2.DataModel;
 using RecipeApp.Core.ExternalModels;
 using System;

@@ -8,7 +8,7 @@ namespace Website.Authorization
 {
     public class IsRecipeOwnerAuthorizationHandler :  AuthorizationHandler<OperationAuthorizationRequirement, RecipeModel>
     {
-        UserManager<IdentityUser> _userManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public IsRecipeOwnerAuthorizationHandler(UserManager<IdentityUser>
             userManager)
