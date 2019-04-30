@@ -26,6 +26,22 @@ namespace Website
             return result.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Deletes a recipe.
+        /// TODO This should actually delete and not just post again.
+        /// </summary>
+        /// <param name="recipe"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteRecipe(RecipeModel recipe)
+        {
+            var client = _httpClientFactory.CreateClient("RecipeAPI");
+
+            var raw = JsonConvert.SerializeObject(recipe);
+            Console.WriteLine(raw);
+            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+            return result.IsSuccessStatusCode;
+        }
+
         public async Task<RecipeModel> GetRecipe(string userId, string recipeId)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");

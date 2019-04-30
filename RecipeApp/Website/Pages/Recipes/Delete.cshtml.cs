@@ -9,15 +9,18 @@ using Website.Data;
 
 namespace Website.Pages.Recipes
 {
-    #region snippet
     public class DeleteModel : DI_BasePageModel
     {
+        private readonly RecipeService RecipeService;
+
         public DeleteModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            RecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
+            this.RecipeService = recipeService;
         }
 
         [BindProperty]
@@ -25,9 +28,8 @@ namespace Website.Pages.Recipes
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Recipe = await Context.Recipe.FirstOrDefaultAsync(
-                               m => m.RecipeId == id && m.UserId == UserManager.GetUserId(this.User));
-
+            Recipe = await RecipeService.GetRecipe(UserManager.GetUserId(User), id.ToString());
+         
             if (Recipe == null)
             {
                 return NotFound();
@@ -46,11 +48,7 @@ namespace Website.Pages.Recipes
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
-            Recipe = await Context.Recipe.FindAsync(id);
-
-            var recipe = await Context
-                .Recipe.AsNoTracking()
-                .FirstOrDefaultAsync(m => m.RecipeId == id);
+            var recipe = await RecipeService.GetRecipe(UserManager.GetUserId(User), id.ToString());
 
             if (recipe == null)
             {
@@ -65,11 +63,9 @@ namespace Website.Pages.Recipes
                 return new ChallengeResult();
             }
 
-            Context.Recipe.Remove(Recipe);
-            await Context.SaveChangesAsync();
+            var deleted = await RecipeService.DeleteRecipe(recipe);
 
             return RedirectToPage("./Index");
         }
     }
-    #endregion
 }

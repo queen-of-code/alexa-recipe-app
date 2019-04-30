@@ -17,8 +17,6 @@ namespace Website.Data
             catch { }
         }
         
-        public DbSet<RecipeModel> Recipe { get; set; }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
