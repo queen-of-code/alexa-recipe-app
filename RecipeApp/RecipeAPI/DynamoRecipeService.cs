@@ -16,19 +16,18 @@ namespace RecipeAPI
         public DynamoRecipeService(IAmazonDynamoDB amazonDynamoDb)
         {
             _client = amazonDynamoDb;
-            Task.WaitAll(this.EnsureTableExists());
         }
 
         /// <summary>
         /// Creates the Recipes table, if it does not already exist.
         /// </summary>
         /// <returns>True if there's a good table to use, false otherwise.</returns>
-        public async Task<bool> EnsureTableExists()
+        public static async Task<bool> EnsureTableExists(IAmazonDynamoDB client)
         {
-            Console.WriteLine($"Dynamo URL is {_client.Config.ServiceURL}");
-            Console.WriteLine($"Dynamo RegionName is {_client.Config.RegionEndpointServiceName}");
+            Console.WriteLine($"Dynamo URL is {client.Config.ServiceURL}");
+            Console.WriteLine($"Dynamo RegionName is {client.Config.RegionEndpointServiceName}");
             var request = new ListTablesRequest { Limit = 10 };
-            var response = await _client.ListTablesAsync(request);
+            var response = await client.ListTablesAsync(request);
 
             if (!response.TableNames.Contains("Recipe"))
             {
@@ -67,7 +66,7 @@ namespace RecipeAPI
                     }
                 };
 
-                var created = await _client.CreateTableAsync(createRequest);
+                var created = await client.CreateTableAsync(createRequest);
                 return created.HttpStatusCode == System.Net.HttpStatusCode.OK;
             }
 

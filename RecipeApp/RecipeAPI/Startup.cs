@@ -45,6 +45,8 @@ namespace RecipeAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                var client = app.ApplicationServices.GetService<IAmazonDynamoDB>();
+                var result = DynamoRecipeService.EnsureTableExists(client);
             }
 
             app.UseMvc();
