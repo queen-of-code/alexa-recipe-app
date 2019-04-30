@@ -8,5 +8,5 @@ This is a simple dotnet core demo project for standing up a website / API / Data
 
 
 # Build and Test
-From within the AlexaAPI folder, you can build each component independently, or merely run 'docker-compose build' to compile all dependencies and create the requisite images.
+From within the RecipeApp folder, you can build each component independently, or merely run 'docker-compose build' to compile all dependencies and create the requisite images.
 Then you can run 'docker-compose up' to run the services.
