@@ -10,7 +10,11 @@ namespace Website.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            this.Database.EnsureCreated();   
+            try
+            {
+                this.Database.EnsureCreated();
+            }
+            catch { }
         }
         
         public DbSet<RecipeModel> Recipe { get; set; }
