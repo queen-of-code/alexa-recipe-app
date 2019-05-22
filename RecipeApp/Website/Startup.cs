@@ -63,15 +63,23 @@ namespace Website
                 microsoftOptions.ClientSecret = GetSecretOrEnvVar("Authentication.Microsoft.Password");
             });
 
-            services.AddMvc(config =>
-            {
-                // using Microsoft.AspNetCore.Mvc.Authorization;
-                // using Microsoft.AspNetCore.Authorization;
-                var policy = new AuthorizationPolicyBuilder()
-                                 .RequireAuthenticatedUser()
-                                 .Build();
-                config.Filters.Add(new AuthorizeFilter(policy));
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().AddRazorPagesOptions(options =>
+             {
+                 options.Conventions.AuthorizeFolder("/Recipes");
+                 options.Conventions.AllowAnonymousToPage("/Index");
+                 options.Conventions.AllowAnonymousToPage("/Contact");
+                 options.Conventions.AllowAnonymousToPage("/About");
+             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            //services.AddMvc(config =>
+            //{
+            //    // using Microsoft.AspNetCore.Mvc.Authorization;
+            //    // using Microsoft.AspNetCore.Authorization;
+            //    var policy = new AuthorizationPolicyBuilder()
+            //                     .RequireAuthenticatedUser()
+            //                     .Build();
+            //    config.Filters.Add(new AuthorizeFilter(policy));
+            //}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             // Authorization handlers.
             services.AddScoped<IAuthorizationHandler, IsRecipeOwnerAuthorizationHandler>();
@@ -86,6 +94,7 @@ namespace Website
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
+                app.UseBrowserLink();
             }
             else
             {

@@ -21,14 +21,13 @@ namespace Website
             var client = _httpClientFactory.CreateClient("RecipeAPI");
 
             var raw = JsonConvert.SerializeObject(recipe);
-            Console.WriteLine(raw);
+
             var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
             return result.IsSuccessStatusCode;
         }
 
         /// <summary>
         /// Deletes a recipe.
-        /// TODO This should actually delete and not just post again.
         /// </summary>
         /// <param name="recipe"></param>
         /// <returns></returns>
@@ -37,8 +36,8 @@ namespace Website
             var client = _httpClientFactory.CreateClient("RecipeAPI");
 
             var raw = JsonConvert.SerializeObject(recipe);
-            Console.WriteLine(raw);
-            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+            var result = await client.DeleteAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}");
+
             return result.IsSuccessStatusCode;
         }
 

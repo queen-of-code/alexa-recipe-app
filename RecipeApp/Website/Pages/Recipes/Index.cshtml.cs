@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using RecipeApp.Core.ExternalModels;
 using System;
 using System.Collections.Generic;
@@ -24,9 +25,11 @@ namespace Website.Pages.Recipes
 
         public IList<RecipeModel> Recipe { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             var currentUserId = UserManager.GetUserId(User);
+            if (currentUserId == null)
+                return new UnauthorizedResult();
 
             var recipes = await RecipeService.GetAllRecipes(currentUserId);
             if (recipes == null)
@@ -37,6 +40,8 @@ namespace Website.Pages.Recipes
             {
                 Recipe = new List<RecipeModel>(recipes);
             }
+
+            return Page();
         }
     }
 }

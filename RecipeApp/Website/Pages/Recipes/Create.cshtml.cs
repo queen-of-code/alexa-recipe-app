@@ -28,6 +28,9 @@ namespace Website.Pages.Recipes
         public IActionResult OnGet()
         {
             var userId = UserManager.GetUserId(this.User);
+            if (userId == null)
+                return new UnauthorizedResult();
+
             Recipe = new RecipeModel
             {
                 Name = "Chicken Tikka",
