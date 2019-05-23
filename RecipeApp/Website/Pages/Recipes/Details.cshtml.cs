@@ -40,7 +40,7 @@ namespace Website.Pages.Recipes
 
             var currentUserId = UserManager.GetUserId(User);
 
-            if (!isAuthorized &&  currentUserId != Recipe.UserId) 
+            if (!isAuthorized && currentUserId != Recipe.UserId)
             {
                 return new ChallengeResult();
             }

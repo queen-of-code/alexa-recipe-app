@@ -1,8 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Website.Authorization
 {
@@ -31,6 +27,6 @@ namespace Website.Authorization
         public static readonly string ApproveOperationName = "Approve";
         public static readonly string RejectOperationName = "Reject";
 
-        public static readonly string RecipeAdministratorsRole ="RecipeAdministrators";
+        public static readonly string RecipeAdministratorsRole = "RecipeAdministrators";
     }
 }

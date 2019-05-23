@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,14 +51,14 @@ namespace Website
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(
                     Configuration.GetConnectionString("DefaultConnection")));
- 
+
             services.AddDefaultIdentity<IdentityUser>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
             {
-                microsoftOptions.ClientId = GetSecretOrEnvVar("Authentication.Microsoft.ApplicationId"); ;
+                microsoftOptions.ClientId = GetSecretOrEnvVar("Authentication.Microsoft.ApplicationId");
                 microsoftOptions.ClientSecret = GetSecretOrEnvVar("Authentication.Microsoft.Password");
             });
 
@@ -108,7 +107,6 @@ namespace Website
 
             app.UseAuthentication();
 
-
             app.UseMvc();
         }
 
@@ -129,8 +127,10 @@ namespace Website
                     }
                 }
             }
-  
-            return Configuration.GetValue<string>(key) ?? "FOO";
+
+            var hmm = Configuration.GetValue<string>(key) ?? "FOO";
+            Console.WriteLine(hmm.Substring(0, 2));
+            return hmm;
         }
     }
 }

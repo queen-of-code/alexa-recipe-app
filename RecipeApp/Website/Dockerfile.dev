@@ -8,6 +8,10 @@ COPY ["Website/Website.csproj", "Website/"]
 COPY ["Core/Core.csproj", "Core/"]
 RUN dotnet restore "Website/Website.csproj"
 COPY . .
+
+WORKDIR "/src/Core"
+RUN dotnet build "Core.csproj" -c Release -o /app
+
 WORKDIR "/src/Website"
 RUN dotnet build "Website.csproj" -c Release -o /app
 

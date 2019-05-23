@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using RecipeApp.Core.ExternalModels;
 
 namespace Website.Data
 {
@@ -16,7 +14,7 @@ namespace Website.Data
             }
             catch { }
         }
-        
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

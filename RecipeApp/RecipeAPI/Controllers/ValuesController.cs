@@ -82,7 +82,7 @@ namespace RecipeAPI.Controllers
                     return new BadRequestResult();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new BadRequestResult();
             }

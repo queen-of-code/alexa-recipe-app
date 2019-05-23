@@ -1,6 +1,4 @@
 ﻿using Amazon.DynamoDBv2;
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.Runtime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;

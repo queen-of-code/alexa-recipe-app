@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RecipeApp.Core.ExternalModels;
-using System.Linq;
 using System.Threading.Tasks;
 using Website.Authorization;
 using Website.Data;

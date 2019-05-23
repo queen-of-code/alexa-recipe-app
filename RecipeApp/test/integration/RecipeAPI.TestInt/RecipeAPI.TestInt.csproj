@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="out\**" />
+    <EmbeddedResource Remove="out\**" />
+    <None Remove="out\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Moq" Version="4.10.1" />

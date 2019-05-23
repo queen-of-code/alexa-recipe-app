@@ -44,7 +44,7 @@ namespace Website
         public async Task<RecipeModel> GetRecipe(string userId, string recipeId)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            var result =  await client.GetAsync($"/api/values/{userId}/{recipeId}");
+            var result = await client.GetAsync($"/api/values/{userId}/{recipeId}");
             if (result.IsSuccessStatusCode)
             {
                 var rawData = await result.Content.ReadAsStringAsync();
