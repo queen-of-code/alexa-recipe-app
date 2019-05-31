@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RecipeApp.Core.ExternalModels;
-using System.Linq;
 using System.Threading.Tasks;
 using Website.Authorization;
 using Website.Data;
@@ -29,7 +27,11 @@ namespace Website.Pages.Recipes
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Recipe = await RecipeService.GetRecipe(UserManager.GetUserId(User), id.ToString());
+            var userId = UserManager.GetUserId(User);
+            if (userId == null)
+                return new UnauthorizedResult();
+
+            Recipe = await RecipeService.GetRecipe(userId, id.ToString());
             if (Recipe == null)
             {
                 return NotFound();
@@ -69,10 +71,15 @@ namespace Website.Pages.Recipes
             }
 
             Recipe.UserId = recipe.UserId;
+            Recipe.RecipeId = recipe.RecipeId;
 
             var result = await RecipeService.SaveRecipe(Recipe);
+            if (result)
+            {
+                return RedirectToPage("./Index");
+            }
 
-            return RedirectToPage("./Index");
+            return Page();
         }
 
     }

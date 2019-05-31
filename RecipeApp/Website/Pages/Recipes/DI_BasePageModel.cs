@@ -19,6 +19,6 @@ namespace Website.Pages.Recipes
             Context = context;
             UserManager = userManager;
             AuthorizationService = authorizationService;
-        } 
+        }
     }
 }

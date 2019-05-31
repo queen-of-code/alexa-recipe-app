@@ -41,12 +41,22 @@ namespace RecipeAPI.Controllers
 
             return converted;
         }
+        
+        // GET api/values/5/123
+        [HttpGet("{userId}/{recipeId}")]
+        public async Task<RecipeModel> Get(string userId, long recipeId)
+        {
+            var recipe = await RecipeService.RetrieveRecipe(userId, recipeId);
+
+            var converted = recipe.GenerateExternalRecipe();
+
+            return converted;
+        }
 
         // POST api/values
         [HttpPost("{userId}")]
         public async Task<IActionResult> Post(string userId, [FromBody] RecipeModel value)
         {
-            Console.WriteLine(value);
             if (value == null)
             {
                 Logger.LogWarning("Failed to parse a recipe on post.");
@@ -72,9 +82,8 @@ namespace RecipeAPI.Controllers
                     return new BadRequestResult();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e.Message);
                 return new BadRequestResult();
             }
 
@@ -82,15 +91,27 @@ namespace RecipeAPI.Controllers
 
         // PUT api/values/5
         [HttpPut("{userId}/{recipeId}")]
-        public ActionResult Put(string userId, string recipeId, [FromBody] RecipeModel value)
+        public async Task<IActionResult> Put(string userId, string recipeId, [FromBody] RecipeModel value)
         {
-            return new AcceptedResult();
+            var converted = new Recipe(value);
+            var result = await RecipeService.SaveRecipe(converted);
+
+            if (result)
+                return new AcceptedResult();
+
+            return new BadRequestResult();
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        // DELETE api/values/5/1223
+        [HttpDelete("{userId}/{recipeId}")]
+        public async Task<IActionResult> Delete(string userId, long recipeId)
         {
+            var result = await RecipeService.DeleteRecipe(userId, recipeId);
+
+            if (result)
+                return new OkResult();
+
+            return new BadRequestResult();
         }
     }
 }

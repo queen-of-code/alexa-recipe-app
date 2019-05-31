@@ -4,14 +4,17 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <UserSecretsId>aspnet-Website-FC9FB0F9-1E1B-4461-85B6-41F59A0332C7</UserSecretsId>
     <ProjectGuid>3af7dcd8-893b-4438-afcb-990fd2679ab6</ProjectGuid>  
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>  
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="2.2.0" /> 
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" /> 
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.9" /> 
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.0" />
   </ItemGroup>
@@ -20,4 +23,60 @@
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="wwwroot\bootstrap-grid.css" />
+    <Content Remove="wwwroot\bootstrap-grid.css.map" />
+    <Content Remove="wwwroot\bootstrap-grid.min.css" />
+    <Content Remove="wwwroot\bootstrap-grid.min.css.map" />
+    <Content Remove="wwwroot\bootstrap-reboot.css" />
+    <Content Remove="wwwroot\bootstrap-reboot.css.map" />
+    <Content Remove="wwwroot\bootstrap-reboot.min.css" />
+    <Content Remove="wwwroot\bootstrap-reboot.min.css.map" />
+    <Content Remove="wwwroot\bootstrap.css" />
+    <Content Remove="wwwroot\bootstrap.css.map" />
+    <Content Remove="wwwroot\bootstrap.min.css" />
+    <Content Remove="wwwroot\bootstrap.min.css.map" />
+    <Content Remove="wwwroot\bootstrap.bundle.js" />
+    <Content Remove="wwwroot\bootstrap.bundle.js.map" />
+    <Content Remove="wwwroot\bootstrap.bundle.min.js" />
+    <Content Remove="wwwroot\bootstrap.bundle.min.js.map" />
+    <Content Remove="wwwroot\bootstrap.js" />
+    <Content Remove="wwwroot\bootstrap.js.map" />
+    <Content Remove="wwwroot\bootstrap.min.js" />
+    <Content Remove="wwwroot\bootstrap.min.js.map" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap-grid.css.map" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap-grid.min.css" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap-grid.min.css.map" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap-reboot.css.map" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap-reboot.min.css" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap-reboot.min.css.map" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap.css.map" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap.min.css" />
+    <Content Remove="wwwroot\bootstrap\css\bootstrap.min.css.map" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.bundle.js" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.bundle.js.map" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.bundle.min.js" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.bundle.min.js.map" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.js.map" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.min.js" />
+    <Content Remove="wwwroot\bootstrap\js\bootstrap.min.js.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wwwroot\bootstrap\css\bootstrap-grid.css.map" />
+    <None Include="wwwroot\bootstrap\css\bootstrap-grid.min.css" />
+    <None Include="wwwroot\bootstrap\css\bootstrap-grid.min.css.map" />
+    <None Include="wwwroot\bootstrap\css\bootstrap-reboot.css.map" />
+    <None Include="wwwroot\bootstrap\css\bootstrap-reboot.min.css" />
+    <None Include="wwwroot\bootstrap\css\bootstrap-reboot.min.css.map" />
+    <None Include="wwwroot\bootstrap\css\bootstrap.css.map" />
+    <None Include="wwwroot\bootstrap\css\bootstrap.min.css" />
+    <None Include="wwwroot\bootstrap\css\bootstrap.min.css.map" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.bundle.js" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.bundle.js.map" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.bundle.min.js" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.bundle.min.js.map" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.js.map" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.min.js" />
+    <None Include="wwwroot\bootstrap\js\bootstrap.min.js.map" />
+  </ItemGroup>
 </Project>

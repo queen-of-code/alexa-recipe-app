@@ -15,7 +15,7 @@ namespace RecipeAPI.Tests
 {
     public class DynamoRecipeServiceTests
     {
-        [Fact]
+        [Fact(Skip="NoMoreMocks!")]
         public async void TestSave_Create_Delete()
         {
             var moq = new Moq.Mock<IAmazonDynamoDB>();

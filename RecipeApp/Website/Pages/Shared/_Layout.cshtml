@@ -9,43 +9,44 @@
     <title>@ViewData["Title"] - Website</title>
 
     <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/bootstrap/css/bootstrap.css"/>
         <link rel="stylesheet" href="~/css/site.css" />
     </environment>
     <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="~/bootstrap/css/bootstrap.min.css"
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
 </head>
-<body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-page="/Index" class="navbar-brand">Alexa Recipe Website</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a asp-page="/Index">Home</a></li>
-                    <li><a asp-page="/About">About</a></li>
-                    <li><a asp-page="/Contact">Contact</a></li>
-                </ul>
+<body id="page-top">
+
+    <nav id="top-nav" class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" asp-page="/Index"><img src="~/images/queenofcode-logo-large-purple-dark-small.png" width="50" height="35" alt=""></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" asp-page="/Index">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-page="/About">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-page="/Contact">Contact</a>
+                </li>
                 @if (SignInManager.IsSignedIn(User))
                 {
-                    <ul class="nav navbar-nav">
-                        <li><a asp-page="/Recipes">Recipes</a></li>
-                    </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Recipes/Index">My Recipes</a>
+                    </li>
                 }
-                <partial name="_LoginPartial" />
-            </div>
+            </ul>
         </div>
+        <partial name="_LoginPartial" />
     </nav>
 
     <partial name="_CookieConsentPartial" />
@@ -54,13 +55,13 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2019 - Website</p>
+            <p>&copy; 2019 - Zeebee Technologies</p>
         </footer>
     </div>
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/bootstrap/js/bootstrap.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">

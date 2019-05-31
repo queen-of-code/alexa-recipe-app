@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Website.Authorization
 {
-    public class IsRecipeOwnerAuthorizationHandler :  AuthorizationHandler<OperationAuthorizationRequirement, RecipeModel>
+    public class IsRecipeOwnerAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, RecipeModel>
     {
         private readonly UserManager<IdentityUser> _userManager;
 

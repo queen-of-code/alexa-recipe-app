@@ -26,7 +26,10 @@ namespace Website.Pages.Recipes
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var userId = UserManager.GetUserId(this.User);
+            var userId = UserManager.GetUserId(User);
+            if (userId == null)
+                return new UnauthorizedResult();
+
             Recipe = await RecipeService.GetRecipe(userId, id.ToString());
             if (Recipe == null)
             {
@@ -37,7 +40,7 @@ namespace Website.Pages.Recipes
 
             var currentUserId = UserManager.GetUserId(User);
 
-            if (!isAuthorized &&  currentUserId != Recipe.UserId) 
+            if (!isAuthorized && currentUserId != Recipe.UserId)
             {
                 return new ChallengeResult();
             }

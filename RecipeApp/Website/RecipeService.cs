@@ -16,19 +16,28 @@ namespace Website
             _httpClientFactory = httpClientFactory;
         }
 
+        public async Task<bool> CreateRecipe(RecipeModel recipe)
+        {
+            var client = _httpClientFactory.CreateClient("RecipeAPI");
+
+            var raw = JsonConvert.SerializeObject(recipe);
+
+            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+            return result.IsSuccessStatusCode;
+        }
+
         public async Task<bool> SaveRecipe(RecipeModel recipe)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
 
             var raw = JsonConvert.SerializeObject(recipe);
-            Console.WriteLine(raw);
-            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+
+            var result = await client.PutAsJsonAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}", recipe);
             return result.IsSuccessStatusCode;
         }
 
         /// <summary>
         /// Deletes a recipe.
-        /// TODO This should actually delete and not just post again.
         /// </summary>
         /// <param name="recipe"></param>
         /// <returns></returns>
@@ -37,15 +46,15 @@ namespace Website
             var client = _httpClientFactory.CreateClient("RecipeAPI");
 
             var raw = JsonConvert.SerializeObject(recipe);
-            Console.WriteLine(raw);
-            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+            var result = await client.DeleteAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}");
+
             return result.IsSuccessStatusCode;
         }
 
         public async Task<RecipeModel> GetRecipe(string userId, string recipeId)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            var result =  await client.GetAsync($"/api/values/{userId}/{recipeId}");
+            var result = await client.GetAsync($"/api/values/{userId}/{recipeId}");
             if (result.IsSuccessStatusCode)
             {
                 var rawData = await result.Content.ReadAsStringAsync();
