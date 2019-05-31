@@ -16,13 +16,19 @@ namespace Website
             _httpClientFactory = httpClientFactory;
         }
 
+        public async Task<bool> CreateRecipe(RecipeModel recipe)
+        {
+            var client = _httpClientFactory.CreateClient("RecipeAPI");
+
+            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+            return result.IsSuccessStatusCode;
+        }
+
         public async Task<bool> SaveRecipe(RecipeModel recipe)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
 
-            var raw = JsonConvert.SerializeObject(recipe);
-
-            var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
+            var result = await client.PutAsJsonAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}", recipe);
             return result.IsSuccessStatusCode;
         }
 
@@ -35,7 +41,6 @@ namespace Website
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
 
-            var raw = JsonConvert.SerializeObject(recipe);
             var result = await client.DeleteAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}");
 
             return result.IsSuccessStatusCode;

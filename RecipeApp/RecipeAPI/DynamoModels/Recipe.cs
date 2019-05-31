@@ -36,7 +36,7 @@ namespace RecipeAPI.DynamoModels
         [DynamoDBProperty]
         public int CookTimeMins { get; set; }
 
-        [DynamoDBVersion]
+        //[DynamoDBVersion]
         public int? VersionNumber { get; set; }
 
         public Recipe()

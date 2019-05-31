@@ -71,10 +71,15 @@ namespace Website.Pages.Recipes
             }
 
             Recipe.UserId = recipe.UserId;
+            Recipe.RecipeId = recipe.RecipeId;
 
             var result = await RecipeService.SaveRecipe(Recipe);
+            if (result)
+            {
+                return RedirectToPage("./Index");
+            }
 
-            return RedirectToPage("./Index");
+            return Page();
         }
 
     }
