@@ -112,9 +112,17 @@ namespace RecipeAPI
         /// </summary>
         public async Task<bool> DeleteRecipe(string userId, long recipeId)
         {
-            var recipe = await RetrieveRecipe(userId, recipeId);
+            var context = new DynamoDBContext(_client);
 
-            return await DeleteRecipe(recipe);
+            try
+            {
+                await context.DeleteAsync<Recipe>(userId, recipeId, new System.Threading.CancellationToken());
+                return true;
+            }
+            catch (AmazonDynamoDBException)
+            {
+                return false;
+            }
         }
 
         /// <summary>

@@ -22,6 +22,7 @@ namespace RecipeAPI.TestInt
             {
                 this.ApiURL = DefaultBaseUrl;
             }
+
             client = new HttpClient();
         }
 
@@ -33,7 +34,9 @@ namespace RecipeAPI.TestInt
             {
                 var testRecipe = new RecipeModel()
                 {
-                    Name = "TESTINGTHIS"
+                    Name = "TESTINGTHIS",
+                    RecipeId = 5,
+                    UserId = "1"
                 };
                 var result = await client.PutAsJsonAsync<RecipeModel>($"{ApiURL}/api/values/5/1", testRecipe);
                 Assert.True(result.IsSuccessStatusCode);
