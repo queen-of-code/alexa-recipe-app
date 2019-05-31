@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-
+    <ProjectGuid>fff7dcd8-abcd-4438-afcb-990fd2676666</ProjectGuid>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -17,14 +17,10 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\RecipeAPI\RecipeAPI.csproj" />
   </ItemGroup>
-
 </Project>
