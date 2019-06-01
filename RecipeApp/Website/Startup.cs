@@ -49,6 +49,8 @@ namespace Website
 
             services.AddSingleton<RecipeService>();
 
+            
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(
                     Configuration.GetConnectionString("DefaultConnection")));
@@ -61,6 +63,10 @@ namespace Website
             {
                 microsoftOptions.ClientId = GetSecretOrEnvVar("Authentication.Microsoft.ApplicationId");
                 microsoftOptions.ClientSecret = GetSecretOrEnvVar("Authentication.Microsoft.Password");
+            }).AddFacebook(facebookOptions =>
+            {
+                facebookOptions.AppId = GetSecretOrEnvVar("Facebook.API.Key");
+                facebookOptions.AppSecret = GetSecretOrEnvVar("Facebook.API.Secret");
             });
 
             services.AddMvc().AddRazorPagesOptions(options =>
