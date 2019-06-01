@@ -44,6 +44,7 @@ namespace Website
             {
                 client.BaseAddress = new Uri(Configuration.GetConnectionString("RecipeAPIConnection"));
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.DefaultRequestHeaders.Add("X-API-Key", Configuration.GetValue<string>("RecipeConnectionKey"));
             });
 
             services.AddSingleton<RecipeService>();

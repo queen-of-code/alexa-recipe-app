@@ -22,6 +22,7 @@ namespace RecipeAPI.TestInt
             {
                 this.ApiURL = DefaultBaseUrl;
             }
+            this.ApiURL = "https://recipe-dataapi.azurewebsites.net";
 
             client = new HttpClient();
         }
