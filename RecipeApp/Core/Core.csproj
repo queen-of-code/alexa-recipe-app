@@ -4,8 +4,7 @@
     <ProjectGuid>016177F9-3D63-47C3-BE0E-B86BBFA5DE08</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1"/>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
   </ItemGroup>
 </Project>

@@ -29,6 +29,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
   website:
+    container_name: recipe-ui
     #image: "queenofcode/alexa-recipe-app:latest"
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
@@ -43,7 +44,7 @@ services:
     ports:
      - "5000:80"
   recipeapi:
-#    container_name: recipeapi
+    container_name: recipe-api
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev

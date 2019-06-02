@@ -1,15 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using RecipeApp.Core.ExternalModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using RecipeApp.Core;
+using RecipeApp.Core.ExternalModels;
 
 namespace Website
 {
@@ -29,7 +26,8 @@ namespace Website
         public async Task<bool> CreateRecipe(RecipeModel recipe)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetJwtAuth(recipe.UserId));
+            var token = Utilities.GenerateJWTToken(recipe.UserId, _JwtIssuer, _JwtKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var result = await client.PostAsJsonAsync($"/api/values/{recipe.UserId}", recipe);
             return result.IsSuccessStatusCode;
@@ -38,7 +36,7 @@ namespace Website
         public async Task<bool> SaveRecipe(RecipeModel recipe)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            string jwt = GetJwtAuth(recipe.UserId);
+            var jwt = Utilities.GenerateJWTToken(recipe.UserId, _JwtIssuer, _JwtKey);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var result = await client.PutAsJsonAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}", recipe);
@@ -53,7 +51,8 @@ namespace Website
         public async Task<bool> DeleteRecipe(RecipeModel recipe)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetJwtAuth(recipe.UserId));
+            var jwt = Utilities.GenerateJWTToken(recipe.UserId, _JwtIssuer, _JwtKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var result = await client.DeleteAsync($"/api/values/{recipe.UserId}/{recipe.RecipeId}");
 
@@ -63,7 +62,8 @@ namespace Website
         public async Task<RecipeModel> GetRecipe(string userId, string recipeId)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetJwtAuth(userId));
+            var jwt = Utilities.GenerateJWTToken(userId, _JwtIssuer, _JwtKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var result = await client.GetAsync($"/api/values/{userId}/{recipeId}");
             if (result.IsSuccessStatusCode)
@@ -88,7 +88,8 @@ namespace Website
         public async Task<List<RecipeModel>> GetAllRecipes(String userId)
         {
             var client = _httpClientFactory.CreateClient("RecipeAPI");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetJwtAuth(userId));
+            var jwt = Utilities.GenerateJWTToken(userId, _JwtIssuer, _JwtKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var result = await client.GetAsync($"/api/values/{userId}");
             if (result.IsSuccessStatusCode)
@@ -108,28 +109,6 @@ namespace Website
             {
                 return null;
             }
-        }
-
-        private string GetJwtAuth(string userId)
-        {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var token = new JwtSecurityToken
-            (
-                issuer: _JwtIssuer,
-                audience: _JwtIssuer,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(60),
-                notBefore: DateTime.UtcNow,
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_JwtKey)),
-                        SecurityAlgorithms.HmacSha256)
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 
