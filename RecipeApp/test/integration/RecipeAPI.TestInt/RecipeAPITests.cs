@@ -20,7 +20,7 @@ namespace RecipeAPI.TestInt
 
         public RecipeAPITests()
         {
-            var websiteUrl = Environment.GetEnvironmentVariable("ApiUrl");
+            var websiteUrl = Environment.GetEnvironmentVariable("APIURL");
             if (!string.IsNullOrWhiteSpace(websiteUrl))
             {
                 this.ApiURL = websiteUrl;
@@ -31,7 +31,7 @@ namespace RecipeAPI.TestInt
             }
             this.ApiURL = "https://recipe-dataapi.azurewebsites.net";
 
-            var key = Environment.GetEnvironmentVariable("RecipeKey");
+            var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
             if (!String.IsNullOrEmpty(key))
             {
                 this.JwtKey = key;
