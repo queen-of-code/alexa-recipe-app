@@ -30,7 +30,7 @@ services:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
   website:
     container_name: recipe-ui
-    #image: "queenofcode/alexa-recipe-app:latest"
+    #image: "website/website:latest"
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
     secrets:
