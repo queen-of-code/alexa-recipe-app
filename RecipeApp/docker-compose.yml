@@ -33,11 +33,11 @@ services:
     #image: "website/website:latest"
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
-    secrets:
-      - Authentication.Microsoft.ApplicationId
-      - Authentication.Microsoft.Password
-      - Facebook.API.Key
-      - Facebook.API.Secret
+#    secrets:
+#      - Authentication.Microsoft.ApplicationId
+#      - Authentication.Microsoft.Password
+#      - Facebook.API.Key
+#      - Facebook.API.Secret
     build:
       context: .
       dockerfile: ./Website/Dockerfile.dev
@@ -59,13 +59,14 @@ volumes:
   dynamodata: {}
 #volumes:
 # - ./mysql_data:/initialized-db
-  
+
+# Un-comment out these secrets if you want to use Microsoft + FB Auth locally  
 secrets:
-  Authentication.Microsoft.ApplicationId:
-    file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
-  Authentication.Microsoft.Password:
-    file: ~/.docker/secrets/Authentication.Microsoft.Password.txt
-  Facebook.API.Key:
-    file: ~/.docker/secrets/Facebook.API.Key.txt
-  Facebook.API.Secret:
-    file: ~/.docker/secrets/Facebook.API.Secret.txt
+#  Authentication.Microsoft.ApplicationId:
+#    file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
+#  Authentication.Microsoft.Password:
+#    file: ~/.docker/secrets/Authentication.Microsoft.Password.txt
+#  Facebook.API.Key:
+#    file: ~/.docker/secrets/Facebook.API.Key.txt
+#  Facebook.API.Secret:
+#    file: ~/.docker/secrets/Facebook.API.Secret.txt

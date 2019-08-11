@@ -122,7 +122,6 @@ namespace Website
             const string DOCKER_SECRET_PATH = "/run/secrets/";
             if (Directory.Exists(DOCKER_SECRET_PATH))
             {
-                Console.WriteLine("Using docker secret yay");
                 IFileProvider provider = new PhysicalFileProvider(DOCKER_SECRET_PATH);
                 IFileInfo fileInfo = provider.GetFileInfo(key);
                 if (fileInfo.Exists)
@@ -135,8 +134,7 @@ namespace Website
                 }
             }
 
-            var hmm = Configuration.GetValue<string>(key) ?? "FOO";
-            Console.WriteLine(hmm.Substring(0, 2));
+            var hmm = Configuration.GetValue<string>(key) ?? "MISSING";
             return hmm;
         }
     }
