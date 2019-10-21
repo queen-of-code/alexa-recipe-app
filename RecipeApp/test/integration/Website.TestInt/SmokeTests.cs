@@ -2,28 +2,24 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Integration;
 
 namespace Website.TestInt
 {
-    public class SmokeTests
+    public class SmokeTests : IntegrationTestBase
     {
-        private const string DefaultBaseUrl = "http://localhost:5000";
-
         private readonly string BaseUrl;
         private readonly HttpClient client = new HttpClient();
 
+        public override string LocalBaseUrl => "http://localhost:4000";
+
+        public override string QaBaseUrl => "https://recipe-ui-qa.azurewebsites.net";
+
+        public override string ProdUrl => "https://recipe-ui.azurewebsites.net";
+
         public SmokeTests()
         {
-            var websiteUrl = Environment.GetEnvironmentVariable("WebsiteUrl");
-
-            if (!string.IsNullOrWhiteSpace(websiteUrl))
-            {
-                this.BaseUrl = websiteUrl;
-            }
-            else
-            {
-                this.BaseUrl = DefaultBaseUrl;
-            }
+            this.BaseUrl = GetTestUrl(); // To override it, either specify "local", "staging", or "prod"
         }
 
         [Fact]

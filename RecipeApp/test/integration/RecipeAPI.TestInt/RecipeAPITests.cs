@@ -7,9 +7,10 @@ using Xunit;
 
 namespace RecipeAPI.TestInt
 {
+    [Trait("Category", "Integration")]
     public class RecipeAPITests
     {
-        private const string DefaultBaseUrl = "http://localhost:8080";
+        private const string DefaultBaseUrl = "http://localhost:4080";
         private const string ProdBaseUrl = "https://recipe-dataapi.azurewebsites.net";
         private const string DefaultKey = "7ecb61f9642247a7b536f68d8cdf1cee";
         private const string JwtIssuer = "https://recipe-ui.azurewebsites.net";
@@ -29,7 +30,6 @@ namespace RecipeAPI.TestInt
             {
                 this.ApiURL = DefaultBaseUrl;
             }
-            this.ApiURL = "https://recipe-dataapi.azurewebsites.net";
 
             var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
             if (!String.IsNullOrEmpty(key))
@@ -47,7 +47,6 @@ namespace RecipeAPI.TestInt
         }
 
         [Fact]
-        [Trait("Category","Integration")]
         public async Task TestSave_and_Delete()
         {
             try

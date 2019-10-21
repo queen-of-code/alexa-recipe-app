@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS aspnetuserroles (
 -- Table structure for table `aspnetusers`
 --
 
-CREATE TABLE IF NOT EXISTS `AspNetUsers` (
+CREATE TABLE IF NOT EXISTS `aspnetusers` (
   `Id` varchar(128) NOT NULL,
   `Email` varchar(256) DEFAULT NULL,
   `EmailConfirmed` tinyint(1) NOT NULL,

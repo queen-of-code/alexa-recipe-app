@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using RecipeAPI.DynamoModels;
+
 using RecipeApp.Core.ExternalModels;
 
 namespace RecipeAPI.Controllers
@@ -17,9 +20,9 @@ namespace RecipeAPI.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly ILogger Logger;
-        private readonly DynamoRecipeService RecipeService;
+        private readonly IDynamoRecipeService RecipeService;
 
-        public ValuesController(DynamoRecipeService service,
+        public ValuesController(IDynamoRecipeService service,
                                 ILogger<ValuesController> logger)
         {
             this.RecipeService = service;
@@ -28,7 +31,7 @@ namespace RecipeAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public IActionResult Get()
         {
             return new BadRequestResult();
         }

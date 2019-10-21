@@ -3,8 +3,9 @@ using Xunit;
 
 namespace Website.Tests
 {
-    public class UnitTest1
+    public class RecipeServiceTests
     {
+        [Trait("Category", "Unit")]
         [Fact]
         public void Test1()
         {

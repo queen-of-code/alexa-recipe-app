@@ -6,7 +6,7 @@ services:
 #      context: SQL
 #      dockerfile: Dockerfile
     ports:
-      - "8001:3306"
+      - "3306:3306"
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 'test_pass' # TODO: Change this
@@ -23,31 +23,35 @@ services:
       DYNAMO_SECRET_KEY: whocares
       AWS_REGION: us-west-2
     ports:
-      - "8000:8000"
+      - "7000:8000"
     volumes:
-      - dynamodata:/home/dynamodblocal
+      - ./dynamo_data:/home/dynamodblocal
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
   website:
-    container_name: recipe-ui
     #image: "website/website:latest"
+    build:
+      context: .
+      dockerfile: ./Website/Dockerfile.dev
+    depends_on:
+      - recipeapi
+      - mysql
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
-#    secrets:
+#    secrets: Uncomment these secrets if you want to use Microsoft + FB Auth locally
 #      - Authentication.Microsoft.ApplicationId
 #      - Authentication.Microsoft.Password
 #      - Facebook.API.Key
 #      - Facebook.API.Secret
-    build:
-      context: .
-      dockerfile: ./Website/Dockerfile.dev
     ports:
-     - "5000:80"
+     - "4000:80"
   recipeapi:
-    container_name: recipe-api
+    #image: website.azurecr.io/recipeapi:latest
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev
+    depends_on:
+      - dynamodb
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
       AWS_ACCESS_KEY_ID: 'whatever'
@@ -55,13 +59,8 @@ services:
     ports:
      - "8080:80"
 
-volumes:
-  dynamodata: {}
-#volumes:
-# - ./mysql_data:/initialized-db
-
 # Un-comment out these secrets if you want to use Microsoft + FB Auth locally  
-secrets:
+#secrets:
 #  Authentication.Microsoft.ApplicationId:
 #    file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
 #  Authentication.Microsoft.Password:

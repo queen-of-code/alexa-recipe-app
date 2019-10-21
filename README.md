@@ -2,9 +2,11 @@
 This is a simple dotnet core demo project for standing up a website / API / Database using Docker containers and docker-compose for local development. 
 
 # Getting Started
-1.  Install Docker for Windows/Mac/WhateverYourOSIs
+1.  Install AND run Docker for Windows/Mac/WhateverYourOSIs
 2.  Install dotnet core 2.2 at a minimum 
 3.  Something to edit C# in (VS Code or VS Community are good choices).
+
+If you are attending an in-person tutorial, please ensure that you have successfully run Docker before class. Your laptop may require several reboots to enable virtualization. NOTE: if you are using a MacBook with Windows, virtualization is complicated. You may have to soft-boot from MacOS into Windows to get it to work. 
 
 # Build and Test
 From within the RecipeApp folder, you can build each component independently, or merely run 'docker-compose build' to compile all dependencies and create the requisite images.
