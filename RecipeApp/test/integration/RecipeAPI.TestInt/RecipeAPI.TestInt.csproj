@@ -22,5 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\RecipeAPI\RecipeAPI.csproj" />
+    <ProjectReference Include="..\IntegrationTestBase\IntegrationTestBase.csproj" />
   </ItemGroup>
 </Project>

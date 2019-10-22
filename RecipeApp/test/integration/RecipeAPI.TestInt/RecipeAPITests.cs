@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Integration;
 using RecipeApp.Core;
 using RecipeApp.Core.ExternalModels;
 using Xunit;
@@ -8,12 +9,17 @@ using Xunit;
 namespace RecipeAPI.TestInt
 {
     [Trait("Category", "Integration")]
-    public class RecipeAPITests
+    public class RecipeAPITests : IntegrationTestBase
     {
-        private const string DefaultBaseUrl = "http://localhost:4080";
-        private const string ProdBaseUrl = "https://recipe-dataapi.azurewebsites.net";
+        public override string LocalBaseUrl => "http://localhost:4080";
+
+        public override string QaBaseUrl => "https://recipe-dataapi-qa.azurewebsites.net";
+
+        public override string ProdUrl => "https://recipeapi.azurewebsites.net";
+
         private const string DefaultKey = "7ecb61f9642247a7b536f68d8cdf1cee";
-        private const string JwtIssuer = "https://recipe-ui.azurewebsites.net";
+        private const string ProdJwtIssuer = "https://recipe-ui.azurewebsites.net";
+        private const string QaJwtIssuer = "https://recipe-ui-qa.azurewebsites.net";
 
         private readonly string ApiURL;
         private readonly string JwtKey;
@@ -21,15 +27,7 @@ namespace RecipeAPI.TestInt
 
         public RecipeAPITests()
         {
-            var websiteUrl = Environment.GetEnvironmentVariable("APIURL");
-            if (!string.IsNullOrWhiteSpace(websiteUrl))
-            {
-                this.ApiURL = websiteUrl;
-            }
-            else
-            {
-                this.ApiURL = DefaultBaseUrl;
-            }
+            this.ApiURL = GetTestUrl(); // To override it, either specify "local", "staging", or "prod"
 
             var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
             if (!String.IsNullOrEmpty(key))
@@ -42,7 +40,7 @@ namespace RecipeAPI.TestInt
             }
 
             client = new HttpClient();
-            var jwt = Utilities.GenerateJWTToken("1", JwtIssuer, JwtKey);
+            var jwt = Utilities.GenerateJWTToken("5", ProdJwtIssuer, JwtKey);
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
         }
 

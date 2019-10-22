@@ -58,7 +58,7 @@ namespace RecipeAPI
                 });
 
 
-            services.AddSingleton<DynamoRecipeService>();
+            services.AddSingleton<IDynamoRecipeService, DynamoRecipeService>();
         }
 
         /// <summary>
