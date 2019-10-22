@@ -10,17 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{0462A7A4-EA2A-4BC9-9DEB-36DB512AA2CB}"
-	ProjectSection(SolutionItems) = preProject
-		SQL\Dockerfile = SQL\Dockerfile
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecipeAPI", "RecipeAPI\RecipeAPI.csproj", "{AAA7DCD8-893B-4438-AFCB-990FD2676666}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DynamoDb", "DynamoDb", "{3000B0B7-2E06-4DF9-8BEA-C3D8A3D7E68D}"
-	ProjectSection(SolutionItems) = preProject
-		DynamoDB\Dockerfile = DynamoDB\Dockerfile
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{016177F9-3D63-47C3-BE0E-B86BBFA5DE08}"
 EndProject

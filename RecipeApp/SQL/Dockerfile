@@ -9,7 +9,7 @@ ENV MYSQL_USER=recipeuser
 ENV MYSQL_PASSWORD=testpassword123
 ENV MYSQL_DATABASE=recipes
 
-COPY init.sql /docker-entrypoint-initdb.d/
+#COPY init.sql /docker-entrypoint-initdb.d/
 
 # Need to change the datadir to something else that /var/lib/mysql because the parent docker file defines it as a volume.
 # https://docs.docker.com/engine/reference/builder/#volume :
@@ -18,5 +18,4 @@ COPY init.sql /docker-entrypoint-initdb.d/
 RUN ["/usr/local/bin/docker-entrypoint.sh", "mysqld", "--datadir", "/initialized-db"]
 
 FROM mysql:latest
-
 COPY --from=builder /initialized-db /var/lib/mysql

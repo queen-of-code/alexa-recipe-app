@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RecipeAPI
@@ -31,7 +32,8 @@ namespace RecipeAPI
 
             var awsOptions = Configuration.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
-           
+            services.AddAWSService<IAmazonDynamoDB>(awsOptions);
+
             // Add JWT Authentication 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // => remove default claims
             services
@@ -55,7 +57,6 @@ namespace RecipeAPI
                     };
                 });
 
-            services.AddAWSService<IAmazonDynamoDB>(awsOptions);
 
             services.AddSingleton<DynamoRecipeService>();
         }
@@ -69,8 +70,20 @@ namespace RecipeAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                var client = app.ApplicationServices.GetService<IAmazonDynamoDB>();
-                var result = Task.Run( () => DynamoRecipeService.EnsureTableExists(client)).GetAwaiter().GetResult();
+                try
+                {
+                    var client = app.ApplicationServices.GetService<IAmazonDynamoDB>();
+                    var result = Task.Run(() => DynamoRecipeService.EnsureTableExists(client)).GetAwaiter().GetResult();
+                }
+                catch (Exception)
+                {
+                    // TODO This is a terrible way to resolve a race condition.
+                    Console.WriteLine("Solving a startup race case in the worst way possible");
+                    Thread.Sleep(100);
+                    var client = app.ApplicationServices.GetService<IAmazonDynamoDB>();
+                    var result = Task.Run(() => DynamoRecipeService.EnsureTableExists(client)).GetAwaiter().GetResult();
+
+                }
             }
 
             app.UseMvc();

@@ -23,9 +23,9 @@ services:
       DYNAMO_SECRET_KEY: whocares
       AWS_REGION: us-west-2
     ports:
-      - "7000:8000"
+      - "8000:8000"
     volumes:
-      - ./dynamo_data:/home/dynamodblocal
+      - dynamodata:/home/dynamodblocal
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
   website:
@@ -58,7 +58,9 @@ services:
       AWS_SECRET_ACCESS_KEY: 'whocares'
     ports:
      - "8080:80"
-
+     
+volumes:
+  dynamodata: {}
 # Un-comment out these secrets if you want to use Microsoft + FB Auth locally  
 #secrets:
 #  Authentication.Microsoft.ApplicationId:
