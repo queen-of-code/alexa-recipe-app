@@ -11,7 +11,7 @@ namespace RecipeAPI.TestInt
     [Trait("Category", "Integration")]
     public class RecipeAPITests : IntegrationTestBase
     {
-        public override string LocalBaseUrl => "http://localhost:4080";
+        public override string LocalBaseUrl => "http://localhost:8080";
 
         public override string QaBaseUrl => "https://recipe-dataapi-qa.azurewebsites.net";
 
@@ -29,7 +29,7 @@ namespace RecipeAPI.TestInt
         {
             this.ApiURL = GetTestUrl(); // To override it, either specify "local", "staging", or "prod"
 
-            var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
+            var key = ""; // Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
             if (!String.IsNullOrEmpty(key))
             {
                 this.JwtKey = key;

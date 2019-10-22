@@ -78,9 +78,6 @@ namespace RecipeAPI
                 {
                     // TODO This is a terrible way to resolve a race condition.
                     Console.WriteLine("Solving a startup race case in the worst way possible");
-                    Thread.Sleep(100);
-                    var client = app.ApplicationServices.GetService<IAmazonDynamoDB>();
-                    var result = Task.Run(() => DynamoRecipeService.EnsureTableExists(client)).GetAwaiter().GetResult();
 
                 }
             }

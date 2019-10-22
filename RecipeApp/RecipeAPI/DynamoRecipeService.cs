@@ -18,6 +18,7 @@ namespace RecipeAPI
     {
         private readonly IAmazonDynamoDB _client;
         private IDynamoDBContext _testContext = null;
+        internal bool initialized = false;
 
         public DynamoRecipeService(IAmazonDynamoDB amazonDynamoDb)
         {
@@ -88,6 +89,12 @@ namespace RecipeAPI
         /// </summary>
         public async Task<Recipe> RetrieveRecipe(string userId, long recipeId)
         {
+            if (!initialized)
+            {
+                var result = await EnsureTableExists(_client);
+                initialized = result;
+            }
+
             var context = _testContext ?? new DynamoDBContext(_client);
 
             try
@@ -102,6 +109,11 @@ namespace RecipeAPI
 
         public async Task<IEnumerable<Recipe>> GetAllRecipesForUser(string userId)
         {
+            if (!initialized)
+            {
+                var result = await EnsureTableExists(_client);
+                initialized = result;
+            }
             var context = _testContext ?? new DynamoDBContext(_client);
 
             try
@@ -121,6 +133,11 @@ namespace RecipeAPI
         /// </summary>
         public async Task<bool> DeleteRecipe(string userId, long recipeId)
         {
+            if (!initialized)
+            {
+                var result = await EnsureTableExists(_client);
+                initialized = result;
+            }
             var context = _testContext ?? new DynamoDBContext(_client);
 
             try
@@ -140,6 +157,11 @@ namespace RecipeAPI
         /// </summary>
         public async Task<bool> SaveRecipe(Recipe recipe)
         {
+            if (!initialized)
+            {
+                var result = await EnsureTableExists(_client);
+                initialized = result;
+            }
             if (recipe == null)
             {
                 return false;

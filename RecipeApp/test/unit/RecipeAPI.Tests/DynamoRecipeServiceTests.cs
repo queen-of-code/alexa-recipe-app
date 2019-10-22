@@ -16,6 +16,7 @@ namespace RecipeAPI.Tests
     public class DynamoRecipeServiceTests
     {
 
+
         [Fact]
         public async Task EnsureTableExists_True()
         {
@@ -73,6 +74,7 @@ namespace RecipeAPI.Tests
                 .Callback((Recipe r, CancellationToken ct) => { callback = r; });
 
             var recipeService = new DynamoRecipeService(null);
+            recipeService.initialized = true;
             recipeService.SetupMockContext(moq.Object);
 
             var recipe = new Recipe()
@@ -104,6 +106,7 @@ namespace RecipeAPI.Tests
                 .Callback((Recipe r, CancellationToken ct) => { callback = r; });
 
             var recipeService = new DynamoRecipeService(null);
+            recipeService.initialized = true;
             recipeService.SetupMockContext(moq.Object);
 
             var recipe = new Recipe()
@@ -125,6 +128,7 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task SaveRecipe_Invalid()
         {
+            // TODO Also mock the Client because you need it!
             var moq = new Moq.Mock<IDynamoDBContext>();
             Recipe callback = null;
 
@@ -134,6 +138,7 @@ namespace RecipeAPI.Tests
                 .Callback((Recipe r, CancellationToken ct) => { callback = r; });
 
             var recipeService = new DynamoRecipeService(null);
+            recipeService.initialized = true;
             recipeService.SetupMockContext(moq.Object);
 
             var recipe = new Recipe()
