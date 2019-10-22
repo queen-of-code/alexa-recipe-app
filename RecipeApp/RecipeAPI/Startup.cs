@@ -67,7 +67,6 @@ namespace RecipeAPI
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             Console.WriteLine($"Environment is dev? {env.EnvironmentName}");
-            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 try
