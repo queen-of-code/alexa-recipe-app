@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
@@ -20,7 +20,7 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task EnsureTableExists_True()
         {
-            var moq = new Moq.Mock<IAmazonDynamoDB>();
+            var moq = new Mock<IAmazonDynamoDB>();
             moq.SetupAllProperties();
             moq.Setup(s => 
                 s.ListTablesAsync(It.IsAny<ListTablesRequest>(), It.IsAny<CancellationToken>()))
@@ -33,14 +33,14 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task EnsureTableExists_False()
         {
-            var moq = new Moq.Mock<IAmazonDynamoDB>();
+            var moq = new Mock<IAmazonDynamoDB>();
             moq.SetupAllProperties();
             moq.Setup(s =>
                 s.ListTablesAsync(It.IsAny<ListTablesRequest>(), It.IsAny<CancellationToken>()))
                  .ReturnsAsync(new ListTablesResponse { TableNames = new List<string> { "NOTHING" } });
             moq.Setup(s =>
                 s.CreateTableAsync(It.IsAny<CreateTableRequest>(), It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(new CreateTableResponse { HttpStatusCode = System.Net.HttpStatusCode.BadRequest });
+                 .ReturnsAsync(new CreateTableResponse { HttpStatusCode = HttpStatusCode.BadRequest });
 
             var exists = await DynamoRecipeService.EnsureTableExists(moq.Object);
             Assert.False(exists);
@@ -49,14 +49,14 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task EnsureTableExists_Created()
         {
-            var moq = new Moq.Mock<IAmazonDynamoDB>();
+            var moq = new Mock<IAmazonDynamoDB>();
             moq.SetupAllProperties();
             moq.Setup(s =>
                 s.ListTablesAsync(It.IsAny<ListTablesRequest>(), It.IsAny<CancellationToken>()))
                  .ReturnsAsync(new ListTablesResponse { TableNames = new List<string> { "NOTHING" } });
             moq.Setup(s =>
                 s.CreateTableAsync(It.IsAny<CreateTableRequest>(), It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(new CreateTableResponse { HttpStatusCode = System.Net.HttpStatusCode.OK });
+                 .ReturnsAsync(new CreateTableResponse { HttpStatusCode = HttpStatusCode.OK });
 
             var exists = await DynamoRecipeService.EnsureTableExists(moq.Object);
             Assert.True(exists);
@@ -65,19 +65,19 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task SaveRecipe_Valid()
         {
-            var moq = new Moq.Mock<IDynamoDBContext>();
+            var moq = new Mock<IDynamoDBContext>();
             Recipe callback = null;
 
             moq.SetupAllProperties();
             moq.Setup(s =>
-                s.SaveAsync<Recipe>(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
+                s.SaveAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
                 .Callback((Recipe r, CancellationToken ct) => { callback = r; });
 
             var recipeService = new DynamoRecipeService(null);
-            recipeService.initialized = true;
+            DynamoRecipeService.Initialized = true;
             recipeService.SetupMockContext(moq.Object);
 
-            var recipe = new Recipe()
+            var recipe = new Recipe
             {
                 Name = "Test Recipe",
                 LastUpdateTime = DateTime.UtcNow,
@@ -97,19 +97,19 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task SaveRecipe_NoId()
         {
-            var moq = new Moq.Mock<IDynamoDBContext>();
+            var moq = new Mock<IDynamoDBContext>();
             Recipe callback = null;
 
             moq.SetupAllProperties();
             moq.Setup(s =>
-                s.SaveAsync<Recipe>(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
+                s.SaveAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
                 .Callback((Recipe r, CancellationToken ct) => { callback = r; });
 
             var recipeService = new DynamoRecipeService(null);
-            recipeService.initialized = true;
+            DynamoRecipeService.Initialized = true;
             recipeService.SetupMockContext(moq.Object);
 
-            var recipe = new Recipe()
+            var recipe = new Recipe
             {
                 Name = "Test Recipe",
                 LastUpdateTime = DateTime.UtcNow,
@@ -122,26 +122,26 @@ namespace RecipeAPI.Tests
             var result = await recipeService.SaveRecipe(recipe);
             Assert.True(result);
             Assert.NotNull(callback);
-            Assert.NotEqual(default(long), callback.RecipeId);
+            Assert.NotEqual(default, callback.RecipeId);
         }
 
         [Fact]
         public async Task SaveRecipe_Invalid()
         {
             // TODO Also mock the Client because you need it!
-            var moq = new Moq.Mock<IDynamoDBContext>();
+            var moq = new Mock<IDynamoDBContext>();
             Recipe callback = null;
 
             moq.SetupAllProperties();
             moq.Setup(s =>
-                s.SaveAsync<Recipe>(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
+                s.SaveAsync(It.IsAny<Recipe>(), It.IsAny<CancellationToken>()))
                 .Callback((Recipe r, CancellationToken ct) => { callback = r; });
 
             var recipeService = new DynamoRecipeService(null);
-            recipeService.initialized = true;
+            DynamoRecipeService.Initialized = true;
             recipeService.SetupMockContext(moq.Object);
 
-            var recipe = new Recipe()
+            var recipe = new Recipe
             {
                 Name = "",
                 LastUpdateTime = DateTime.UtcNow,

@@ -17,8 +17,8 @@ namespace RecipeAPI
     public class DynamoRecipeService : IDynamoRecipeService
     {
         private readonly IAmazonDynamoDB _client;
-        private IDynamoDBContext _testContext = null;
-        internal bool initialized = false;
+        private IDynamoDBContext _testContext;
+        internal static volatile bool Initialized;
 
         public DynamoRecipeService(IAmazonDynamoDB amazonDynamoDb)
         {
@@ -36,6 +36,11 @@ namespace RecipeAPI
         /// <returns>True if there's a good table to use, false otherwise.</returns>
         public static async Task<bool> EnsureTableExists(IAmazonDynamoDB client)
         {
+            if (Initialized)
+            {
+                return true;
+            }
+
             var request = new ListTablesRequest { Limit = 10 };
             var response = await client.ListTablesAsync(request);
 
@@ -77,9 +82,11 @@ namespace RecipeAPI
                 };
 
                 var created = await client.CreateTableAsync(createRequest);
+                Initialized = created.HttpStatusCode == System.Net.HttpStatusCode.OK;
                 return created.HttpStatusCode == System.Net.HttpStatusCode.OK;
             }
 
+            Initialized = true;
             return true; // It already existed.
         }
 
@@ -89,41 +96,44 @@ namespace RecipeAPI
         /// </summary>
         public async Task<Recipe> RetrieveRecipe(string userId, long recipeId)
         {
-            if (!initialized)
+            if (!Initialized)
             {
                 var result = await EnsureTableExists(_client);
-                initialized = result;
+                Initialized = result;
             }
 
-            var context = _testContext ?? new DynamoDBContext(_client);
-
-            try
+            using (var context = _testContext ?? new DynamoDBContext(_client))
             {
-                return await context.LoadAsync<Recipe>(userId, recipeId);
-            }
-            catch (AmazonDynamoDBException)
-            {
-                return null;
+                try
+                {
+                    return await context.LoadAsync<Recipe>(userId, recipeId);
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return null;
+                }
             }
         }
 
         public async Task<IEnumerable<Recipe>> GetAllRecipesForUser(string userId)
         {
-            if (!initialized)
+            if (!Initialized)
             {
                 var result = await EnsureTableExists(_client);
-                initialized = result;
+                Initialized = result;
             }
-            var context = _testContext ?? new DynamoDBContext(_client);
 
-            try
+            using (var context = _testContext ?? new DynamoDBContext(_client))
             {
-                var query = context.QueryAsync<Recipe>(userId);
-                return await query.GetRemainingAsync();
-            }
-            catch (AmazonDynamoDBException)
-            {
-                return new Recipe[0];
+                try
+                {
+                    var query = context.QueryAsync<Recipe>(userId);
+                    return await query.GetRemainingAsync();
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return new Recipe[0];
+                }
             }
         }
 
@@ -133,21 +143,23 @@ namespace RecipeAPI
         /// </summary>
         public async Task<bool> DeleteRecipe(string userId, long recipeId)
         {
-            if (!initialized)
+            if (!Initialized)
             {
                 var result = await EnsureTableExists(_client);
-                initialized = result;
+                Initialized = result;
             }
-            var context = _testContext ?? new DynamoDBContext(_client);
 
-            try
+            using (var context = _testContext ?? new DynamoDBContext(_client))
             {
-                await context.DeleteAsync<Recipe>(userId, recipeId, new System.Threading.CancellationToken());
-                return true;
-            }
-            catch (AmazonDynamoDBException)
-            {
-                return false;
+                try
+                {
+                    await context.DeleteAsync<Recipe>(userId, recipeId);
+                    return true;
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return false;
+                }
             }
         }
 
@@ -157,39 +169,40 @@ namespace RecipeAPI
         /// </summary>
         public async Task<bool> SaveRecipe(Recipe recipe)
         {
-            if (!initialized)
+            if (!Initialized)
             {
                 var result = await EnsureTableExists(_client);
-                initialized = result;
+                Initialized = result;
             }
+
             if (recipe == null)
             {
                 return false;
             }
 
-            var context = _testContext ?? new DynamoDBContext(_client);
+            using (var context = _testContext ?? new DynamoDBContext(_client))
+            {
+                recipe.LastUpdateTime = DateTime.UtcNow;
+                if (recipe.RecipeId == default(long))
+                {
+                    recipe.RecipeId = Utilities.NextInt64();
+                }
 
-            recipe.LastUpdateTime = DateTime.UtcNow;
-            if (recipe.RecipeId == default(long))
-            {
-                recipe.RecipeId = Utilities.NextInt64();
-            }
+                if (!recipe.IsValid())
+                {
+                    return false;
+                }
 
-            if (!recipe.IsValid())
-            {
-                return false;
-            }
-
-            try
-            {
-                await context.SaveAsync(recipe);
-                return true;
-            }
-            catch (AmazonDynamoDBException)
-            {
-                return false;
+                try
+                {
+                    await context.SaveAsync(recipe);
+                    return true;
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return false;
+                }
             }
         }
-
     }
 }

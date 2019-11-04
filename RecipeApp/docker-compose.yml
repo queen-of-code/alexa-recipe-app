@@ -46,7 +46,7 @@ services:
     ports:
      - "4000:80"
   recipeapi:
-    #image: website.azurecr.io/recipeapi:latest
+    #image: website.azurecr.io/recipeapi:184
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev

@@ -1,4 +1,9 @@
-﻿using Amazon.DynamoDBv2;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+
+using Amazon.DynamoDBv2;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,11 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace RecipeAPI
 {
@@ -23,10 +23,26 @@ namespace RecipeAPI
 
         public IConfiguration Configuration { get; }
 
-        /// <summary>
-        ///  This method gets called by the runtime. Use this method to add services to the container.
-        /// </summary>
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureProductionServices(IServiceCollection services)
+        {
+            ConfigureCommonServices(services);
+            
+            Console.WriteLine("Using production environment.");
+        }
+
+        public void ConfigureDevelopmentServices(IServiceCollection services)
+        {
+            ConfigureCommonServices(services);
+            Console.WriteLine("Using development environment.");
+        }
+
+        public void ConfigureStagingServices(IServiceCollection services)
+        {
+            ConfigureCommonServices(services);
+            Console.WriteLine("Using staging environment.");
+        }
+
+        private void ConfigureCommonServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -66,20 +82,9 @@ namespace RecipeAPI
         /// </summary>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            Console.WriteLine($"Environment is dev? {env.EnvironmentName}");
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                try
-                {
-                    var client = app.ApplicationServices.GetService<IAmazonDynamoDB>();
-                    var result = Task.Run(() => DynamoRecipeService.EnsureTableExists(client)).GetAwaiter().GetResult();
-                }
-                catch (Exception)
-                {
-                    // TODO This is a terrible way to resolve a race condition.
-                    Console.WriteLine("Solving a startup race case in the worst way possible");
-
-                }
             }
 
             app.UseMvc();

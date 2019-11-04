@@ -9,8 +9,8 @@ namespace Website.TestInt
 {
     public class SmokeTests : IntegrationTestBase
     {
-        private readonly string BaseUrl;
-        private readonly HttpClient client = new HttpClient();
+        private readonly string _baseUrl;
+        private readonly HttpClient _client = new HttpClient();
 
         public override string LocalBaseUrl => "http://localhost:4000";
 
@@ -20,13 +20,13 @@ namespace Website.TestInt
 
         public SmokeTests()
         {
-            this.BaseUrl = GetTestUrl(); // To override it, either specify "local", "staging", or "prod"
+            this._baseUrl = GetTestUrl(); // To override it, either specify "local", "staging", or "prod"
         }
 
         [Fact]
         public async Task Get_Index()
         {
-            var result = await client.GetAsync($"{BaseUrl}/");
+            var result = await _client.GetAsync($"{_baseUrl}/");
             Assert.NotNull(result);
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
@@ -37,7 +37,7 @@ namespace Website.TestInt
         [Fact]
         public async Task Get_Contact()
         {
-            var result = await client.GetAsync($"{BaseUrl}/Contact");
+            var result = await _client.GetAsync($"{_baseUrl}/Contact");
             Assert.NotNull(result);
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
@@ -49,7 +49,7 @@ namespace Website.TestInt
         [Fact]
         public async Task Get_About()
         {
-            var result = await client.GetAsync($"{BaseUrl}/About");
+            var result = await _client.GetAsync($"{_baseUrl}/About");
             Assert.NotNull(result);
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
@@ -60,7 +60,7 @@ namespace Website.TestInt
         [Fact]
         public async Task Get_Login()
         {
-            var result = await client.GetAsync($"{BaseUrl}/Identity/Account/Login");
+            var result = await _client.GetAsync($"{_baseUrl}/Identity/Account/Login");
             Assert.NotNull(result);
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
