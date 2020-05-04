@@ -12,11 +12,13 @@ namespace Website.TestInt
         private readonly string _baseUrl;
         private readonly HttpClient _client = new HttpClient();
 
-        public override string LocalBaseUrl => "http://localhost:4000";
+        public override string LocalBaseUrl => "http://localhost:3000";
 
         public override string QaBaseUrl => "https://recipe-ui-qa.azurewebsites.net";
 
         public override string ProdUrl => "https://recipe-ui.azurewebsites.net";
+
+        private const int MinPageLengthBytes = 10;
 
         public SmokeTests()
         {
@@ -31,7 +33,7 @@ namespace Website.TestInt
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
             Assert.NotNull(content);
-            Assert.True(content.Length > 10);
+            Assert.True(content.Length > MinPageLengthBytes);
         }
 
         [Fact]
@@ -42,7 +44,7 @@ namespace Website.TestInt
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
             Assert.NotNull(content);
-            Assert.True(content.Length > 10);
+            Assert.True(content.Length > MinPageLengthBytes);
         }
 
 
@@ -54,7 +56,7 @@ namespace Website.TestInt
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
             Assert.NotNull(content);
-            Assert.True(content.Length > 10);
+            Assert.True(content.Length > MinPageLengthBytes);
         }
 
         [Fact]
@@ -65,7 +67,7 @@ namespace Website.TestInt
             Assert.True(result.IsSuccessStatusCode);
             var content = await result.Content.ReadAsStringAsync();
             Assert.NotNull(content);
-            Assert.True(content.Length > 10);
+            Assert.True(content.Length > MinPageLengthBytes);
         }
     }
 }

@@ -33,12 +33,14 @@ namespace RecipeAPI
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
             ConfigureCommonServices(services);
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging locally.
             Console.WriteLine("Using development environment.");
         }
 
         public void ConfigureStagingServices(IServiceCollection services)
         {
-            ConfigureCommonServices(services);
+            ConfigureCommonServices(services); 
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging locally.
             Console.WriteLine("Using staging environment.");
         }
 
@@ -67,9 +69,9 @@ namespace RecipeAPI
                     cfg.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidIssuer = Configuration["JwtIssuer"],
-                        ValidAudience = Configuration["JwtIssuer"],
+                        ValidAudience = "API",
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["RecipeConnectionKey"])),
-                        ClockSkew = TimeSpan.Zero // remove delay of token when expire
+                        ClockSkew = TimeSpan.FromSeconds(60) // remove delay of token when expire
                     };
                 });
 

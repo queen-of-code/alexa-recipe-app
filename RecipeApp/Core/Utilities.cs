@@ -29,7 +29,7 @@ namespace RecipeApp.Core
             var token = new JwtSecurityToken
             (
                 issuer: issuer,
-                audience: issuer,
+                audience: "API",
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(60),
                 notBefore: DateTime.UtcNow,

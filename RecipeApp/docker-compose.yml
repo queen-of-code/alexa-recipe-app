@@ -29,7 +29,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
   website:
-    #image: "website/website:latest"
+    #image: "website.azurecr.io/website:208"
     build:
       context: .
       dockerfile: ./Website/Dockerfile.dev
@@ -44,9 +44,9 @@ services:
 #      - Facebook.API.Key
 #      - Facebook.API.Secret
     ports:
-     - "4000:80"
+     - "3000:80"
   recipeapi:
-    #image: website.azurecr.io/recipeapi:184
+    #image: website.azurecr.io/recipeapi:207
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev

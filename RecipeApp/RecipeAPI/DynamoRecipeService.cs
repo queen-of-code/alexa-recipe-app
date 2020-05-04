@@ -148,11 +148,11 @@ namespace RecipeAPI
                 var result = await EnsureTableExists(_client);
                 Initialized = result;
             }
-
             using (var context = _testContext ?? new DynamoDBContext(_client))
             {
                 try
                 {
+//                    throw new AccessViolationException("OH NO YOU CANNOT DELETE THIS");
                     await context.DeleteAsync<Recipe>(userId, recipeId);
                     return true;
                 }

@@ -44,7 +44,6 @@ namespace Website
             {
                 client.BaseAddress = new Uri(Configuration.GetConnectionString("RecipeAPIConnection"));
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-                client.DefaultRequestHeaders.Add("X-API-Key", Configuration.GetValue<string>("RecipeConnectionKey"));
             });
 
             services.AddSingleton<RecipeService>();
@@ -96,6 +95,7 @@ namespace Website
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            Console.WriteLine($"Environment is {env.EnvironmentName}");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
