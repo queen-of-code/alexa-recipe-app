@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using RecipeApp.Core;
 using RecipeApp.Core.ExternalModels;
 
@@ -71,7 +71,7 @@ namespace Website
                 var rawData = await result.Content.ReadAsStringAsync();
                 try
                 {
-                    var model = JsonConvert.DeserializeObject<RecipeModel>(rawData);
+                    var model = JsonSerializer.Deserialize<RecipeModel>(rawData);
                     return model;
                 }
                 catch (Exception)
@@ -97,7 +97,7 @@ namespace Website
                 var rawData = await result.Content.ReadAsStringAsync();
                 try
                 {
-                    var model = JsonConvert.DeserializeObject<List<RecipeModel>>(rawData);
+                    var model = JsonSerializer.Deserialize<List<RecipeModel>>(rawData);
                     return model;
                 }
                 catch (Exception)

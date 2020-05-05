@@ -14,16 +14,16 @@ using RecipeApp.Core.ExternalModels;
 
 namespace RecipeAPI.Controllers
 {
-    [Route("api/[controller]")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
-    public class ValuesController : ControllerBase
+    [Route("api/values")]
+    public class ValuesApiController : ControllerBase
     {
         private readonly ILogger Logger;
         private readonly IDynamoRecipeService RecipeService;
 
-        public ValuesController(IDynamoRecipeService service,
-                                ILogger<ValuesController> logger)
+        public ValuesApiController(IDynamoRecipeService service,
+                                ILogger<ValuesApiController> logger)
         {
             this.RecipeService = service;
             this.Logger = logger;
@@ -60,7 +60,7 @@ namespace RecipeAPI.Controllers
 
         // POST api/values
         [HttpPost("{userId}")]
-        public async Task<IActionResult> Post(string userId, [FromBody] RecipeModel value)
+        public async Task<IActionResult> Post(string userId, RecipeModel value)
         {
             if (value == null)
             {
@@ -96,9 +96,12 @@ namespace RecipeAPI.Controllers
 
         // PUT api/values/5
         [HttpPut("{userId}/{recipeId}")]
-        public async Task<IActionResult> Put(string userId, string recipeId, [FromBody] RecipeModel value)
+        public async Task<IActionResult> Put(string userId, string recipeId, RecipeModel value)
         {
             var converted = new Recipe(value);
+            if (converted.RecipeId == default(long)) converted.RecipeId = Convert.ToInt64(recipeId);
+            if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
+
             var result = await RecipeService.SaveRecipe(converted);
 
             if (result)

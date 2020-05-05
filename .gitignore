@@ -317,3 +317,4 @@ ASALocalRun/
 #Local Docker artifacts
 mysql_data/
 out/
+/RecipeApp/dynamo_data/shared-local-instance.db

@@ -1,39 +1,39 @@
-﻿using System;
+﻿using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using Newtonsoft.Json;
+using System;
 
 namespace RecipeApp.Core.ExternalModels
 {
     public class RecipeModel
     {
-        [JsonProperty("user_id")]
+        [JsonPropertyName("userId")]
         public string UserId { get; set; }
 
-        [JsonProperty("recipe_id")]
+        [JsonPropertyName("recipeId")]
         public long RecipeId { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("last_updated")]
+        [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdateTime { get; set; }
 
         [NotMapped]
-        [JsonProperty("ingredients")]
+        [JsonPropertyName("ingredients")]
         public List<string> Ingredients { get; private set; } = new List<string>();
 
         [NotMapped]
-        [JsonProperty("steps")]
+        [JsonPropertyName("steps")]
         public List<string> Steps { get; private set; } = new List<string>();
 
-        [JsonProperty("servings")]
+        [JsonPropertyName("servings")]
         public int Servings { get; set; }
 
-        [JsonProperty("prep_minutes")]
+        [JsonPropertyName("prepTimeMins")]
         public int PrepTimeMins { get; set; }
 
-        [JsonProperty("cook_minutes")]
+        [JsonPropertyName("cookTimeMins")]
         public int CookTimeMins { get; set; }
     }
 }

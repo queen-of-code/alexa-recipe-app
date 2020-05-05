@@ -26,8 +26,9 @@ services:
       - "8000:8000"
     volumes:
       - dynamodata:/home/dynamodblocal
+      - ./dynamo_data:/home/data
     working_dir: /home/dynamodblocal
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
     #image: "website.azurecr.io/website:208"
     build:

@@ -38,7 +38,7 @@ namespace Website.Authorization
             //    return Task.CompletedTask;
             //}
 
-            if (resource.UserId.ToString() == _userManager.GetUserId(context.User))
+            if (resource?.UserId == _userManager.GetUserId(context.User))
             {
                 context.Succeed(requirement);
             }

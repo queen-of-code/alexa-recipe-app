@@ -26,7 +26,6 @@ namespace RecipeAPI
         public void ConfigureProductionServices(IServiceCollection services)
         {
             ConfigureCommonServices(services);
-            
             Console.WriteLine("Using production environment.");
         }
 
@@ -34,23 +33,27 @@ namespace RecipeAPI
         {
             ConfigureCommonServices(services);
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging locally.
+            var key = Configuration["RecipeConnectionKey"];
+            Console.WriteLine($"Key starts with {key.Substring(0, 4)}");
             Console.WriteLine("Using development environment.");
         }
 
         public void ConfigureStagingServices(IServiceCollection services)
         {
-            ConfigureCommonServices(services); 
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging locally.
+            ConfigureCommonServices(services);
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging in Staging
+            var key = Configuration["RecipeConnectionKey"];
+            Console.WriteLine($"Key starts with {key.Substring(0, 4)}");
             Console.WriteLine("Using staging environment.");
         }
 
         private void ConfigureCommonServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
             var awsOptions = Configuration.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
             services.AddAWSService<IAmazonDynamoDB>(awsOptions);
+            services.AddControllers(o => o.AllowEmptyInputInBodyModelBinding = true);
+            services.AddHealthChecks();
 
             // Add JWT Authentication 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // => remove default claims
@@ -82,14 +85,23 @@ namespace RecipeAPI
         /// <summary>
         ///  This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         /// </summary>
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            
+            if ("development".Equals(env.EnvironmentName, StringComparison.OrdinalIgnoreCase))
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    endpoints.MapHealthChecks("/health");
+                }
+            );
         }
     }
 }

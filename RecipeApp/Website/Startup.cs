@@ -48,33 +48,33 @@ namespace Website
 
             services.AddSingleton<RecipeService>();
 
-            
-
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(
                     Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddDefaultIdentity<IdentityUser>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
             {
                 microsoftOptions.ClientId = GetSecretOrEnvVar("Authentication.Microsoft.ApplicationId");
                 microsoftOptions.ClientSecret = GetSecretOrEnvVar("Authentication.Microsoft.Password");
-            }).AddFacebook(facebookOptions =>
-            {
-                facebookOptions.AppId = GetSecretOrEnvVar("Facebook.API.Key");
-                facebookOptions.AppSecret = GetSecretOrEnvVar("Facebook.API.Secret");
             });
+                
+            //    .AddFacebook(facebookOptions =>
+            //{
+            //    facebookOptions.AppId = GetSecretOrEnvVar("Facebook.API.Key");
+            //    facebookOptions.AppSecret = GetSecretOrEnvVar("Facebook.API.Secret");
+            //});
 
-            services.AddMvc().AddRazorPagesOptions(options =>
-             {
-                 options.Conventions.AuthorizeFolder("/Recipes");
-                 options.Conventions.AllowAnonymousToPage("/Index");
-                 options.Conventions.AllowAnonymousToPage("/Contact");
-                 options.Conventions.AllowAnonymousToPage("/About");
-             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(options => options.EnableEndpointRouting = false)
+                            .AddRazorPagesOptions(options =>
+                             {
+                                 options.Conventions.AuthorizeFolder("/Recipes");
+                                 options.Conventions.AllowAnonymousToPage("/Index");
+                                 options.Conventions.AllowAnonymousToPage("/Contact");
+                                 options.Conventions.AllowAnonymousToPage("/About");
+                             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             //services.AddMvc(config =>
             //{
@@ -93,13 +93,12 @@ namespace Website
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             Console.WriteLine($"Environment is {env.EnvironmentName}");
-            if (env.IsDevelopment())
+            if ("Development".Equals(env.EnvironmentName, StringComparison.OrdinalIgnoreCase))
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseBrowserLink();
             }
             else
@@ -113,6 +112,7 @@ namespace Website
             app.UseCookiePolicy();
 
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseMvc();
         }

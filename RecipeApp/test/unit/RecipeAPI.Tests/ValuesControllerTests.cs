@@ -32,7 +32,7 @@ namespace RecipeAPI.Tests
         [Fact]
         public void Get()
         {
-            var valuesController = new ValuesController(null, null);
+            var valuesController = new ValuesApiController(null, null);
             var result = valuesController.Get();
             Assert.IsType<BadRequestResult>(result);
         }
@@ -40,7 +40,7 @@ namespace RecipeAPI.Tests
         [Fact]
         public async Task Get_UserId()
         {
-            var logger = new Mock<ILogger<ValuesController>>();
+            var logger = new Mock<ILogger<ValuesApiController>>();
             logger.SetupAllProperties();
 
             var dynamo = new Mock<IDynamoRecipeService>();
@@ -48,7 +48,7 @@ namespace RecipeAPI.Tests
                 s.GetAllRecipesForUser(It.IsAny<string>()))
                 .ReturnsAsync(new List<Recipe>() { TestingRecipe });
 
-            var valuesController = new ValuesController(dynamo.Object, logger.Object);
+            var valuesController = new ValuesApiController(dynamo.Object, logger.Object);
 
             var result = await valuesController.Get("123");
             Assert.NotNull(result);

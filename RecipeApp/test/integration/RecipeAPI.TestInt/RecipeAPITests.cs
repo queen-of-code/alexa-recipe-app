@@ -1,6 +1,8 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Integration;
 using RecipeApp.Core;
@@ -32,7 +34,7 @@ namespace RecipeAPI.TestInt
         public RecipeAPITests()
         {
             this.TestEnvironment = Environment.GetEnvironmentVariable("RecipeEnv") ?? QAEnvironment; // To override it, either specify "local", "staging", or "prod"
-            //this.TestEnvironment = "local";
+            this.TestEnvironment = "QA";
             this.ApiURL = GetTestUrl(this.TestEnvironment);
 
             var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
@@ -43,7 +45,7 @@ namespace RecipeAPI.TestInt
             else
             {
                 Console.WriteLine("Couldn't find a key from the environment variable so using default.");
-                this.JwtKey = DefaultKey; 
+                this.JwtKey = "890cd1ad20d24bb18363162a14bc91db"; // DefaultKey; 
             }
 
             Console.WriteLine($"Test environment is {this.TestEnvironment} hitting {this.ApiURL} and key {this.JwtKey.Substring(0, 4)}");
@@ -65,6 +67,7 @@ namespace RecipeAPI.TestInt
         [Fact]
         public async Task TestSave_and_Delete()
         {
+            const int testRecipeId = 4567;
             var token = GenerateJWT();
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -74,18 +77,20 @@ namespace RecipeAPI.TestInt
                 var testRecipe = new RecipeModel()
                 {
                     Name = "TESTINGTHIS",
-                    RecipeId = 4567,
+                    RecipeId = testRecipeId,
                     UserId = TestUserId
                 };
-                var result = await client.PostAsJsonAsync<RecipeModel>($"{ApiURL}/api/values/{TestUserId}", testRecipe);
+
+                var content = new StringContent(JsonSerializer.Serialize(testRecipe), Encoding.UTF8, "application/json");
+                var result = await client.PutAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}", content);
                 Assert.True(result.IsSuccessStatusCode, $"Received HTTP Status Code of {result.StatusCode}");
 
-                var delete = await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/1");
+                var delete = await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}");
                 Assert.True(delete.IsSuccessStatusCode, $"Received HTTP Status Code of {result.StatusCode}");
             }
             finally
             {
-                var delete1 = await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/1");
+                var delete1 = await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}");
             }
         }
     }

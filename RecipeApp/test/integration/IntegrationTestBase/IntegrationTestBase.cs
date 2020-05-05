@@ -19,18 +19,23 @@ namespace Integration
                 env = overrideEnv;
             }
 
+            string url;
             if (string.IsNullOrWhiteSpace(env) || string.Equals("local", env))
             {
-                return LocalBaseUrl;
+                url =  LocalBaseUrl;
             }
-
-            if (string.Equals(env, "QA", StringComparison.OrdinalIgnoreCase) || 
-                string.Equals(env, "staging", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(env, "QA", StringComparison.OrdinalIgnoreCase) || 
+                     string.Equals(env, "staging", StringComparison.OrdinalIgnoreCase))
             {
-                return QaBaseUrl;
+                url = QaBaseUrl;
+            }
+            else
+            {
+                url = ProdUrl;
             }
 
-            return ProdUrl;
+            Console.WriteLine($"Test environment is {env} hitting {url}");
+            return url;
         }
     }
 }
