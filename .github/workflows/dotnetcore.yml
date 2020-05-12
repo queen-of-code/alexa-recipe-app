@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore RecipeApp/Website.sln
     - name: Build
       run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
     - name: Test
-      run: dotnet test --no-restore --verbosity normal RecipeApp/Website.sln
+      run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln
