@@ -1,6 +1,6 @@
 # Alexa Recipe Tutorial App
-----------------
 ![.NET Core](https://github.com/queen-of-code/alexa-recipe-app/workflows/.NET%20Core/badge.svg?branch=master)
+----------------
 
 # Introduction 
 This is a simple dotnet core demo project for standing up a website / API / Database using Docker containers and docker-compose for local development. 
