@@ -22,4 +22,4 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
     - name: Test
-      run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln
+      run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration
