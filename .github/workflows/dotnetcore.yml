@@ -23,3 +23,5 @@ jobs:
       run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
     - name: Test
       run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v1.2
