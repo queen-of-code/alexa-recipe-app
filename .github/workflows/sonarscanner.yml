@@ -34,3 +34,6 @@ jobs:
             /d:sonar.verbose="true"
             /d:sonar.cs.cobertura.reportsPaths='"**/coverage.cobertura.xml"'
             /d:sonar.coverage.exclusions='"RecipeApp/tests/**/*.cs","**/*.md"'
+      env:
+       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
