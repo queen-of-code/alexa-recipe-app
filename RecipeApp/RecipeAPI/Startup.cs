@@ -49,6 +49,8 @@ namespace RecipeAPI
 
         private void ConfigureCommonServices(IServiceCollection services)
         {
+            services.AddMvc();
+
             var awsOptions = Configuration.GetAWSOptions();
             services.AddDefaultAWSOptions(awsOptions);
             services.AddAWSService<IAmazonDynamoDB>(awsOptions);

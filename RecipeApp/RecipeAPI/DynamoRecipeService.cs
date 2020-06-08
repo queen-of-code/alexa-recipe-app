@@ -19,6 +19,9 @@ namespace RecipeAPI
         private readonly IAmazonDynamoDB _client;
         private IDynamoDBContext _testContext;
         internal static volatile bool Initialized;
+        private static readonly object LockObject = new object();
+
+        private const string TableNotCreatedError = "Table wasn't created correctly in Dynamo.";
 
         public DynamoRecipeService(IAmazonDynamoDB amazonDynamoDb)
         {
@@ -30,66 +33,166 @@ namespace RecipeAPI
             _testContext = context;
         }
 
+        private static async Task<bool> EnsureTableExists(IAmazonDynamoDB client, IDynamoTable table)
+        {
+            if (table == null || client == null) return false;
+
+            var createRequest = table.CreateRequest;
+            var created = await client.CreateTableAsync(createRequest).ConfigureAwait(true);
+            return created?.HttpStatusCode == System.Net.HttpStatusCode.OK;
+        }
+
         /// <summary>
         /// Creates the Recipes table, if it does not already exist.
         /// </summary>
         /// <returns>True if there's a good table to use, false otherwise.</returns>
-        public static async Task<bool> EnsureTableExists(IAmazonDynamoDB client)
+        public static bool EnsureTablesExists(IAmazonDynamoDB client)
         {
-            if (Initialized)
-            {
-                return true;
-            }
+            if (Initialized) return true;
+            if (client == null) return false;
 
-            var request = new ListTablesRequest { Limit = 10 };
-            var response = await client.ListTablesAsync(request);
-
-            if (!response.TableNames.Contains("Recipe"))
+            lock(LockObject)
             {
-                var createRequest = new CreateTableRequest
+                if (!Initialized)
                 {
-                    TableName = "Recipe",
-                    AttributeDefinitions = new List<AttributeDefinition>
-                    {
-                        new AttributeDefinition
-                        {
-                            AttributeName = "UserId",
-                            AttributeType = "S"
-                        },
-                         new AttributeDefinition
-                        {
-                            AttributeName = "RecipeId",
-                            AttributeType = "N"
-                        }
-                    },
-                    KeySchema = new List<KeySchemaElement>
-                    {
-                        new KeySchemaElement
-                        {
-                            AttributeName = "UserId",
-                            KeyType = "HASH"
-                        },
-                        new KeySchemaElement
-                        {
-                            AttributeName = "RecipeId",
-                            KeyType = "RANGE"                        }
-                    },
-                    ProvisionedThroughput = new ProvisionedThroughput
-                    {
-                        ReadCapacityUnits = 5,
-                        WriteCapacityUnits = 5
-                    }
-                };
+                    var creates = new List<Task<bool>>();
+                    var tables = new IDynamoTable[] { new Recipe(), new Meal(), new Person(), new Plan() };
+                    var request = new ListTablesRequest { Limit = 10 };
 
-                var created = await client.CreateTableAsync(createRequest);
-                Initialized = created.HttpStatusCode == System.Net.HttpStatusCode.OK;
-                return created.HttpStatusCode == System.Net.HttpStatusCode.OK;
+                    var response = client.ListTablesAsync(request).GetAwaiter().GetResult();
+                    foreach (var table in tables)
+                    {
+                        if (!response.TableNames.Contains(table.TableName))
+                        {
+                            creates.Add(EnsureTableExists(client, table));
+                        }
+
+                    }
+
+                    Task.WaitAll(creates.ToArray());
+                    var success = creates.TrueForAll(s => s.Result);
+
+                    Initialized = true;
+
+                    return success;
+                }
             }
 
-            Initialized = true;
-            return true; // It already existed.
+            return true;
         }
 
+
+        public async Task<T> RetrieveItem<T>(string userId, long itemId) where T : IDynamoTable, new()
+        {
+            if (!Initialized)
+            {
+                var result = EnsureTablesExists(_client);
+                if (!result) throw new ArgumentException(TableNotCreatedError);
+            }
+
+            using (var context = _testContext ?? new DynamoDBContext(_client))
+            {
+                try
+                {
+                    return await context.LoadAsync<T>(userId, itemId).ConfigureAwait(false);
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return default(T);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves an item into the database. Returns false if something went wrong, or
+        /// true if it was saved successfully.
+        /// </summary>
+        public async Task<bool> SaveItem<T>(T item) where T : IDynamoTable, new()
+        {
+            if (!Initialized)
+            {
+                var result = EnsureTablesExists(_client);
+                if (!result) throw new ArgumentException(TableNotCreatedError);
+            }
+
+            if (item == null) return false;
+
+            using (var context = _testContext ?? new DynamoDBContext(_client))
+            {
+                item.LastUpdateTime = DateTime.UtcNow;
+                if (item.EntityId == default(long))
+                {
+                    item.EntityId = Utilities.NextInt64();
+                }
+
+                if (!item.IsValid())
+                {
+                    return false;
+                }
+
+                try
+                {
+                    await context.SaveAsync(item).ConfigureAwait(false);
+                    return true;
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes an item from the database. Returns false if something went wrong, or
+        /// true if it was deleted successfully.
+        /// </summary>
+        public async Task<bool> DeleteItem<T>(string userId, long itemId) where T : IDynamoTable, new()
+        {
+            if (!Initialized)
+            {
+                var result = EnsureTablesExists(_client);
+                if (!result) throw new ArgumentException(TableNotCreatedError);
+            }
+
+            using (var context = _testContext ?? new DynamoDBContext(_client))
+            {
+                try
+                {
+//                    throw new AccessViolationException("OH NO YOU CANNOT DELETE THIS");
+                    await context.DeleteAsync<T>(userId, itemId).ConfigureAwait(false);
+                    return true;
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all of a specified item from the right database for a user. Use with caution!
+        /// </summary>
+        public async Task<IEnumerable<T>> GetAllItemsForUser<T>(string userId) where T : IDynamoTable, new()
+        {
+            if (!Initialized)
+            {
+                var result = EnsureTablesExists(_client);
+                if (!result) throw new ArgumentException(TableNotCreatedError);
+            }
+
+            using (var context = _testContext ?? new DynamoDBContext(_client))
+            {
+                try
+                {
+                    var query = context.QueryAsync<T>(userId);
+                    return await query.GetRemainingAsync().ConfigureAwait(false);
+                }
+                catch (AmazonDynamoDBException)
+                {
+                    return Array.Empty<T>();
+                }
+            }
+        }
 
         /// <summary>
         /// Retrieves a recipe from the database. Returns null if nothing could be found.
@@ -98,7 +201,7 @@ namespace RecipeAPI
         {
             if (!Initialized)
             {
-                var result = await EnsureTableExists(_client);
+                var result = EnsureTablesExists(_client);
                 Initialized = result;
             }
 
@@ -106,7 +209,7 @@ namespace RecipeAPI
             {
                 try
                 {
-                    return await context.LoadAsync<Recipe>(userId, recipeId);
+                    return await context.LoadAsync<Recipe>(userId, recipeId).ConfigureAwait(false);
                 }
                 catch (AmazonDynamoDBException)
                 {
@@ -119,7 +222,7 @@ namespace RecipeAPI
         {
             if (!Initialized)
             {
-                var result = await EnsureTableExists(_client);
+                var result = EnsureTablesExists(_client);
                 Initialized = result;
             }
 
@@ -132,7 +235,7 @@ namespace RecipeAPI
                 }
                 catch (AmazonDynamoDBException)
                 {
-                    return new Recipe[0];
+                    return Array.Empty<Recipe>();
                 }
             }
         }
@@ -145,7 +248,7 @@ namespace RecipeAPI
         {
             if (!Initialized)
             {
-                var result = await EnsureTableExists(_client);
+                var result = EnsureTablesExists(_client);
                 Initialized = result;
             }
             using (var context = _testContext ?? new DynamoDBContext(_client))
@@ -171,7 +274,7 @@ namespace RecipeAPI
         {
             if (!Initialized)
             {
-                var result = await EnsureTableExists(_client);
+                var result = EnsureTablesExists(_client);
                 Initialized = result;
             }
 
@@ -183,9 +286,9 @@ namespace RecipeAPI
             using (var context = _testContext ?? new DynamoDBContext(_client))
             {
                 recipe.LastUpdateTime = DateTime.UtcNow;
-                if (recipe.RecipeId == default(long))
+                if (recipe.EntityId == default(long))
                 {
-                    recipe.RecipeId = Utilities.NextInt64();
+                    recipe.EntityId = Utilities.NextInt64();
                 }
 
                 if (!recipe.IsValid())

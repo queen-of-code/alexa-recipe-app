@@ -30,10 +30,10 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
-    #image: "website.azurecr.io/website:208"
+    #image: website:latest
     build:
-      context: .
-      dockerfile: ./Website/Dockerfile.dev
+     context: .
+     dockerfile: ./Website/Dockerfile.dev
     depends_on:
       - recipeapi
       - mysql
@@ -47,10 +47,10 @@ services:
     ports:
      - "3000:80"
   recipeapi:
-    #image: website.azurecr.io/recipeapi:207
-    build:
-      context: .
-      dockerfile: ./RecipeAPI/Dockerfile.dev
+    image: website.azurecr.io/recipeapi:latest
+    #build:
+    #  context: .
+    #  dockerfile: ./RecipeAPI/Dockerfile.dev
     depends_on:
       - dynamodb
     environment:

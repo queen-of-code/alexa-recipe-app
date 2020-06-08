@@ -15,7 +15,7 @@ namespace RecipeAPI.Tests
             LastUpdateTime = DateTime.UtcNow,
             Name = "Receip1",
             PrepTimeMins = 2,
-            RecipeId = 0,
+            EntityId = 0,
             Servings = 4,
             UserId = "5"
         };
@@ -26,7 +26,7 @@ namespace RecipeAPI.Tests
             LastUpdateTime = DateTime.Today,
             Name = "Receip2",
             PrepTimeMins = 20,
-            RecipeId = 3,
+            EntityId = 3,
             Servings = 40,
             UserId = "50"
         };
@@ -37,7 +37,7 @@ namespace RecipeAPI.Tests
             LastUpdateTime = DateTime.MinValue,
             Name = "Recipe3",
             PrepTimeMins = 200,
-            RecipeId = 3,
+            EntityId = 3,
             Servings = 400,
             UserId = "50"
         };
@@ -68,7 +68,7 @@ namespace RecipeAPI.Tests
             Assert.Equal(external.LastUpdateTime, copy.LastUpdateTime);
             Assert.Equal(external.Name, copy.Name);
             Assert.Equal(external.PrepTimeMins, copy.PrepTimeMins);
-            Assert.Equal(external.RecipeId, copy.RecipeId);
+            Assert.Equal(external.RecipeId, copy.EntityId);
             Assert.Equal(external.Servings, copy.Servings);
             Assert.Equal(external.UserId, copy.UserId);
             Assert.Equal(external.Steps.Count, copy.Steps.Count);

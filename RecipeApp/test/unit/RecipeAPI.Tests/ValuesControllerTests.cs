@@ -1,16 +1,13 @@
-﻿using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
-
-using RecipeAPI.Controllers;
-
-using Moq;
-using Xunit;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
+using Moq;
+using RecipeAPI.Controllers;
 using RecipeAPI.DynamoModels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace RecipeAPI.Tests
 {
@@ -22,7 +19,7 @@ namespace RecipeAPI.Tests
             Name = "Test Recipe",
             LastUpdateTime = DateTime.UtcNow,
             UserId = "123",
-            RecipeId = 456,
+            EntityId = 456,
             CookTimeMins = 11,
             PrepTimeMins = 22,
             Servings = 99
@@ -55,7 +52,7 @@ namespace RecipeAPI.Tests
 
             var resultList = result.ToList();
             Assert.Single(resultList);
-            Assert.Equal(TestingRecipe.RecipeId, resultList[0].RecipeId);
+            Assert.Equal(TestingRecipe.EntityId, resultList[0].RecipeId);
             Assert.Equal(TestingRecipe.UserId, resultList[0].UserId);
             Assert.Equal(TestingRecipe.Name, resultList[0].Name);
             Assert.Equal(TestingRecipe.LastUpdateTime, resultList[0].LastUpdateTime);

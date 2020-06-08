@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.Model;
 using RecipeApp.Core.ExternalModels;
 using System;
 using System.Collections.Generic;
@@ -6,14 +7,20 @@ using System.Linq;
 
 namespace RecipeAPI.DynamoModels
 {
-    [DynamoDBTable("Recipe")]
-    public sealed class Recipe : IEquatable<Recipe>
+    [DynamoDBTable(RecipeTableName)]
+    public sealed class Recipe : IEquatable<Recipe>, IDynamoTable
     {
+        [DynamoDBIgnore]
+        public const string RecipeTableName = "Recipe";
+
+        [DynamoDBIgnore]
+        public string TableName => RecipeTableName;
+
         [DynamoDBHashKey]
         public string UserId { get; set; }
 
         [DynamoDBRangeKey]
-        public long RecipeId { get; set; }
+        public long EntityId { get; set; }
 
         [DynamoDBProperty]
         public string Name { get; set; }
@@ -39,6 +46,29 @@ namespace RecipeAPI.DynamoModels
         //[DynamoDBVersion]
         public int? VersionNumber { get; set; }
 
+        [DynamoDBIgnore]
+        public CreateTableRequest CreateRequest =>
+            new CreateTableRequest
+            {
+                TableName = TableName,
+                AttributeDefinitions = new List<AttributeDefinition>
+                {
+                    new AttributeDefinition { AttributeName = nameof(UserId), AttributeType = "S" },
+                    new AttributeDefinition { AttributeName = nameof(EntityId), AttributeType = "N" }
+                },
+                KeySchema = new List<KeySchemaElement>
+                {
+                    new KeySchemaElement { AttributeName = nameof(UserId), KeyType = "HASH" },
+                    new KeySchemaElement { AttributeName = nameof(EntityId), KeyType = "RANGE" }
+                },
+                ProvisionedThroughput = new ProvisionedThroughput
+                {
+                    ReadCapacityUnits = 5,
+                    WriteCapacityUnits = 5
+                }
+            };
+
+
         public Recipe()
         {
         }
@@ -51,7 +81,7 @@ namespace RecipeAPI.DynamoModels
                 this.LastUpdateTime = external.LastUpdateTime;
                 this.Name = external.Name;
                 this.PrepTimeMins = external.PrepTimeMins;
-                this.RecipeId = external.RecipeId;
+                this.EntityId = external.RecipeId;
                 this.Servings = external.Servings;
                 this.UserId = external.UserId;
 
@@ -69,7 +99,7 @@ namespace RecipeAPI.DynamoModels
             var recipe = new RecipeModel
             {
                 UserId = this.UserId,
-                RecipeId = this.RecipeId,
+                RecipeId = this.EntityId,
                 Name = this.Name,
                 LastUpdateTime = this.LastUpdateTime,
                 PrepTimeMins = this.PrepTimeMins,
@@ -84,7 +114,7 @@ namespace RecipeAPI.DynamoModels
 
         public bool IsValid()
         {
-            if (String.IsNullOrWhiteSpace(this.UserId) || this.RecipeId == default(long))
+            if (String.IsNullOrWhiteSpace(this.UserId) || this.EntityId == default(long))
             {
                 return false;
             }
@@ -102,16 +132,29 @@ namespace RecipeAPI.DynamoModels
             return true;
         }
 
-        public bool Equals(Recipe other)
+        public override bool Equals(object otherObj)
         {
+            var other = otherObj as Recipe;
+
             if (other == null)
             {
                 return false;
             }
 
             return this.UserId == other.UserId &&
-                   this.RecipeId == other.RecipeId &&
+                   this.EntityId == other.EntityId &&
                    this.VersionNumber == other.VersionNumber;
         }
+
+        bool IEquatable<Recipe>.Equals(Recipe other)
+        {
+            return this.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        
     }
 }

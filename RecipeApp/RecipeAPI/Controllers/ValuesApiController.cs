@@ -99,7 +99,7 @@ namespace RecipeAPI.Controllers
         public async Task<IActionResult> Put(string userId, string recipeId, RecipeModel value)
         {
             var converted = new Recipe(value);
-            if (converted.RecipeId == default(long)) converted.RecipeId = Convert.ToInt64(recipeId);
+            if (converted.EntityId == default(long)) converted.EntityId = Convert.ToInt64(recipeId);
             if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
 
             var result = await RecipeService.SaveRecipe(converted);
