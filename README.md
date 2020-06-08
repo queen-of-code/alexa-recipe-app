@@ -1,9 +1,13 @@
+# Alexa Recipe Tutorial App
+![.NET Core](https://github.com/queen-of-code/alexa-recipe-app/workflows/.NET%20Core/badge.svg?branch=master)
+----------------
+
 # Introduction 
 This is a simple dotnet core demo project for standing up a website / API / Database using Docker containers and docker-compose for local development. 
 
 # Getting Started
 1.  Install AND run Docker for Windows/Mac/WhateverYourOSIs
-2.  Install dotnet core 2.2 at a minimum 
+2.  Install dotnet core 3.1 at a minimum 
 3.  Something to edit C# in (VS Code or VS Community are good choices).
 
 If you are attending an in-person tutorial, please ensure that you have successfully run Docker before class. Your laptop may require several reboots to enable virtualization. NOTE: if you are using a MacBook with Windows, virtualization is complicated. You may have to soft-boot from MacOS into Windows to get it to work. 
