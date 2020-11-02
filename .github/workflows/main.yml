@@ -44,5 +44,5 @@ jobs:
               # Password or personal access token used to log against the Docker registry
               password: ${{ secrets.DOCKERHUB_PASSWORD }}
         - name: Build
-          run: docker-compose -f RecipeApp/docker-compose.yml build --tag jannaloeffler/alexa-recipe-app:la
+          run: docker-compose -f RecipeApp/docker-compose.yml build
 
