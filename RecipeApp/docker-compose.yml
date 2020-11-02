@@ -48,9 +48,9 @@ services:
      - "3000:80"
   recipeapi:
     image: jannaloeffler/recipeapi:latest
-    #build:
-    #  context: .
-    #  dockerfile: ./RecipeAPI/Dockerfile.dev
+    build:
+      context: .
+      dockerfile: ./RecipeAPI/Dockerfile.dev
     depends_on:
       - dynamodb
     environment:
