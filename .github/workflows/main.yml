@@ -21,16 +21,16 @@ jobs:
             dotnet-version: 3.1.101
         - name: Install dotnet tool 
           run: dotnet tool install --global dotnet-sonarscanner
-        - name: Start sonar
-          run: dotnet sonarscanner begin /k:"gh_alexa_recipe_app" 
+#        - name: Start sonar
+#          run: dotnet sonarscanner begin /k:"gh_alexa_recipe_app" 
         - name: Install dependencies
           run: dotnet restore RecipeApp/Website.sln
         - name: Build
           run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
         - name: Test
           run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration
-        - name: End sonar
-          run: dotnet sonarscanner end
+#        - name: End sonar
+#          run: dotnet sonarscanner end
                               
     cd:
         runs-on: ubuntu-latest
