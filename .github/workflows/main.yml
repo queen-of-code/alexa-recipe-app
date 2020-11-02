@@ -37,8 +37,8 @@ jobs:
         needs: ci
         steps:
         - uses: actions/checkout@v1
-        - name: Docker login
-          run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
+#        - name: Docker login
+#          run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
         - name: Build
           run: docker-compose -f RecipeApp/docker-compose.yml build --tag jannaloeffler/alexa-recipe-app:la
 
