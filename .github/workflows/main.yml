@@ -43,6 +43,7 @@ jobs:
           with:
             username: ${{ secrets.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_PASSWORD }}
+            file: RecipeApp/docker-compose.yml
             tag_with_ref: true
 
         # runs-on: ubuntu-latest
