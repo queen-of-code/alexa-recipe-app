@@ -43,10 +43,10 @@ jobs:
               username: ${{ secrets.DOCKERHUB_USERNAME }}
               # Password or personal access token used to log against the Docker registry
               password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        - name: Build
-          run: docker-compose -f RecipeApp/docker-compose.yml build
         - name: Tag Website with commit
           run: sed -E -i'' "s/(.*recipe_website:).*/\1$COMMIT/" 'RecipeApp/docker-compose.yml'
+        - name: Build
+          run: docker-compose -f RecipeApp/docker-compose.yml build
         - name: Push
           run: docker-compose -f RecipeApp/docker-compose.yml push
 
