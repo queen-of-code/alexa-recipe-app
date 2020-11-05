@@ -17,7 +17,7 @@ services:
       - ./mysql_data:/var/lib/mysql
       #- ./SQL:/docker-entrypoint-initdb.d/:ro
   dynamodb:
-    image: amazon/dynamodb-local:latest
+    image: amazon/dynamodb-local
     environment:
       DYNAMO_ACCESS_KEY: whatever
       DYNAMO_SECRET_KEY: whocares
@@ -47,7 +47,7 @@ services:
     ports:
      - "3000:80"
   recipeapi:
-    image: jannaloeffler/recipeapi:latest
+    image: jannaloeffler/recipeapi
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev
