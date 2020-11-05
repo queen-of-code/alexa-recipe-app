@@ -30,7 +30,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
-    image: jannaloeffler/recipe_website:latest
+    image: "jannaloeffler/recipe_website:${TAG}"
     build:
      context: .
      dockerfile: ./Website/Dockerfile.dev
@@ -47,7 +47,7 @@ services:
     ports:
      - "3000:80"
   recipeapi:
-    image: jannaloeffler/recipeapi:latest
+    image: "jannaloeffler/recipeapi:${TAG}"
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev
@@ -59,10 +59,10 @@ services:
       AWS_SECRET_ACCESS_KEY: 'whocares'
     ports:
      - "8080:80"
-     
+
 volumes:
   dynamodata: {}
-# Un-comment out these secrets if you want to use Microsoft + FB Auth locally  
+# Un-comment out these secrets if you want to use Microsoft + FB Auth locally
 #secrets:
 #  Authentication.Microsoft.ApplicationId:
 #    file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
