@@ -30,6 +30,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
+    image: jannaloeffler/recipe_website:${COMMIT}
     build:
      context: .
      dockerfile: ./Website/Dockerfile.dev
@@ -45,7 +46,6 @@ services:
 #      - Facebook.API.Secret
     ports:
      - "3000:80"
-    container_name: recipe_website
   recipeapi:
     image: jannaloeffler/recipeapi
     build:
@@ -59,7 +59,6 @@ services:
       AWS_SECRET_ACCESS_KEY: 'whocares'
     ports:
      - "8080:80"
-    container_name: recipeapi
 
 volumes:
   dynamodata: {}
