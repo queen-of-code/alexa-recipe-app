@@ -30,7 +30,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
-    image: jannaloeffler/recipe_website:latest
+    image: jannaloeffler/recipe_website:${COMMIT}
     build:
      context: .
      dockerfile: ./Website/Dockerfile.dev
@@ -47,7 +47,7 @@ services:
     ports:
      - "3000:80"
   recipeapi:
-    image: jannaloeffler/recipeapi
+    image: jannaloeffler/recipeapi:${COMMIT}
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev

@@ -44,9 +44,6 @@ jobs:
               username: ${{ secrets.DOCKERHUB_USERNAME }}
               # Password or personal access token used to log against the Docker registry
               password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        - name: Get the version
-              id: vars
-              run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
         - name: Build
           run: docker-compose -f RecipeApp/docker-compose.yml build
         - name: Push
