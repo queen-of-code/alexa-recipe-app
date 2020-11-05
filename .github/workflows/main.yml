@@ -45,8 +45,8 @@ jobs:
               password: ${{ secrets.DOCKERHUB_PASSWORD }}
         - name: Build
           run: docker-compose -f RecipeApp/docker-compose.yml build
-        - name: Tag Website
-          run: docker tag jannaloeffler/recipe_website jannaloeffler/recipe_website:${{ github.sha }}
+        - name: Tag Website with commit
+          run: sed -E -i'' "s/(.*recipe_website:).*/\1$COMMIT/" 'RecipeApp/docker-compose.yml'
         - name: Push
           run: docker-compose -f RecipeApp/docker-compose.yml push
 
