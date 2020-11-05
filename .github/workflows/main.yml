@@ -36,7 +36,7 @@ jobs:
         runs-on: ubuntu-latest
         needs: ci
         steps:
-        - uses: actions/checkout@v1
+        - uses: actions/checkout@v2
         - name: Docker Login
           uses: docker/login-action@v1.6.0
           with:
@@ -45,21 +45,23 @@ jobs:
               password: ${{ secrets.DOCKERHUB_PASSWORD }}
         - name: Build
           run: docker-compose -f RecipeApp/docker-compose.yml build
+        - name: Tag Website
+          run: docker tag jannaloeffler/recipe_website jannaloeffler/recipe_website:${{ github.sha }}
         - name: Push
           run: docker-compose -f RecipeApp/docker-compose.yml push
 
-    cd_prod:
-        runs-on: ubuntu-latest
-        needs: ci
-        steps:
-        - uses: actions/checkout@v1
-        - name: Docker Login
-          uses: docker/login-action@v1.6.0
-          with:
-              username: ${{ secrets.DOCKERHUB_USERNAME }}
-              # Password or personal access token used to log against the Docker registry
-              password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        - name: Build
-          run: docker-compose -f RecipeApp/docker-compose.yml build
-        - name: Push
-          run: docker-compose -f RecipeApp/docker-compose.yml push
+    # cd_prod:
+    #     runs-on: ubuntu-latest
+    #     needs: ci
+    #     steps:
+    #     - uses: actions/checkout@v1
+    #     - name: Docker Login
+    #       uses: docker/login-action@v1.6.0
+    #       with:
+    #           username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #           # Password or personal access token used to log against the Docker registry
+    #           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    #     - name: Build
+    #       run: docker-compose -f RecipeApp/docker-compose.yml build
+    #     - name: Push
+    #       run: docker-compose -f RecipeApp/docker-compose.yml push
