@@ -48,6 +48,8 @@ jobs:
                 TAG: ${{ github.sha }}
             run: docker-compose -f RecipeApp/docker-compose.yml build
           - name: Push
+            env:
+                TAG: ${{ github.sha }}
             run: docker-compose -f RecipeApp/docker-compose.yml push
 
         # cd_prod:
