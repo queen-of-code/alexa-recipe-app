@@ -17,7 +17,7 @@ services:
       - ./mysql_data:/var/lib/mysql
       #- ./SQL:/docker-entrypoint-initdb.d/:ro
   dynamodb:
-    image: amazon/dynamodb-local:latest
+    image: amazon/dynamodb-local
     environment:
       DYNAMO_ACCESS_KEY: whatever
       DYNAMO_SECRET_KEY: whocares
@@ -30,7 +30,6 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
-    image: jannaloeffler/recipe_website:${COMMIT}
     build:
      context: .
      dockerfile: ./Website/Dockerfile.dev
@@ -46,8 +45,9 @@ services:
 #      - Facebook.API.Secret
     ports:
      - "3000:80"
+    container_name: recipe_website
   recipeapi:
-    image: jannaloeffler/recipeapi:${COMMIT}
+    image: jannaloeffler/recipeapi
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev
@@ -59,6 +59,7 @@ services:
       AWS_SECRET_ACCESS_KEY: 'whocares'
     ports:
      - "8080:80"
+    container_name: recipeapi
 
 volumes:
   dynamodata: {}
