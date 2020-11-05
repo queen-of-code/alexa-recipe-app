@@ -72,9 +72,9 @@ jobs:
                 password: ${{ secrets.DOCKERHUB_PASSWORD }}
           - name: Build
             env:
-                TAG: ${{ github.ref }}
+                TAG: latest
             run: docker-compose -f RecipeApp/docker-compose.yml build
           - name: Push
             env:
-                TAG: ${{ github.ref }}
+                TAG: latest
             run: docker-compose -f RecipeApp/docker-compose.yml push
