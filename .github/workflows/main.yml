@@ -55,7 +55,7 @@ jobs:
             run: docker-compose -f RecipeApp/docker-compose.yml push
 
     pkg_prod:
-          if: github.event_name != 'release'
+          if: github.event_name == 'release'
           runs-on: ubuntu-latest
           needs: build_test
           steps:
