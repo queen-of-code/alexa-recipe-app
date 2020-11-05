@@ -12,7 +12,8 @@ on:
       - master
 
 jobs:
-    ci:
+  #CI Pipeline
+    build_test:
         runs-on: ubuntu-latest
         steps:
         - uses: actions/checkout@v2
@@ -25,21 +26,17 @@ jobs:
             dotnet-version: 3.1.101
         - name: Install dotnet tool
           run: dotnet tool install --global dotnet-sonarscanner
-#        - name: Start sonar
-#          run: dotnet sonarscanner begin /k:"gh_alexa_recipe_app"
         - name: Install dependencies
           run: dotnet restore RecipeApp/Website.sln
         - name: Build
           run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
         - name: Test
           run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration
-#        - name: End sonar
-#          run: dotnet sonarscanner end
 
-    cd_dev:
+    pkg_dev:
           if: github.event_name != 'release'
           runs-on: ubuntu-latest
-          needs: ci
+          needs: build_test
           steps:
           - uses: actions/checkout@v2
           - name: Docker Login
@@ -57,11 +54,10 @@ jobs:
                 TAG: ${{ github.sha }}
             run: docker-compose -f RecipeApp/docker-compose.yml push
 
-
-    cd_prod:
+    pkg_prod:
           if: github.event_name == 'release'
           runs-on: ubuntu-latest
-          needs: ci
+          needs: build_test
           steps:
           - uses: actions/checkout@v2
           - name: Docker Login
@@ -72,9 +68,9 @@ jobs:
                 password: ${{ secrets.DOCKERHUB_PASSWORD }}
           - name: Build
             env:
-                TAG: ${{ github.ref }}
+                TAG: latest
             run: docker-compose -f RecipeApp/docker-compose.yml build
           - name: Push
             env:
-                TAG: ${{ github.ref }}
+                TAG: latest
             run: docker-compose -f RecipeApp/docker-compose.yml push
