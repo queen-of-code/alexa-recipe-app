@@ -33,33 +33,24 @@ jobs:
 #          run: dotnet sonarscanner end
 
     cd_dev:
-        name: Push Docker image to Docker Hub
+        name: Push Docker images to Docker Hub
         runs-on: ubuntu-latest
+        needs: ci
         steps:
-        - name: Check out the repo
-          uses: actions/checkout@v2
-        - name: Push to Docker Hub
-          uses: docker/build-push-action@v1
+        - uses: actions/checkout@v2
+        - name: Docker Login
+          uses: docker/login-action@v1.6.0
           with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_PASSWORD }}
-            file: RecipeApp/docker-compose.yml
-            tag_with_ref: true
-
-        # runs-on: ubuntu-latest
-        # needs: ci
-        # steps:
-        # - uses: actions/checkout@v2
-        # - name: Docker Login
-        #   uses: docker/login-action@v1.6.0
-        #   with:
-        #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-        #       # Password or personal access token used to log against the Docker registry
-        #       password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        # - name: Build
-        #   run: docker-compose -f RecipeApp/docker-compose.yml build
-        # - name: Push
-        #   run: docker-compose -f RecipeApp/docker-compose.yml push
+              username: ${{ secrets.DOCKERHUB_USERNAME }}
+              # Password or personal access token used to log against the Docker registry
+              password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        - name: Get the version
+              id: vars
+              run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+        - name: Build
+          run: docker-compose -f RecipeApp/docker-compose.yml build
+        - name: Push
+          run: docker-compose -f RecipeApp/docker-compose.yml push
 
     cd_prod:
         runs-on: ubuntu-latest
