@@ -44,8 +44,9 @@ jobs:
               password: ${{ secrets.DOCKERHUB_PASSWORD }}
         - name: Build
           run: docker-compose -f RecipeApp/docker-compose.yml build
-        - name: Tag
+        - name: Tag Web
           run: docker tag recipe_website jannaloeffler/recipe_website:${{ github.sha }}
+        - name: Tag API
           run: docker tag recipeapi jannaloeffler/recipeapi:${{ github.sha }}
         - name: Push
           run: docker-compose -f RecipeApp/docker-compose.yml push
