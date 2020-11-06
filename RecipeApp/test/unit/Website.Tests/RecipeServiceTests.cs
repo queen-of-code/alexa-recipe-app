@@ -9,7 +9,7 @@ namespace Website.Tests
         [Fact]
         public void Test1()
         {
-
+        // A comment
         }
     }
 }
