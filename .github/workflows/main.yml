@@ -1,6 +1,9 @@
 name: Alexa Recipe App CI/CD
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
