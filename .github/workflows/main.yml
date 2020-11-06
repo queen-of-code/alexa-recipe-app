@@ -1,4 +1,4 @@
-name: Alexa Recipe App CI/CD
+name: Alexa Recipe App CI
 
 on:
   push:
