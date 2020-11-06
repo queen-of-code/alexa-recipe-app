@@ -11,7 +11,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   deploy_dev:
-    if: github.event_name == 'label' && github.event.label.name == 'deploy_pr'
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
