@@ -1,0 +1,28 @@
+name: Deploy PR to Dev
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  pull_request:
+    branches: [ master ]
+    types: [ labeled ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  deploy_dev:
+    if: github.event_name == 'label' && github.event.label.name == 'deploy_pr'
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    steps:
+          - uses: actions/checkout@v2
+          - name: Docker Login
+            uses: docker/login-action@v1.6.0
+            with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                # Password or personal access token used to log against the Docker registry
+                password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          - name: Tag For Deploy
+            run: docker tag jannaloeffler/recipe_website:${{ github.sha }} jannaloeffler/recipe_website:dev
+          - name: Push
+            run: docker push
