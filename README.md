@@ -1,5 +1,5 @@
 # Alexa Recipe Tutorial App
-![.NET Core](https://github.com/queen-of-code/alexa-recipe-app/workflows/.NET%20Core/badge.svg?branch=master)
+![Alexa Recipe App CI/CD](https://github.com/queen-of-code/alexa-recipe-app/workflows/Alexa%20Recipe%20App%20CI/CD/badge.svg)
 ----------------
 
 # Introduction 
