@@ -48,6 +48,8 @@ jobs:
                images: 'index.docker.io/queenofcode/recipeapi:dev'
     integration_test: 
       runs-on: ubuntu-latest
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
+      needs: pkg_dev
       steps:
         - uses: actions/checkout@v2
           with:
