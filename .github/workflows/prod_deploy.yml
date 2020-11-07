@@ -1,16 +1,14 @@
-name: Deploy PR to Dev
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+name: Prod Continuous Delivery
 on:
-  pull_request:
-    branches: [ master ]
-    types: [ labeled ]
+  release:
+    types:
+      - published
+    branches:
+      - master
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-    pkg_dev:
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
+    ship_it:
       runs-on: ubuntu-latest
       steps:
           - uses: actions/checkout@v2
@@ -27,8 +25,7 @@ jobs:
             run: docker-compose -f RecipeApp/docker-compose.yml build
           - name: Push
             env:
-                TAG: dev
-                #TAG: ${{ github.sha }}
+                TAG: latest
             run: docker-compose -f RecipeApp/docker-compose.yml push
           - name: Azure authentication
             uses: azure/login@v1
@@ -38,18 +35,14 @@ jobs:
             uses: azure/webapps-deploy@v2
             with:
                app-name: 'recipe-ui'
-               slot-name: 'qa'
-               images: 'index.docker.io/queenofcode/recipe_website:dev'
+               images: 'index.docker.io/queenofcode/recipe_website:latest'
           - name: Deploy API to Azure
             uses: azure/webapps-deploy@v2
             with:
                app-name: 'recipe-dataapi'
-               slot-name: 'qa'
-               images: 'index.docker.io/queenofcode/recipeapi:dev'
+               images: 'index.docker.io/queenofcode/recipeapi:latest'
     integration_test: 
       runs-on: ubuntu-latest
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
-      needs: pkg_dev
       steps:
         - uses: actions/checkout@v2
           with:
