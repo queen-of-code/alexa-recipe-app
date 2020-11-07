@@ -1,0 +1,42 @@
+on:
+  release:
+    types:
+      - published
+    branches:
+      - master
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+    ship_it:
+      runs-on: ubuntu-latest
+      steps:
+          - uses: actions/checkout@v2
+          - name: Docker Login
+            uses: docker/login-action@v1.6.0
+            with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                # Password or personal access token used to log against the Docker registry
+                password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          - name: Build
+            env:
+                TAG: dev
+                #TAG: ${{ github.sha }}
+            run: docker-compose -f RecipeApp/docker-compose.yml build
+          - name: Push
+            env:
+                TAG: latest
+            run: docker-compose -f RecipeApp/docker-compose.yml push
+          - name: Azure authentication
+            uses: azure/login@v1
+            with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
+          - name: Deploy UI to Azure
+            uses: azure/webapps-deploy@v2
+            with:
+               app-name: 'recipe-ui'
+               images: 'index.docker.io/queenofcode/recipe_website:latest'
+          - name: Deploy API to Azure
+            uses: azure/webapps-deploy@v2
+            with:
+               app-name: 'recipe-dataapi'
+               images: 'index.docker.io/queenofcode/recipeapi:latest'
