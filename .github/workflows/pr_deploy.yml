@@ -30,7 +30,10 @@ jobs:
      #           TAG: dev
      #           #TAG: ${{ github.sha }}
      #       run: docker-compose -f RecipeApp/docker-compose.yml push
-          
+          - name: Azure authentication
+            uses: azure/login@v1
+            with:
+                creds: ${{ secrets.AZURE_CREDENTIALS }}
           - name: Deploy UI to Azure
             uses: azure/webapps-deploy@v2
             with:
