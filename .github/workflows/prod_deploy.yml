@@ -60,4 +60,4 @@ jobs:
           env:
              RecipeEnv: Production
              RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
-          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category==Integration
+          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
