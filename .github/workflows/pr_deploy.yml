@@ -36,6 +36,6 @@ jobs:
             with:
                app-name: 'recipe-ui'
                slot-name: 'qa'
-               publish-profile: ${{ secrets.AzureAppService_PublishProfile_c95c7c71939a407eb1c8d2f3d7d3004f }}
+               publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C95C7C71939A407EB1C8D2F3D7D3004F }}
                images: 'index.docker.io/queenofcode/recipe_website:dev'
         # NOTE: The API deploys in alternate way in Azure, for demo purposes
