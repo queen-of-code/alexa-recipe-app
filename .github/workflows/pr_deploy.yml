@@ -20,21 +20,22 @@ jobs:
                 username: ${{ secrets.DOCKERHUB_USERNAME }}
                 # Password or personal access token used to log against the Docker registry
                 password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          - name: Build
-            env:
-                TAG: dev
-                #TAG: ${{ github.sha }}
-            run: docker-compose -f RecipeApp/docker-compose.yml build
-          - name: Push
-            env:
-                TAG: dev
-                #TAG: ${{ github.sha }}
-            run: docker-compose -f RecipeApp/docker-compose.yml push
+     #     - name: Build
+     #       env:
+     #           TAG: dev
+     #           #TAG: ${{ github.sha }}
+     #       run: docker-compose -f RecipeApp/docker-compose.yml build
+     #     - name: Push
+     #       env:
+     #           TAG: dev
+     #           #TAG: ${{ github.sha }}
+     #       run: docker-compose -f RecipeApp/docker-compose.yml push
+          
           - name: Deploy UI to Azure
             uses: azure/webapps-deploy@v2
             with:
                app-name: 'recipe-ui'
                slot-name: 'qa'
                publish-profile: ${{ secrets.AzureAppService_PublishProfile_c95c7c71939a407eb1c8d2f3d7d3004f }}
-               images: 'index.docker.io/jannaloeffler/recipe_website:dev'
+               images: 'index.docker.io/queenofcode/recipe_website:dev'
         # NOTE: The API deploys in alternate way in Azure, for demo purposes
