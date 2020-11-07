@@ -46,3 +46,23 @@ jobs:
                app-name: 'recipe-dataapi'
                slot-name: 'qa'
                images: 'index.docker.io/queenofcode/recipeapi:dev'
+    integration_test: 
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            # Disabling shallow clone is recommended for improving relevancy of reporting
+            fetch-depth: 0
+        - name: Setup .NET Core
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: 3.1.101
+        - name: Install dependencies
+          run: dotnet restore RecipeApp/Website.sln
+        - name: Build
+          run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
+        - name: Test
+          env:
+             RecipeEnv: Production
+             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
+          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category==Integration
