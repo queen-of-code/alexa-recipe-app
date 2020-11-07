@@ -1,4 +1,4 @@
-name: Prod Continuous Delivery
+name: Deploy to Production
 on:
   release:
     types:
