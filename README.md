@@ -1,5 +1,6 @@
 # Alexa Recipe Tutorial App
-![Alexa Recipe App CI/CD](https://github.com/queen-of-code/alexa-recipe-app/workflows/Alexa%20Recipe%20App%20CI/CD/badge.svg)
+![Continuous Integration](https://github.com/queen-of-code/alexa-recipe-app/workflows/Alexa%20Recipe%20App%20CI/CD/badge.svg)
+![Prod Continuous Delivery](https://github.com/queen-of-code/alexa-recipe-app/workflows/Prod%20Continuous%20Delivery/badge.svg)
 ----------------
 
 # Introduction 
