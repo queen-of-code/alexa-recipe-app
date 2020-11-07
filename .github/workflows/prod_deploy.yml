@@ -20,7 +20,7 @@ jobs:
                 password: ${{ secrets.DOCKERHUB_PASSWORD }}
           - name: Build
             env:
-                TAG: dev
+                TAG: latest
                 #TAG: ${{ github.sha }}
             run: docker-compose -f RecipeApp/docker-compose.yml build
           - name: Push
