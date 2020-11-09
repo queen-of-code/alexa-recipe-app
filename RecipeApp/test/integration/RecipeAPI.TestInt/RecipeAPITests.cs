@@ -34,7 +34,6 @@ namespace RecipeAPI.TestInt
         public RecipeAPITests()
         {
             this.TestEnvironment = Environment.GetEnvironmentVariable("RecipeEnv") ?? QAEnvironment; // To override it, either specify "local", "staging", or "prod"
-            this.TestEnvironment = "QA";
             this.ApiURL = GetTestUrl(this.TestEnvironment);
 
             var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
@@ -45,7 +44,7 @@ namespace RecipeAPI.TestInt
             else
             {
                 Console.WriteLine("Couldn't find a key from the environment variable so using default.");
-                this.JwtKey = "890cd1ad20d24bb18363162a14bc91db"; // DefaultKey; 
+                this.JwtKey = DefaultKey;
             }
 
             Console.WriteLine($"Test environment is {this.TestEnvironment} hitting {this.ApiURL} and key {this.JwtKey.Substring(0, 4)}");
