@@ -13,8 +13,8 @@ namespace Website.Tests
 {
     public class RecipeServiceTests
     {
-        [Trait("Category", "Unit")]
-        [Fact]
+        //[Trait("Category", "Unit")]
+        //[Fact]
         public async Task TestCreateRecipe_Ok()
         {
             var mockConfig = new Mock<IConfiguration>();
