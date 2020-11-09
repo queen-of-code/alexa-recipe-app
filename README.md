@@ -30,3 +30,8 @@ In order to run the application, you'll need to ensure that all the secrets exis
 By default, the application runs on the following ports:
 Website - http://localhost:3000
 API - http://localhost:8080
+
+# Tutorial Participants
+
+Melissa Benua
+Janna Loeffler 
