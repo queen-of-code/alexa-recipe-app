@@ -20,7 +20,7 @@ You will need to set an environment variable 'TAG' in order to run.
 
 Depends on your environment.
 In powershell, doing $env:TAG = 'my-tag' will work.
-In terminal, doing 'exportTAG=my-tag' will work.
+In terminal (MacOS), doing 'exportTAG=my-tag' will work.
 
 Then you can run 'docker-compose up' to run the services.
 
