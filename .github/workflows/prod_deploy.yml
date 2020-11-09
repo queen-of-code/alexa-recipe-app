@@ -43,6 +43,7 @@ jobs:
                images: 'index.docker.io/queenofcode/recipeapi:latest'
     integration_test: 
       runs-on: ubuntu-latest
+      needs: ship_it
       steps:
         - uses: actions/checkout@v2
           with:
