@@ -81,5 +81,5 @@ jobs:
             #report_title: # optional
             github_token: ${{secrets.GITHUB_TOKEN }}
             set_check_status_from_test_outcome: true
-            extra_test_parameters: '--filter category=Integration'
+            extra_test_parameters: '--filter Category=Integration'
             #fail_build_on_failed_tests: # optional
