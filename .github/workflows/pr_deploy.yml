@@ -58,7 +58,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             # Disabling shallow clone is recommended for improving relevancy of reporting
-            fetch-depth: 0
+            fetch-depth: 1
         - name: Setup .NET Core
           uses: actions/setup-dotnet@v1
           with:
@@ -66,9 +66,26 @@ jobs:
         - name: Install dependencies
           run: dotnet restore RecipeApp/Website.sln
         - name: Build
-          run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
+          run: dotnet build --no-restore --verbosity minimal --configuration Release RecipeApp/Website.sln
         - name: Test
           env:
-             RecipeEnv: Production
-             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
+             RecipeEnv: QA
+             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE_INTERNAL_AUTH }}
           run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
+      #  - name: dotnet-tests-report
+      #    uses: zyborg/dotnet-tests-report@v1.4.4
+      #    env:
+      #       RecipeEnv: QA
+      #       RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
+      #    with:
+      #      project_path: RecipeApp/Website.sln
+      #      no_restore: true
+      #      no_build: true
+      #      msbuild_configuration: Release
+      #      #msbuild_verbosity: # optional
+      #      #report_name: # optional
+      #      #report_title: # optional
+      #      github_token: ${{secrets.GITHUB_TOKEN }}
+      #      set_check_status_from_test_outcome: true
+      #      extra_test_parameters: '--filter Category=Integration'
+      #      #fail_build_on_failed_tests: # optional
