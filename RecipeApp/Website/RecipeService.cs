@@ -16,11 +16,14 @@ namespace Website
         private readonly string _JwtKey;
         private readonly string _JwtIssuer;
 
+        public readonly string _RuntimeEnvironment;
+
         public RecipeService(IHttpClientFactory httpClientFactory, IConfiguration config)
         {
             _httpClientFactory = httpClientFactory;
             _JwtKey = config["RecipeConnectionKey"];
             _JwtIssuer = config["JwtIssuer"];
+            _RuntimeEnvironment = config["MyRuntimeEnvironment"];
         }
 
         public async Task<bool> CreateRecipe(RecipeModel recipe)

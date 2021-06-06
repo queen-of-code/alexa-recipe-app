@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace RecipeAPI
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
