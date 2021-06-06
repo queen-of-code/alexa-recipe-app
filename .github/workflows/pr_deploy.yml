@@ -54,7 +54,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             # Disabling shallow clone is recommended for improving relevancy of reporting
-            fetch-depth: 0
+            fetch-depth: 1
         - name: Setup .NET Core
           uses: actions/setup-dotnet@v1
           with:
@@ -65,6 +65,6 @@ jobs:
           run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
         - name: Test
           env:
-             RecipeEnv: Production
+             RecipeEnv: QA
              RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
           run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
