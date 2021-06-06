@@ -66,7 +66,7 @@ jobs:
         - name: Test
           env:
              RecipeEnv: QA
-             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
+             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE_INTERNAL_AUTH }}
           run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
       #  - name: dotnet-tests-report
       #    uses: zyborg/dotnet-tests-report@v1.4.4
