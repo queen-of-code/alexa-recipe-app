@@ -61,25 +61,25 @@ jobs:
             dotnet-version: 3.1.101
         - name: Install dependencies
           run: dotnet restore RecipeApp/Website.sln
-      #  - name: Test
-      #    env:
-      #       RecipeEnv: QA
-      #       RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
-      #    run: dotnet test --no-restore --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
-        - name: dotnet-tests-report
-          uses: zyborg/dotnet-tests-report@v1.4.4
+        - name: Test
           env:
              RecipeEnv: QA
              RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
-          with:
-            project_path: RecipeApp/Website.sln
-            no_restore: true
-            no_build: true
-            msbuild_configuration: Release
-            #msbuild_verbosity: # optional
-            #report_name: # optional
-            #report_title: # optional
-            github_token: ${{secrets.GITHUB_TOKEN }}
-            set_check_status_from_test_outcome: true
-            extra_test_parameters: '--filter Category=Integration'
-            #fail_build_on_failed_tests: # optional
+          run: dotnet test --no-restore --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
+      #  - name: dotnet-tests-report
+      #    uses: zyborg/dotnet-tests-report@v1.4.4
+      #    env:
+      #       RecipeEnv: QA
+      #       RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
+      #    with:
+      #      project_path: RecipeApp/Website.sln
+      #      no_restore: true
+      #      no_build: true
+      #      msbuild_configuration: Release
+      #      #msbuild_verbosity: # optional
+      #      #report_name: # optional
+      #      #report_title: # optional
+      #      github_token: ${{secrets.GITHUB_TOKEN }}
+      #      set_check_status_from_test_outcome: true
+      #      extra_test_parameters: '--filter Category=Integration'
+      #      #fail_build_on_failed_tests: # optional
