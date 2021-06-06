@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -40,7 +41,7 @@ namespace RecipeAPI.Controllers
         [HttpGet("{userId}")]
         public async Task<IEnumerable<RecipeModel>> Get(string userId)
         {
-            var recipes = await RecipeService.GetAllRecipesForUser(userId);
+            var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
 
             var converted = recipes?.Select(s => s.GenerateExternalRecipe());
 
@@ -51,7 +52,7 @@ namespace RecipeAPI.Controllers
         [HttpGet("{userId}/{recipeId}")]
         public async Task<RecipeModel> Get(string userId, long recipeId)
         {
-            var recipe = await RecipeService.RetrieveRecipe(userId, recipeId);
+            var recipe = await RecipeService.RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
 
             var converted = recipe.GenerateExternalRecipe();
 
@@ -76,7 +77,7 @@ namespace RecipeAPI.Controllers
 
             try
             {
-                var result = await RecipeService.SaveRecipe(new Recipe(value));
+                var result = await RecipeService.SaveRecipe(new Recipe(value)).ConfigureAwait(false);
                 if (result)
                 {
                     return new OkResult();
@@ -87,7 +88,9 @@ namespace RecipeAPI.Controllers
                     return new BadRequestResult();
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return new BadRequestResult();
             }
@@ -99,10 +102,10 @@ namespace RecipeAPI.Controllers
         public async Task<IActionResult> Put(string userId, string recipeId, RecipeModel value)
         {
             var converted = new Recipe(value);
-            if (converted.EntityId == default(long)) converted.EntityId = Convert.ToInt64(recipeId);
+            if (converted.EntityId == default(long)) converted.EntityId = Convert.ToInt64(recipeId, NumberFormatInfo.InvariantInfo);
             if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
 
-            var result = await RecipeService.SaveRecipe(converted);
+            var result = await RecipeService.SaveRecipe(converted).ConfigureAwait(false);
 
             if (result)
                 return new AcceptedResult();
@@ -114,7 +117,7 @@ namespace RecipeAPI.Controllers
         [HttpDelete("{userId}/{recipeId}")]
         public async Task<IActionResult> Delete(string userId, long recipeId)
         {
-            var result = await RecipeService.DeleteRecipe(userId, recipeId);
+            var result = await RecipeService.DeleteRecipe(userId, recipeId).ConfigureAwait(false);
 
             if (result)
                 return new OkResult();
