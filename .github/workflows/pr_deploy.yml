@@ -61,11 +61,11 @@ jobs:
             dotnet-version: 3.1.101
         - name: Install dependencies
           run: dotnet restore RecipeApp/Website.sln
-        - name: Test
-          env:
-             RecipeEnv: QA
-             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
-          run: dotnet test --no-restore --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
+      #  - name: Test
+      #    env:
+      #       RecipeEnv: QA
+      #       RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
+      #    run: dotnet test --no-restore --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
         - name: dotnet-tests-report
           uses: zyborg/dotnet-tests-report@v1.4.4
           env:
