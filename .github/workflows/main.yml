@@ -33,5 +33,36 @@ jobs:
         - name: Build
           run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
         - name: Test
-          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration
-
+          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
+          
+        - name: ReportGenerator
+          uses: danielpalme/ReportGenerator-GitHub-Action@4.8.9
+          with:
+            # The coverage reports that should be parsed (separated by semicolon). Globbing is supported.
+            reports: coverage.cobertura.xml
+            # The directory where the generated report should be saved.
+            #targetdir: # default is coveragereport
+            # The output formats and scope (separated by semicolon) Values: Badges, Clover, Cobertura, CsvSummary, Html, HtmlChart, HtmlInline, HtmlInline_AzurePipelines, HtmlInline_AzurePipelines_Dark, HtmlSummary, JsonSummary, Latex, LatexSummary, lcov, MHtml, PngChart, SonarQube, TeamCitySummary, TextSummary, Xml, XmlSummary
+            #reporttypes: # optional, default is HtmlInline;Cobertura
+            # Optional directories which contain the corresponding source code (separated by semicolon). The source directories are used if coverage report contains classes without path information.
+            #sourcedirs: # optional, default is 
+            # Optional directory for storing persistent coverage information. Can be used in future reports to show coverage evolution.
+            #historydir: # optional, default is 
+            # Default directory for installing the dotnet tool.
+            #toolpath: # optional, default is reportgeneratortool
+            # Optional plugin files for custom reports or custom history storage (separated by semicolon).
+            #plugins: # optional, default is 
+            # Optional list of assemblies that should be included or excluded in the report. Exclusion filters take precedence over inclusion filters. Wildcards are allowed.
+            #assemblyfilters: # optional, default is +*
+            # Optional list of classes that should be included or excluded in the report. Exclusion filters take precedence over inclusion filters. Wildcards are allowed.
+            #classfilters: # optional, default is +*
+            # Optional list of files that should be included or excluded in the report. Exclusion filters take precedence over inclusion filters. Wildcards are allowed.
+            filefilters: +*
+            # The verbosity level of the log messages. Values: Verbose, Info, Warning, Error, Off
+            #verbosity: # optional, default is Info
+            # Optional title.
+            #title: # optional, default is 
+            # Optional tag or build version.
+            #tag: # optional, default is ${{ github.run_number }}_${{ github.run_id }}
+            # Optional custom settings (separated by semicolon). See: https://github.com/danielpalme/ReportGenerator/wiki/Settings
+            #customSettings: # optional, default is 
