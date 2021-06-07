@@ -43,7 +43,7 @@ jobs:
             # The directory where the generated report should be saved.
             #targetdir: # default is coveragereport
             # The output formats and scope (separated by semicolon) Values: Badges, Clover, Cobertura, CsvSummary, Html, HtmlChart, HtmlInline, HtmlInline_AzurePipelines, HtmlInline_AzurePipelines_Dark, HtmlSummary, JsonSummary, Latex, LatexSummary, lcov, MHtml, PngChart, SonarQube, TeamCitySummary, TextSummary, Xml, XmlSummary
-            #reporttypes: # optional, default is HtmlInline;Cobertura
+            reporttypes: "HtmlInline;lcov"
             # Optional directories which contain the corresponding source code (separated by semicolon). The source directories are used if coverage report contains classes without path information.
             #sourcedirs: # optional, default is 
             # Optional directory for storing persistent coverage information. Can be used in future reports to show coverage evolution.
@@ -71,3 +71,8 @@ jobs:
           with:
             name: CoverageReport # Artifact name        
             path: coveragereport # Directory containing files to upload
+            
+        - name: Report Code Coverage
+          uses: romeovs/lcov-reporter-action@v0.2.16
+          with:
+            lcov-file: coveragereport/lcov.info
