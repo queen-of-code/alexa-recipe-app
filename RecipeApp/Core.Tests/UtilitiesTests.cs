@@ -33,6 +33,7 @@ namespace RecipeApp.API.Tests
         [Theory]
         [InlineData("myUserId", "www.me.com", "12345678901234567890123456784567")]
         [InlineData("someUserId", "www.foo.com", "12345678901234567890123456784567")]
+        [InlineData("someUserId", "www.demo.com", "12345678901234567890123456784567")]
         public void GenerateJWT_Good(string userId, string issuer, string key)
         {
             var result = Core.Utilities.GenerateJWTToken(userId, issuer, key);
