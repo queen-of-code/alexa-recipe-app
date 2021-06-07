@@ -66,3 +66,8 @@ jobs:
             #tag: # optional, default is ${{ github.run_number }}_${{ github.run_id }}
             # Optional custom settings (separated by semicolon). See: https://github.com/danielpalme/ReportGenerator/wiki/Settings
             #customSettings: # optional, default is 
+        - name: Upload coverage report artifact
+          uses: actions/upload-artifact@v2.2.3
+          with:
+            name: CoverageReport # Artifact name        
+            path: coveragereport # Directory containing files to upload
