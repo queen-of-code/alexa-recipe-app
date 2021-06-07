@@ -62,6 +62,34 @@ namespace RecipeAPI.Tests
             dynamo.Verify(s => s.GetAllRecipesForUser(It.IsAny<string>()), Times.Once);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Put_Simple(bool ok)
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            logger.SetupAllProperties();
 
+            var recipeModel = new RecipeApp.Core.ExternalModels.RecipeModel()
+            {
+                CookTimeMins = 60,
+                Name = "Unit Test Recipe",
+                RecipeId = 11111,
+                UserId = "userId"
+            };
+
+            var dynamo = new Mock<IDynamoRecipeService>();
+            dynamo.Setup(s =>
+                s.SaveRecipe(It.IsAny<Recipe>()))
+                .ReturnsAsync(ok);
+
+            var valuesController = new ValuesApiController(dynamo.Object, logger.Object);
+            var result = await  valuesController.Put(recipeModel.UserId, recipeModel.RecipeId.ToString(), recipeModel);
+            
+            if (ok)
+                Assert.IsType<AcceptedResult>(result);
+            else
+                Assert.IsType<BadRequestResult>(result);
+        }
     }
 }
