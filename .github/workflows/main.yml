@@ -37,12 +37,12 @@ jobs:
           
         - name: XUnit Test Report
           uses: dorny/test-reporter@v1
+          if: success() || failure()    # run this step even if previous step failed
           with:
-            artifact: test-results            # artifact name
+            name: XUnit Results
             path: '**/*.trx'                     # Path to test results (inside artifact .zip)
             reporter: dotnet-trx              # Format of test results
             list-suites: all
-            name: XUnit Results
             list-tests: failed
             token: ${{ github.token }}
           
