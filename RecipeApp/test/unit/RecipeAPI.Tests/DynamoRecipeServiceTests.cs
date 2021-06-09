@@ -1,19 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.Model;
 using Moq;
 using RecipeAPI.DynamoModels;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
+using UnitTestBase;
 
 namespace RecipeAPI.Tests
 {
     [Trait("Category", "Unit")]
-    public class DynamoRecipeServiceTests
+    public class DynamoRecipeServiceTests : TestBase
     {
         [Fact]
         public async Task SaveRecipe_Valid()
