@@ -81,7 +81,7 @@ jobs:
           uses: actions/upload-artifact@v2.2.3
           with:
             name: CoverageReport # Artifact name        
-            path: coveragereport # Directory containing files to upload
+            path: coveragereport/index.htm # Directory containing files to upload
             
         - name: Report Code Coverage
           uses: romeovs/lcov-reporter-action@v0.2.16
