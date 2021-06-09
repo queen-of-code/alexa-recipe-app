@@ -33,7 +33,7 @@ jobs:
         - name: Build
           run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
         - name: Test
-          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
+          run: dotnet test --no-restore --no-build --configuration Release --logger trx --verbosity minimal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
           
         - name: XUnit Test Report
           uses: dorny/test-reporter@v1
