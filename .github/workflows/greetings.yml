@@ -1,0 +1,16 @@
+name: Greetings
+
+on: [pull_request, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: 'Thank you for submitting this issue! A maintainer will contact you shortly with any questions.'
+        pr-message: 'Thank you for submitting this pull request! Some checks may require running from this repo instead of a fork - please contact the maintainers for any issues.'
