@@ -35,6 +35,16 @@ jobs:
         - name: Test
           run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
           
+        - name: XUnit Test Report
+          uses: dorny/test-reporter@v1
+          with:
+            artifact: test-results            # artifact name
+            path: '**/*.trx'                     # Path to test results (inside artifact .zip)
+            reporter: dotnet-trx              # Format of test results
+            list-suites: all
+            list-tests: failed
+            token: ${{ github.token }}
+          
         - name: ReportGenerator
           uses: danielpalme/ReportGenerator-GitHub-Action@4.8.9
           with:
