@@ -42,6 +42,7 @@ jobs:
             path: '**/*.trx'                     # Path to test results (inside artifact .zip)
             reporter: dotnet-trx              # Format of test results
             list-suites: all
+            name: XUnit Results
             list-tests: failed
             token: ${{ github.token }}
           
