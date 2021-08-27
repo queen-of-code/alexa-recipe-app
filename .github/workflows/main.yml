@@ -33,7 +33,18 @@ jobs:
         - name: Build
           run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
         - name: Test
-          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
+          run: dotnet test --no-restore --no-build --configuration Release --logger trx --verbosity minimal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
+          
+        - name: XUnit Test Report
+          uses: dorny/test-reporter@v1
+          if: success() || failure()    # run this step even if previous step failed
+          with:
+            name: XUnit Results
+            path: '**/*.trx'                     # Path to test results (inside artifact .zip)
+            reporter: dotnet-trx              # Format of test results
+            list-suites: all
+            list-tests: failed
+            token: ${{ github.token }}
           
         - name: ReportGenerator
           uses: danielpalme/ReportGenerator-GitHub-Action@4.8.9
@@ -70,7 +81,7 @@ jobs:
           uses: actions/upload-artifact@v2.2.3
           with:
             name: CoverageReport # Artifact name        
-            path: coveragereport # Directory containing files to upload
+            path: coveragereport/index.htm # Directory containing files to upload
             
         - name: Report Code Coverage
           uses: romeovs/lcov-reporter-action@v0.2.16

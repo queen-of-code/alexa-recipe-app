@@ -23,7 +23,7 @@ namespace RecipeAPI.DynamoModels
         public string MealName { get; set; }
 
         [DynamoDBProperty]
-        public List<long> Recipes { get; set; } = new List<long>();
+        public List<long> Recipes { get; } = new List<long>();
 
         [DynamoDBProperty]
         public int Servings { get; set; }
@@ -32,10 +32,10 @@ namespace RecipeAPI.DynamoModels
         public int PrepTimeMins { get; set; }
 
         [DynamoDBProperty]
-        public List<long> FavoriteOfUsers { get; set; } = new List<long>();
+        public List<long> FavoriteOfUsers { get; } = new List<long>();
 
         [DynamoDBProperty]
-        public List<string> Allergens { get; set; } = new List<string>();
+        public List<string> Allergens { get; } = new List<string>();
 
         [DynamoDBProperty]
         public DateTime LastUpdateTime { get; set; }

@@ -29,7 +29,7 @@ namespace RecipeAPI.DynamoModels
         public float ServingAdjustment { get; set; } = 1.0F;
 
         [DynamoDBProperty]
-        public List<string> Restrictions { get; set; } = new List<string>();
+        public List<string> Restrictions { get; } = new List<string>();
 
         [DynamoDBIgnore]
         public CreateTableRequest CreateRequest =>
