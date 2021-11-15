@@ -30,8 +30,13 @@ jobs:
                 TAG: dev
                 #TAG: ${{ github.sha }}
             run: docker-compose -f RecipeApp/docker-compose.yml push
+    deploy_dev:
+      runs-on: ubuntu-latest
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
+      needs: pkg_dev
+      steps:
           - name: Azure authentication
-            uses: azure/login@v1
+            uses: azure/login@v1.4.1
             with:
                 creds: ${{ secrets.AZURE_CREDENTIALS }}
           - name: Deploy UI to Azure
@@ -49,7 +54,7 @@ jobs:
     integration_test: 
       runs-on: ubuntu-latest
       if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
-      needs: pkg_dev
+      needs: deploy_dev
       steps:
         - uses: actions/checkout@v2
           with:
