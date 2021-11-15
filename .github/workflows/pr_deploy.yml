@@ -72,21 +72,14 @@ jobs:
           env:
              RecipeEnv: QA
              RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE_INTERNAL_AUTH }}
-          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration
-      #  - name: dotnet-tests-report
-      #    uses: zyborg/dotnet-tests-report@v1.4.4
-      #    env:
-      #       RecipeEnv: QA
-      #       RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE-INTERNAL-AUTH }}
-      #    with:
-      #      project_path: RecipeApp/Website.sln
-      #      no_restore: true
-      #      no_build: true
-      #      msbuild_configuration: Release
-      #      #msbuild_verbosity: # optional
-      #      #report_name: # optional
-      #      #report_title: # optional
-      #      github_token: ${{secrets.GITHUB_TOKEN }}
-      #      set_check_status_from_test_outcome: true
-      #      extra_test_parameters: '--filter Category=Integration'
-      #      #fail_build_on_failed_tests: # optional
+          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration --logger trx
+        - name: XUnit Test Report
+          uses: dorny/test-reporter@v1
+          if: success() || failure()    # run this step even if previous step failed
+          with:
+            name: XUnit Results
+            path: '**/*.trx'                     # Path to test results (inside artifact .zip)
+            reporter: dotnet-trx              # Format of test results
+            list-suites: all
+            list-tests: failed
+            token: ${{ github.token }}
