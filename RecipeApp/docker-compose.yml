@@ -2,6 +2,7 @@ version: '3.4'
 services:
   mysql:
     image: mysql:latest
+    platform: linux/amd64
 #    build:
 #      context: SQL
 #      dockerfile: Dockerfile
@@ -18,6 +19,7 @@ services:
       #- ./SQL:/docker-entrypoint-initdb.d/:ro
   dynamodb:
     image: amazon/dynamodb-local:latest
+    platform: linux/amd64
     environment:
       DYNAMO_ACCESS_KEY: whatever
       DYNAMO_SECRET_KEY: whocares
@@ -31,6 +33,7 @@ services:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
     image: "queenofcode/recipe_website:${TAG}"
+    platform: linux/amd64
     build:
      context: .
      dockerfile: ./Website/Dockerfile.dev
@@ -48,6 +51,7 @@ services:
      - "3000:80"
   recipeapi:
     image: "queenofcode/recipeapi:${TAG}"
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev
