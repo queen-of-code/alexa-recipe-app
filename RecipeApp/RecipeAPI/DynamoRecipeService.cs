@@ -158,7 +158,7 @@ namespace RecipeAPI
             {
                 try
                 {
-                    throw new AccessViolationException("OH NO YOU CANNOT DELETE THIS");
+                    //throw new AccessViolationException("OH NO YOU CANNOT DELETE THIS");
                     await context.DeleteAsync<T>(userId, itemId).ConfigureAwait(false);
                     return true;
                 }
