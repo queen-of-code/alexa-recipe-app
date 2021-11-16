@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <ProjectGuid>FFF7DCD8-ABCD-4438-AFCB-990FD2676666</ProjectGuid>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="xunit" Version="2.4.1" />

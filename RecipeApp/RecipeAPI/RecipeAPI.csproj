@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <UserSecretsId>cb241079-568a-4b12-9a94-18bba6a8f435</UserSecretsId>
@@ -19,14 +19,14 @@
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.6" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.100.3" />
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.4.0" />
-    <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="6.0.2" />
-    <PackageReference Include="Amazon.Lambda.Core" Version="2.0.0" />
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="6.1.0" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.1.0" />
     <PackageReference Include="Amazon.Lambda.Logging.AspNetCore" Version="3.1.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="2.0.0" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.0.1" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.0.30" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.1" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.0.99" />
     <FrameworkeReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.18" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
