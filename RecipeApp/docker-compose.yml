@@ -32,7 +32,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
-    image: "queenofcode/recipe_website:${TAG}"
+    #image: "queenofcode/recipe_website:${TAG}"
     platform: linux/amd64
     build:
      context: .
@@ -50,7 +50,7 @@ services:
     ports:
      - "3000:80"
   recipeapi:
-    image: "queenofcode/recipeapi:${TAG}"
+    #image: "queenofcode/recipeapi:${TAG}"
     platform: linux/amd64
     build:
       context: .
