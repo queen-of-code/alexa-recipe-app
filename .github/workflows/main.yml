@@ -90,7 +90,7 @@ jobs:
             path: coveragereport/index.htm # Directory containing files to upload
             
         - name: Report Code Coverage
-          uses: romeovs/lcov-reporter-action@v0.2.11
+          uses: vebr/jest-lcov-reporter@v0.2.1
           with:
             lcov-file: coveragereport/lcov.info
             github-token: ${{ github.token }}
