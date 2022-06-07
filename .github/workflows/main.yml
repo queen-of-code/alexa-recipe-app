@@ -12,6 +12,12 @@ on:
       - published
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Environment'
+        required: false
+        default: 'Dev'
 
 jobs:
   #CI Pipeline
