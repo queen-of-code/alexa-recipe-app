@@ -33,7 +33,7 @@ namespace RecipeAPI.TestInt
 
         public RecipeAPITests()
         {
-            this.TestEnvironment = Environment.GetEnvironmentVariable("RecipeEnv") ?? QAEnvironment; // To override it, either specify "local", "staging", or "prod"
+            this.TestEnvironment = Environment.GetEnvironmentVariable("RecipeEnv") ?? "local"; // To override it, either specify "local", "staging", or "prod"
             this.ApiURL = GetTestUrl(this.TestEnvironment);
 
             var key = Environment.GetEnvironmentVariable("RECIPE-INTERNAL-AUTH");
