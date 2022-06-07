@@ -47,10 +47,10 @@ namespace Website
             });
 
             services.AddSingleton<RecipeService>();
-
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseMySql(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
 
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
