@@ -5,12 +5,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using UnitTestBase;
 
 namespace RecipeAPI.Tests
 {
     [Trait("Category", "Unit")]
-    public class DynamoRecipeServiceTests : TestBase
+    public class DynamoRecipeServiceTests
     {
         [Fact]
         public async Task SaveRecipe_Valid()
