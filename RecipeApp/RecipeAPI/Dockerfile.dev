@@ -2,16 +2,18 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
 
+FROM ghcr.io/eventstore/eventstore@sha256:ab30bf2a2629e2c8710f8f7fdcb74df5466c6b3b2200c8e9ad8a797ed138012a
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["RecipeAPI/RecipeAPI.csproj", "RecipeAPI/"]
 COPY ["Core/Core.csproj", "Core/"]
-RUN dotnet build "Core/Core.csproj" -c Release
+RUN dotnet build "Core/Core.csproj" -c Release -r linux-arm64 /p:Platform="Any CPU"
 COPY . .
 WORKDIR "/src/RecipeAPI"
 
 FROM build AS publish
-RUN dotnet publish "RecipeAPI.csproj" -c Release -o /app
+RUN dotnet publish "RecipeAPI.csproj" -c Release -o /app -r linux-arm64 /p:Platform="Any CPU"
 
 FROM base AS final
 WORKDIR /app

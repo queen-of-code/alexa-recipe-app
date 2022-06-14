@@ -10,13 +10,13 @@ RUN dotnet restore "Website/Website.csproj"
 COPY . .
 
 WORKDIR "/src/Core"
-RUN dotnet build "Core.csproj" -c Release -o /app
+RUN dotnet build "Core.csproj" -c Release -o /app -r linux-arm64 /p:Platform="Any CPU"
 
 WORKDIR "/src/Website"
-RUN dotnet build "Website.csproj" -c Release -o /app
+RUN dotnet build "Website.csproj" -c Release -o /app -r linux-arm64 /p:Platform="Any CPU"
 
 FROM build AS publish
-RUN dotnet publish "Website.csproj" -c Release -o /app/publish
+RUN dotnet publish "Website.csproj" -c Release -o /app/publish -r linux-arm64 /p:Platform="Any CPU"
 
 FROM base AS final
 WORKDIR /app
