@@ -38,6 +38,7 @@ namespace Website
 
         public async Task<bool> SaveRecipe(RecipeModel recipe)
         {
+            throw new AccessViolationException("OH NO YOU CANNOT SAVE THIS");
             var client = _httpClientFactory.CreateClient("RecipeAPI");
             var jwt = Utilities.GenerateJWTToken(recipe.UserId, _JwtIssuer, _JwtKey);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
