@@ -33,6 +33,7 @@ services:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
     image: "queenofcode/recipe_website:${TAG}"
+    #image: "queenofcode/recipeapi:dev"
     platform: linux/amd64
     build:
      context: .
@@ -51,6 +52,7 @@ services:
      - "3000:80"
   recipeapi:
     image: "queenofcode/recipeapi:${TAG}"
+    #image: "queenofcode/recipeapi:dev"
     platform: linux/amd64
     build:
       context: .
