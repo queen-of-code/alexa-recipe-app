@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Keep it simple
+- Always make the minimal possible change to satisfy the ask. Do not rearchitect without asking me if it is okay. 
+- Stay aware of the context of the code you are making changes in. Match the style and structure whenever possible. 
+- A coding session between us is not satisfied until the build compiles and the tests all pass. 
