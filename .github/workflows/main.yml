@@ -24,12 +24,12 @@ jobs:
     build_test:
         runs-on: ubuntu-latest
         steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v4
           with:
             # Disabling shallow clone is recommended for improving relevancy of reporting
             fetch-depth: 0
         - name: Setup .NET Core
-          uses: actions/setup-dotnet@v1
+          uses: actions/setup-dotnet@v4
           with:
             dotnet-version: '9.0.x'
         - name: Install dotnet tool
@@ -42,7 +42,7 @@ jobs:
           run: dotnet test --no-restore --no-build --configuration Release --logger trx --verbosity minimal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
           
         - name: XUnit Test Report
-          uses: dorny/test-reporter@v1
+          uses: dorny/test-reporter@v1.8.0
           if: success() || failure()    # run this step even if previous step failed
           with:
             name: XUnit Results
@@ -53,7 +53,7 @@ jobs:
             token: ${{ github.token }}
           
         - name: ReportGenerator
-          uses: danielpalme/ReportGenerator-GitHub-Action@4.8.9
+          uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
           with:
             # The coverage reports that should be parsed (separated by semicolon). Globbing is supported.
             reports: "**/coverage.cobertura.xml"
@@ -84,13 +84,13 @@ jobs:
             # Optional custom settings (separated by semicolon). See: https://github.com/danielpalme/ReportGenerator/wiki/Settings
             #customSettings: # optional, default is 
         - name: Upload coverage report artifact
-          uses: actions/upload-artifact@v2.2.3
+          uses: actions/upload-artifact@v4
           with:
             name: CoverageReport # Artifact name        
             path: coveragereport/index.htm # Directory containing files to upload
             
         - name: Report Code Coverage
-          uses: romeovs/lcov-reporter-action@v0.2.11
+          uses: romeovs/lcov-reporter-action@v0.3.1
           with:
             lcov-file: coveragereport/lcov.info
             github-token: ${{ github.token }}
