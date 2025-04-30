@@ -1,1 +1,31 @@
 This is a readme file for the app that stores recipes for access via Alexa.
+
+# Running Tests
+
+## Unit Tests Only
+To run only the unit tests (recommended for most development):
+
+    dotnet test Website.sln --filter "Category!=Integration"
+
+## Integration Tests
+Integration tests require the servers to be running locally (via Docker Compose):
+
+    dotnet test Website.sln --filter "Category=Integration"
+
+Or, to run all tests (unit + integration):
+
+    dotnet test Website.sln
+
+# Running the App with Docker Compose
+
+To build and run all services locally using Docker Compose:
+
+    docker-compose up --build
+
+# Accessing the Website Locally
+
+Once running, the website is accessible at:
+
+    http://localhost:5000
+
+(If you have changed the port mapping in your docker-compose.yml, use that port instead.)
