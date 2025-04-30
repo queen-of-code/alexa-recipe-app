@@ -6,38 +6,45 @@
     var cookieString = consentFeature?.CreateConsentCookie();
 }
 
-@if (showBanner)
-{
-    <nav id="cookieConsent" class="navbar navbar-light bg-light fixed-top" role="alert" style="display:none;">
-        <div class="container">
-            <span class="navbar-brand"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></span>
-            <div class="d-flex flex-grow-1 align-items-center justify-content-between">
-                <p class="mb-0 mr-3">
-                    Use this space to summarize your privacy and cookie use policy.
-                </p>
-                <div>
-                    <a asp-page="/Privacy" class="btn btn-info mr-2">Learn More</a>
-                    <button type="button" class="btn btn-outline-secondary" data-cookie-string="@cookieString">Accept</button>
-                </div>
+@* Always render the banner, but let JS decide if it should be shown. Use a fixed cookie name. *@
+<nav id="cookieConsent" class="navbar navbar-light bg-light fixed-top" role="alert" style="display:none;">
+    <div class="container">
+        <span class="navbar-brand"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></span>
+        <div class="d-flex flex-grow-1 align-items-center justify-content-between">
+            <p class="mb-0 mr-3">
+                Use this space to summarize your privacy and cookie use policy.
+            </p>
+            <div>
+                <a asp-page="/Privacy" class="btn btn-info mr-2">Learn More</a>
+                <button type="button" class="btn btn-outline-secondary" id="cookieConsentAccept">Accept</button>
             </div>
         </div>
-    </nav>
-    <script>
-        (function () {
-            function getCookie(name) {
-                var value = "; " + document.cookie;
-                var parts = value.split("; " + name + "=");
-                if (parts.length === 2) return parts.pop().split(';').shift();
-            }
-            var consentCookieName = '@(cookieString?.Split('=')[0])';
-            var banner = document.getElementById("cookieConsent");
-            if (!getCookie(consentCookieName)) {
-                banner.style.display = '';
-            }
-            document.querySelector("#cookieConsent button[data-cookie-string]").addEventListener("click", function (el) {
-                document.cookie = el.target.dataset.cookieString;
-                banner.classList.add("d-none");
-            }, false);
-        })();
-    </script>
-}
+    </div>
+</nav>
+<script>
+(function () {
+    var cookieName = 'CookieConsent';
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    function setCookie(name, value, days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "true") + expires + "; path=/";
+    }
+    var banner = document.getElementById("cookieConsent");
+    if (!getCookie(cookieName)) {
+        banner.style.display = '';
+    }
+    document.getElementById("cookieConsentAccept").addEventListener("click", function () {
+        setCookie(cookieName, "true", 365);
+        banner.classList.add("d-none");
+    });
+})();
+</script>
