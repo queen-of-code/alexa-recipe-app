@@ -8,7 +8,7 @@
 
 @if (showBanner)
 {
-    <nav id="cookieConsent" class="navbar navbar-light bg-light fixed-top" role="alert">
+    <nav id="cookieConsent" class="navbar navbar-light bg-light fixed-top" role="alert" style="display:none;">
         <div class="container">
             <span class="navbar-brand"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></span>
             <div class="d-flex flex-grow-1 align-items-center justify-content-between">
@@ -24,9 +24,19 @@
     </nav>
     <script>
         (function () {
+            function getCookie(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+            var consentCookieName = '@(cookieString?.Split('=')[0])';
+            var banner = document.getElementById("cookieConsent");
+            if (!getCookie(consentCookieName)) {
+                banner.style.display = '';
+            }
             document.querySelector("#cookieConsent button[data-cookie-string]").addEventListener("click", function (el) {
                 document.cookie = el.target.dataset.cookieString;
-                document.querySelector("#cookieConsent").classList.add("d-none");
+                banner.classList.add("d-none");
             }, false);
         })();
     </script>
