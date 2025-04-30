@@ -13,13 +13,13 @@ namespace Website.Pages.Recipes
     {
         private static readonly Random rand = new Random();
 
-        private readonly RecipeService RecipeService;
+        private readonly IRecipeService RecipeService;
 
         public CreateModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
             UserManager<IdentityUser> userManager,
-            RecipeService recipeService)
+            IRecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
             this.RecipeService = recipeService;

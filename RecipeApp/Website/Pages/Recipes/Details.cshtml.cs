@@ -10,13 +10,13 @@ namespace Website.Pages.Recipes
 {
     public class DetailsModel : DI_BasePageModel
     {
-        private readonly RecipeService RecipeService;
+        private readonly IRecipeService RecipeService;
 
         public DetailsModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
             UserManager<IdentityUser> userManager,
-            RecipeService recipeService)
+            IRecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
             this.RecipeService = recipeService;

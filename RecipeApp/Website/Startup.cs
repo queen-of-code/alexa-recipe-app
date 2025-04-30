@@ -46,7 +46,7 @@ namespace Website
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
 
-            services.AddSingleton<RecipeService>();
+            services.AddSingleton<IRecipeService, RecipeService>();
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));

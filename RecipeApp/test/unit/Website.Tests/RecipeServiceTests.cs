@@ -8,6 +8,7 @@ using Moq.Protected;
 using Xunit;
 using RecipeApp.Core.ExternalModels;
 using Microsoft.Extensions.Configuration;
+using RecipeApp.Core.Services;
 
 namespace Website.Tests
 {

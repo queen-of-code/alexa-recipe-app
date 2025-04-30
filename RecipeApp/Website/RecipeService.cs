@@ -10,7 +10,16 @@ using RecipeApp.Core.ExternalModels;
 
 namespace Website
 {
-    public class RecipeService
+    public interface IRecipeService
+    {
+        Task<bool> CreateRecipe(RecipeApp.Core.ExternalModels.RecipeModel recipe);
+        Task<bool> SaveRecipe(RecipeApp.Core.ExternalModels.RecipeModel recipe);
+        Task<bool> DeleteRecipe(RecipeApp.Core.ExternalModels.RecipeModel recipe);
+        Task<RecipeApp.Core.ExternalModels.RecipeModel> GetRecipe(string userId, string recipeId);
+        Task<List<RecipeApp.Core.ExternalModels.RecipeModel>> GetAllRecipes(string userId);
+    }
+
+    public class RecipeService : IRecipeService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _JwtKey;
