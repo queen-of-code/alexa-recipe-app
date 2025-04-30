@@ -318,3 +318,6 @@ ASALocalRun/
 mysql_data/
 out/
 /RecipeApp/dynamo_data/shared-local-instance.db
+
+# macOS Finder metadata files
+.DS_Store
