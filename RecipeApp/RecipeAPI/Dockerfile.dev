@@ -1,19 +1,21 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+# Copy csproj files and restore as distinct layers
 COPY ["RecipeAPI/RecipeAPI.csproj", "RecipeAPI/"]
 COPY ["Core/Core.csproj", "Core/"]
-RUN dotnet build "Core/Core.csproj" -c Release
+RUN dotnet restore "RecipeAPI/RecipeAPI.csproj"
+
+# Copy everything else and build app
 COPY . .
 WORKDIR "/src/RecipeAPI"
-
-FROM build AS publish
-RUN dotnet publish "RecipeAPI.csproj" -c Release -o /app
+RUN dotnet publish "RecipeAPI.csproj" -c Release -o /app/publish --no-restore
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "RecipeAPI.dll"]
