@@ -1,7 +1,6 @@
-version: '3.4'
 services:
   mysql:
-    image: mysql:latest
+    image: mysql:8.4
     platform: linux/amd64
 #    build:
 #      context: SQL
@@ -32,7 +31,7 @@ services:
     working_dir: /home/dynamodblocal
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
   website:
-    image: "queenofcode/recipe_website:${TAG}"
+    #image: "queenofcode/recipe_website:${TAG}"
     platform: linux/amd64
     build:
      context: .
@@ -42,6 +41,7 @@ services:
       - mysql
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
+      ASPNETCORE_URLS: 'http://+:80'
 #    secrets: Uncomment these secrets if you want to use Microsoft + FB Auth locally
 #      - Authentication.Microsoft.ApplicationId
 #      - Authentication.Microsoft.Password
@@ -50,7 +50,7 @@ services:
     ports:
      - "3000:80"
   recipeapi:
-    image: "queenofcode/recipeapi:${TAG}"
+    #image: "queenofcode/recipeapi:${TAG}"
     platform: linux/amd64
     build:
       context: .
@@ -59,6 +59,7 @@ services:
       - dynamodb
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
+      ASPNETCORE_URLS: 'http://+:80'
       AWS_ACCESS_KEY_ID: 'whatever'
       AWS_SECRET_ACCESS_KEY: 'whocares'
     ports:
