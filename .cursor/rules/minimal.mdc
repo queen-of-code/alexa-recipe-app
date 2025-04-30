@@ -7,5 +7,5 @@ alwaysApply: true
 - Always make the minimal possible change to satisfy the ask. Do not rearchitect without asking me if it is okay. 
 - Stay aware of the context of the code you are making changes in. Match the style and structure whenever possible. 
 - A coding session between us is not satisfied until the build compiles and the tests all pass. 
-- Before you make your first code suggestion, you should check to see if you are on a branch that is not master or main. If you are, then you should make a new sanely-named branch. When you satisfy the requirements of a change, then you should commit your changes to that branch with a descriptive commit message and ask if I want to open a pull request.
+- Before you make your first code suggestion, you should check to see if you are on a branch that is not master or main. If you are, then you should make a new sanely-named branch. If you are not, then don't make a new branch. When you satisfy the requirements of a change, then you should commit your changes to that branch with a descriptive commit message and ask if I want to open a pull request.
 - ALWAYS check what branch you are on before you make any commits. Sometimes the branch will change out from under you unexpectedly. If the branch is different than the one you started on, ask for what branch to use. 

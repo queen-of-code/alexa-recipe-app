@@ -27,10 +27,12 @@ This document summarizes the current automated test coverage for the Alexa Recip
 ### Frontend (Website)
 - **RecipeServiceTests.cs**
   - Covers: Service logic for creating a recipe (success path, using mocked HTTP client).
+- **CreateModelTests.cs**
+  - Covers: Razor PageModel logic for creating a recipe (OnPostAsync handler, success path). Uses mocks for all dependencies (authorization, user manager, service). Fast and isolated.
 
 **Gaps:**
-- No unit tests for UI components (Razor Pages).
-- No unit tests for error handling or edge cases in RecipeService.
+- No unit tests for other UI components (other Razor Pages).
+- No unit tests for error handling or edge cases in RecipeService or PageModels.
 - No tests for authentication, authorization, or user flows.
 
 ---
@@ -61,10 +63,12 @@ This document summarizes the current automated test coverage for the Alexa Recip
 - **Strengths:**
   - Core backend service logic and models are well-covered by unit tests.
   - Basic API and website availability are checked by integration tests.
+  - Now includes a fast, isolated unit test for a Razor PageModel (CreateModel).
 - **Weaknesses:**
   - Limited coverage for UI, authentication, and error scenarios.
   - Integration tests do not cover all user flows or edge cases.
 
 **Recommendation:**
 - Add unit and integration tests for new features (e.g., recipe favoriting).
+- Expand unit tests for other PageModels and error/edge cases.
 - Expand integration tests to cover more end-to-end user scenarios, especially for the UI and authentication flows. 
