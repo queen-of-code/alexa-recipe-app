@@ -20,10 +20,11 @@ namespace Website.Pages.Recipes
             : base(context, authorizationService, userManager)
         {
             this.RecipeService = recipeService;
-            this.RuntimeEnvironment = RecipeService._RuntimeEnvironment;
+            this.RuntimeEnvironment = recipeService.RuntimeEnvironment;
         }
 
         public IList<RecipeModel> Recipe { get; set; }
+        public string RuntimeEnvironment { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {

@@ -16,7 +16,7 @@ namespace Website.Tests
         public async Task OnPostAsync_ValidModel_Authorized_SavesRecipeAndRedirects()
         {
             // Arrange
-            var mockDb = new Mock<ApplicationDbContext>();
+            ApplicationDbContext mockDb = null;
             var mockAuth = new Mock<IAuthorizationService>();
             var mockUserMgr = new Mock<UserManager<IdentityUser>>(
                 Mock.Of<IUserStore<IdentityUser>>(), null, null, null, null, null, null, null, null);
@@ -36,7 +36,7 @@ namespace Website.Tests
             // Set up recipe service
             mockRecipeService.Setup(s => s.SaveRecipe(It.IsAny<RecipeModel>())).ReturnsAsync(true);
 
-            var pageModel = new CreateModel(mockDb.Object, mockAuth.Object, mockUserMgr.Object, mockRecipeService.Object)
+            var pageModel = new CreateModel(mockDb, mockAuth.Object, mockUserMgr.Object, mockRecipeService.Object)
             {
                 Recipe = new RecipeModel { Name = "Test", PrepTimeMins = 1, CookTimeMins = 1, Servings = 1 }
             };
