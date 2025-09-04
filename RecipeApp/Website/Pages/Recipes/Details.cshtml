@@ -1,5 +1,6 @@
 @page "{id:int}"
 @model Website.Pages.Recipes.DetailsModel
+@using System.Linq
 
 @{
     ViewData["Title"] = "Details";
@@ -34,6 +35,19 @@
         </dt>
         <dd>
             @Html.DisplayFor(model => model.Recipe.CookTimeMins)
+        </dd>
+        <dt>
+            Steps
+        </dt>
+        <dd>
+            @if (Model.Recipe.Steps != null && Model.Recipe.Steps.Any())
+            {
+                <div style="white-space: pre-line;">@string.Join("\n", Model.Recipe.Steps)</div>
+            }
+            else
+            {
+                <em>No steps provided</em>
+            }
         </dd>
     </dl>
 </div>
