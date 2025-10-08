@@ -10,13 +10,13 @@ namespace Website.Pages.Recipes
 {
     public class DetailsModel : DI_BasePageModel
     {
-        private readonly RecipeService RecipeService;
+        private readonly IRecipeService RecipeService;
 
         public DetailsModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
             UserManager<IdentityUser> userManager,
-            RecipeService recipeService)
+            IRecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
             this.RecipeService = recipeService;
@@ -53,10 +53,10 @@ namespace Website.Pages.Recipes
             var result = await RecipeService.SaveRecipe(Recipe);
             if (result)
             {
-                return NotFound();
+                return RedirectToPage("./Index");
             }
 
-            return RedirectToPage("./Index");
+            return NotFound();
         }
     }
 }

@@ -10,13 +10,25 @@ using RecipeApp.Core.ExternalModels;
 
 namespace Website
 {
-    public class RecipeService
+    public interface IRecipeService
+    {
+        string RuntimeEnvironment { get; }
+        Task<bool> CreateRecipe(RecipeApp.Core.ExternalModels.RecipeModel recipe);
+        Task<bool> SaveRecipe(RecipeApp.Core.ExternalModels.RecipeModel recipe);
+        Task<bool> DeleteRecipe(RecipeApp.Core.ExternalModels.RecipeModel recipe);
+        Task<RecipeApp.Core.ExternalModels.RecipeModel> GetRecipe(string userId, string recipeId);
+        Task<List<RecipeApp.Core.ExternalModels.RecipeModel>> GetAllRecipes(string userId);
+    }
+
+    public class RecipeService : IRecipeService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _JwtKey;
         private readonly string _JwtIssuer;
 
         public readonly string _RuntimeEnvironment;
+
+        public string RuntimeEnvironment => _RuntimeEnvironment;
 
         public RecipeService(IHttpClientFactory httpClientFactory, IConfiguration config)
         {

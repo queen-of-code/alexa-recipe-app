@@ -4,15 +4,15 @@ namespace Website.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly RecipeService RecipeService;
+        private readonly IRecipeService RecipeService;
 
-        public readonly string RuntimeEnvironment;
+        public string RuntimeEnvironment { get; }
 
-        public IndexModel(RecipeService recipeService) 
+        public IndexModel(IRecipeService recipeService) 
             : base()
         {
             this.RecipeService = recipeService;
-            this.RuntimeEnvironment = RecipeService._RuntimeEnvironment;
+            this.RuntimeEnvironment = recipeService.RuntimeEnvironment;
         }
 
         public void OnGet()

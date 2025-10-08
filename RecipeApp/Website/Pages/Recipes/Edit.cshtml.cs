@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RecipeApp.Core.ExternalModels;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Website.Authorization;
 using Website.Data;
@@ -10,13 +12,13 @@ namespace Website.Pages.Recipes
 {
     public class EditModel : DI_BasePageModel
     {
-        private readonly RecipeService RecipeService;
+        private readonly IRecipeService RecipeService;
 
         public EditModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
             UserManager<IdentityUser> userManager,
-            RecipeService recipeService)
+            IRecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
             this.RecipeService = recipeService;
@@ -24,6 +26,9 @@ namespace Website.Pages.Recipes
 
         [BindProperty]
         public RecipeModel Recipe { get; set; }
+
+        [BindProperty]
+        public string StepsText { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
@@ -43,6 +48,12 @@ namespace Website.Pages.Recipes
             if (!isAuthorized.Succeeded)
             {
                 return new ChallengeResult();
+            }
+
+            // Convert Steps list to text for editing
+            if (Recipe.Steps != null && Recipe.Steps.Any())
+            {
+                StepsText = string.Join("\n", Recipe.Steps);
             }
 
             return Page();
@@ -72,6 +83,17 @@ namespace Website.Pages.Recipes
 
             Recipe.UserId = recipe.UserId;
             Recipe.RecipeId = recipe.RecipeId;
+
+            // Convert StepsText back to Steps list
+            Recipe.Steps.Clear();
+            if (!string.IsNullOrWhiteSpace(StepsText))
+            {
+                var steps = StepsText.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(s => s.Trim())
+                                    .Where(s => !string.IsNullOrEmpty(s))
+                                    .ToList();
+                Recipe.Steps.AddRange(steps);
+            }
 
             var result = await RecipeService.SaveRecipe(Recipe);
             if (result)

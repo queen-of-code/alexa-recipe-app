@@ -10,19 +10,21 @@ namespace Website.Pages.Recipes
 {
     public class IndexModel : DI_BasePageModel
     {
-        private readonly RecipeService RecipeService;
+        private readonly IRecipeService RecipeService;
 
         public IndexModel(
             ApplicationDbContext context,
             IAuthorizationService authorizationService,
             UserManager<IdentityUser> userManager,
-            RecipeService recipeService)
+            IRecipeService recipeService)
             : base(context, authorizationService, userManager)
         {
             this.RecipeService = recipeService;
+            this.RuntimeEnvironment = recipeService.RuntimeEnvironment;
         }
 
         public IList<RecipeModel> Recipe { get; set; }
+        public string RuntimeEnvironment { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {

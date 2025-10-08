@@ -3,6 +3,8 @@ for details on configuring this project to bundle and minify static web assets. 
 body {
     padding-top: 5px;
     padding-bottom: 20px;
+    background-color: #ffffff; /* white background */
+    color: #333333; /* dark gray text for readability */
 }
 
 /* Wrapping element */
@@ -10,6 +12,49 @@ body {
 .body-content {
     padding-left: 5px;
     padding-right: 15px;
+    background-color: #ffffff; /* white background for content */
+    border-radius: 8px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #212529; /* dark gray for headers */
+}
+
+a, a:visited {
+    color: #007bff; /* standard blue for links */
+}
+
+a:hover, a:focus {
+    color: #0056b3; /* darker blue on hover */
+}
+
+.navbar, .navbar-light, .bg-light {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+.btn, .btn-default, .btn-info, .btn-outline-secondary {
+    background-color: #007bff !important;
+    color: #fff !important;
+    border: 1px solid #007bff;
+}
+
+.btn:hover, .btn:focus {
+    background-color: #0056b3 !important;
+    color: #fff !important;
+    border-color: #0056b3;
+}
+
+input, textarea, select {
+    background-color: #ffffff;
+    color: #212529;
+    border: 1px solid #ced4da;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 /* Carousel */
