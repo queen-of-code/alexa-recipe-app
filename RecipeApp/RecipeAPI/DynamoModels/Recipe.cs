@@ -29,7 +29,7 @@ namespace RecipeAPI.DynamoModels
         public DateTime LastUpdateTime { get; set; }
 
         [DynamoDBProperty]
-        public List<string> Ingredients { get; private set; } = new List<string>();
+        public List<string> Ingredients { get; set; } = new List<string>();
 
         [DynamoDBProperty]
         public List<string> Steps { get; set; } = new List<string>();
