@@ -21,11 +21,11 @@ namespace RecipeApp.Core.ExternalModels
 
         [NotMapped]
         [JsonPropertyName("ingredients")]
-        public List<string> Ingredients { get; private set; } = new List<string>();
+        public List<string> Ingredients { get; set; } = new List<string>();
 
         [NotMapped]
         [JsonPropertyName("steps")]
-        public List<string> Steps { get; private set; } = new List<string>();
+        public List<string> Steps { get; set; } = new List<string>();
 
         [JsonPropertyName("servings")]
         public int Servings { get; set; }

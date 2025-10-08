@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RecipeApp.Core.ExternalModels;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Website.Authorization;
 using Website.Data;
@@ -44,11 +45,21 @@ namespace Website.Pages.Recipes
 
             Recipe.Ingredients.AddRange(new string[] { "2lbs Chicken thighs", "2 whole tomatoes", "1 cup cream" });
             Recipe.Steps.AddRange(new string[] { "1. Cut up the chicken", "2. Cook the chicken", "3. Profit!" });
+            
+            // Convert Steps list to text for editing
+            if (Recipe.Steps != null && Recipe.Steps.Any())
+            {
+                StepsText = string.Join("\n", Recipe.Steps);
+            }
+            
             return Page();
         }
 
         [BindProperty]
         public RecipeModel Recipe { get; set; }
+
+        [BindProperty]
+        public string StepsText { get; set; }
 
         #region snippet_Create
         public async Task<IActionResult> OnPostAsync()
@@ -62,6 +73,17 @@ namespace Website.Pages.Recipes
             if (Recipe.RecipeId == default(long))
             {
                 Recipe.RecipeId = rand.Next();
+            }
+
+            // Convert StepsText back to Steps list
+            Recipe.Steps.Clear();
+            if (!string.IsNullOrWhiteSpace(StepsText))
+            {
+                var steps = StepsText.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(s => s.Trim())
+                                    .Where(s => !string.IsNullOrEmpty(s))
+                                    .ToList();
+                Recipe.Steps.AddRange(steps);
             }
 
             // requires using ContactManager.Authorization;

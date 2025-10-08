@@ -53,10 +53,10 @@ namespace Website.Pages.Recipes
             var result = await RecipeService.SaveRecipe(Recipe);
             if (result)
             {
-                return NotFound();
+                return RedirectToPage("./Index");
             }
 
-            return RedirectToPage("./Index");
+            return NotFound();
         }
     }
 }
