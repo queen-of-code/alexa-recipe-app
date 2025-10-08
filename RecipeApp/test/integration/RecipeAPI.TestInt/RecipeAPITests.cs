@@ -63,6 +63,16 @@ namespace RecipeAPI.TestInt
             return jwt;
         }
 
+        private string GetJwtIssuer()
+        {
+            if (this.TestEnvironment == "QA" || this.TestEnvironment == "staging")
+                return QaJwtIssuer;
+            else if (this.TestEnvironment == "prod")
+                return ProdJwtIssuer;
+            else
+                return LocalBaseUrl;
+        }
+
         [Fact]
         public async Task TestSave_and_Delete()
         {
