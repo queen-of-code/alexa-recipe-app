@@ -32,6 +32,7 @@ jobs:
         run: npm run build
 
       - name: Deploy PR preview to Firebase Hosting
+        id: deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -41,3 +42,27 @@ jobs:
           entryPoint: RecipeApp/frontend
           channelId: pr-${{ github.event.number }}
           expires: 7d
+
+      - name: Smoke test preview
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.details_url }}
+        run: |
+          echo "Testing $PREVIEW_URL"
+          # Retry up to 5 times — CDN propagation can take a few seconds
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /tmp/preview.html -w "%{http_code}" "$PREVIEW_URL")
+            if [ "$STATUS" = "200" ]; then break; fi
+            echo "Attempt $i: got $STATUS, retrying..."
+            sleep 5
+          done
+
+          echo "HTTP status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "ERROR: expected 200, got $STATUS"; exit 1; }
+
+          grep -q "<title>Recipe App</title>" /tmp/preview.html \
+            || { echo "ERROR: page title not found"; cat /tmp/preview.html; exit 1; }
+
+          grep -q "<script" /tmp/preview.html \
+            || { echo "ERROR: no script tag — JS bundle missing"; cat /tmp/preview.html; exit 1; }
+
+          echo "Smoke test passed: 200, title present, JS bundle referenced"
