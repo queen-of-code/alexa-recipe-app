@@ -14,11 +14,11 @@ services:
       - ./frontend/firebase.json:/app/firebase.json
       - emulator_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:9099 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 18
-      start_period: 30s
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 9099 && nc -z 127.0.0.1 8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 20s
 
   recipeapi:
     platform: linux/amd64
