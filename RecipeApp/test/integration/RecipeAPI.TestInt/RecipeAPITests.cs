@@ -37,14 +37,16 @@ namespace RecipeAPI.TestInt
         //   FIREBASE_TEST_PASSWORD, and FIREBASE_API_KEY env vars.
         private async Task<string> GetTestTokenAsync()
         {
-            string host, apiKey, email, password;
+            bool isLocal = string.Equals(TestEnvironment, "local", StringComparison.OrdinalIgnoreCase);
+            string signInUrl, signUpUrl, apiKey, email, password;
 
-            if (string.Equals(TestEnvironment, "local", StringComparison.OrdinalIgnoreCase))
+            if (isLocal)
             {
-                host = "http://localhost:9099";
                 apiKey = "fake-api-key";
                 email = "integration-test@example.com";
                 password = "test-password-123";
+                signInUrl = $"http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={apiKey}";
+                signUpUrl  = $"http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key={apiKey}";
             }
             else
             {
@@ -54,22 +56,21 @@ namespace RecipeAPI.TestInt
                     ?? throw new InvalidOperationException("FIREBASE_TEST_EMAIL env var must be set for non-local integration tests.");
                 password = Environment.GetEnvironmentVariable("FIREBASE_TEST_PASSWORD")
                     ?? throw new InvalidOperationException("FIREBASE_TEST_PASSWORD env var must be set for non-local integration tests.");
-                host = "https://identitytoolkit.googleapis.com";
+                signInUrl = $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={apiKey}";
+                signUpUrl  = signInUrl; // not used for production
             }
 
             using var http = new HttpClient();
 
             var signInPayload = JsonSerializer.Serialize(new { email, password, returnSecureToken = true });
-            var signInRes = await http.PostAsync(
-                $"{host}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={apiKey}",
+            var signInRes = await http.PostAsync(signInUrl,
                 new StringContent(signInPayload, Encoding.UTF8, "application/json"));
 
-            if (!signInRes.IsSuccessStatusCode && string.Equals(TestEnvironment, "local", StringComparison.OrdinalIgnoreCase))
+            if (!signInRes.IsSuccessStatusCode && isLocal)
             {
                 // Emulator only: create the user if it doesn't exist yet.
                 var signUpPayload = JsonSerializer.Serialize(new { email, password, returnSecureToken = true });
-                var signUpRes = await http.PostAsync(
-                    $"{host}/identitytoolkit.googleapis.com/v1/accounts:signUp?key={apiKey}",
+                var signUpRes = await http.PostAsync(signUpUrl,
                     new StringContent(signUpPayload, Encoding.UTF8, "application/json"));
                 signUpRes.EnsureSuccessStatusCode();
                 signInRes = signUpRes;
