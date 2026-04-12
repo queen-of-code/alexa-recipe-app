@@ -37,7 +37,7 @@ jobs:
           image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/recipe-docker/recipeapi:${{ github.sha }}
           env_vars: |
             GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
-          flags: --remove-secrets=GOOGLE_APPLICATION_CREDENTIALS --service-account=recipe-app-backend@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          flags: --allow-unauthenticated --remove-secrets=GOOGLE_APPLICATION_CREDENTIALS --service-account=recipe-app-backend@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
   deploy_frontend:
     runs-on: ubuntu-latest
