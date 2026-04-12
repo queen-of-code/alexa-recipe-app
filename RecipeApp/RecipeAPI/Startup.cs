@@ -67,8 +67,10 @@ namespace RecipeAPI
             var isEmulator = !string.IsNullOrEmpty(
                 Environment.GetEnvironmentVariable("FIREBASE_AUTH_EMULATOR_HOST"));
 
+            // FirebaseAdmin v3 requires Credential to be set even in emulator mode.
+            // Use a fake access token for local dev — the emulator accepts any credential.
             var appOptions = isEmulator
-                ? new AppOptions { ProjectId = projectId }
+                ? new AppOptions { ProjectId = projectId, Credential = GoogleCredential.FromAccessToken("owner") }
                 : new AppOptions
                 {
                     Credential = GoogleCredential.FromFile(
@@ -78,8 +80,13 @@ namespace RecipeAPI
 
             FirebaseApp.Create(appOptions);
 
-            // Firestore — automatically uses FIRESTORE_EMULATOR_HOST if set.
-            var firestoreDb = FirestoreDb.Create(projectId);
+            // Firestore — use EmulatorDetection so it connects to the emulator when
+            // FIRESTORE_EMULATOR_HOST is set (local dev), or uses ADC in production.
+            var firestoreDb = new FirestoreDbBuilder
+            {
+                ProjectId = projectId,
+                EmulatorDetection = Google.Api.Gax.EmulatorDetection.EmulatorOrProduction
+            }.Build();
             services.AddSingleton(firestoreDb);
             services.AddSingleton<IFirestoreRecipeService, FirestoreRecipeService>();
 

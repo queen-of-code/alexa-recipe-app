@@ -1,39 +1,54 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Sonar Dotnet Build
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Sonarscanner for dotnet
-      uses: Secbyte/dotnet-sonarscanner@v2.2
-      with:
-        buildCommand: dotnet build  RecipeApp/RecipeApp.sln
-        testCommand: dotnet test RecipeApp/RecipeApp.sln --verbosity Normal --filter Category!=Integration  --collect:"XPlat Code Coverage"
-        projectKey: gh_alexa_recipe_app
-        projectName: Github Alexa Recipe App
-        sonarOrganisation: queen-of-code-github
-        beginArguments: >
-            /d:sonar.verbose="true"
-            /d:sonar.cs.cobertura.reportsPaths='"**/coverage.cobertura.xml"'
-            /d:sonar.coverage.exclusions='"RecipeApp/tests/**/*.cs","**/*.md"'
-      env:
-       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Java (required by SonarScanner)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dotnet-sonarscanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Begin Sonar analysis
+        run: |
+          dotnet sonarscanner begin \
+            /k:"gh_alexa_recipe_app" \
+            /n:"Github Alexa Recipe App" \
+            /o:"queen-of-code-github" \
+            /d:sonar.verbose=true \
+            /d:sonar.cs.cobertura.reportsPaths="**/coverage.cobertura.xml" \
+            /d:sonar.coverage.exclusions="RecipeApp/tests/**/*.cs,**/*.md" \
+            /d:sonar.host.url=https://sonarcloud.io \
+            /d:sonar.token=${{ secrets.SONAR_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: dotnet build RecipeApp/RecipeApp.sln --configuration Release
+
+      - name: Test
+        run: dotnet test RecipeApp/RecipeApp.sln --configuration Release --filter Category!=Integration --collect:"XPlat Code Coverage" --no-build
+
+      - name: End Sonar analysis
+        run: dotnet sonarscanner end /d:sonar.token=${{ secrets.SONAR_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

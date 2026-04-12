@@ -4,7 +4,8 @@ services:
     platform: linux/amd64
     working_dir: /app
     command: >
-      sh -c "npm install -g firebase-tools &&
+      sh -c "apk add --no-cache openjdk21-jre-headless &&
+             npm install -g firebase-tools &&
              firebase emulators:start --project queen-of-code --import=/data --export-on-exit=/data"
     ports:
       - "4000:4000"  # Emulator UI
