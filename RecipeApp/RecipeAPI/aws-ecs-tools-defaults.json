@@ -1,9 +1,0 @@
-
-{
-    "region" : "us-west-2",
-    "profile" : "default",
-    "configuration" : "Release",
-    "tag"           : "recipeapi:recipeapi",
-    "docker-build-working-dir" : "",
-    "vstoolkit-deployment-mode" : "PushOnly"
-}

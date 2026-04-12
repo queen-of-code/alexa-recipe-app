@@ -1,79 +1,57 @@
 services:
-  mysql:
-    image: mysql:8.4
+  firebase-emulator:
+    image: node:20-alpine
     platform: linux/amd64
-#    build:
-#      context: SQL
-#      dockerfile: Dockerfile
+    working_dir: /app
+    command: >
+      sh -c "npm install -g firebase-tools &&
+             firebase emulators:start --project queen-of-code --import=/data --export-on-exit=/data"
     ports:
-      - "3306:3306"
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 'test_pass' # TODO: Change this
-      MYSQL_USER: recipeuser
-      MYSQL_PASSWORD: testpassword123
-      MYSQL_DATABASE: recipes
+      - "4000:4000"  # Emulator UI
+      - "8080:8080"  # Firestore
+      - "9099:9099"  # Auth
     volumes:
-      - ./mysql_data:/var/lib/mysql
-      #- ./SQL:/docker-entrypoint-initdb.d/:ro
-  dynamodb:
-    image: amazon/dynamodb-local:latest
-    platform: linux/amd64
-    environment:
-      DYNAMO_ACCESS_KEY: whatever
-      DYNAMO_SECRET_KEY: whocares
-      AWS_REGION: us-west-2
-    ports:
-      - "8000:8000"
-    volumes:
-      - dynamodata:/home/dynamodblocal
-      - ./dynamo_data:/home/data
-    working_dir: /home/dynamodblocal
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/data"
-  website:
-    #image: "queenofcode/recipe_website:${TAG}"
-    platform: linux/amd64
-    build:
-     context: .
-     dockerfile: ./Website/Dockerfile.dev
-    depends_on:
-      - recipeapi
-      - mysql
-    environment:
-      ASPNETCORE_ENVIRONMENT: 'Development'
-      ASPNETCORE_URLS: 'http://+:80'
-#    secrets: Uncomment these secrets if you want to use Microsoft + FB Auth locally
-#      - Authentication.Microsoft.ApplicationId
-#      - Authentication.Microsoft.Password
-#      - Facebook.API.Key
-#      - Facebook.API.Secret
-    ports:
-     - "3000:80"
+      - ./frontend/firebase.json:/app/firebase.json
+      - emulator_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:4000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
   recipeapi:
-    #image: "queenofcode/recipeapi:${TAG}"
     platform: linux/amd64
     build:
       context: .
       dockerfile: ./RecipeAPI/Dockerfile.dev
     depends_on:
-      - dynamodb
+      firebase-emulator:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
       ASPNETCORE_URLS: 'http://+:80'
-      AWS_ACCESS_KEY_ID: 'whatever'
-      AWS_SECRET_ACCESS_KEY: 'whocares'
+      GCP_PROJECT_ID: 'queen-of-code'
+      FIRESTORE_EMULATOR_HOST: 'firebase-emulator:8080'
+      FIREBASE_AUTH_EMULATOR_HOST: 'firebase-emulator:9099'
     ports:
-     - "8080:80"
+      - "8081:80"  # 8080 is taken by the Firestore emulator
+
+  frontend:
+    image: node:20-alpine
+    platform: linux/amd64
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - recipeapi
+    environment:
+      VITE_USE_EMULATOR: 'true'
+      VITE_API_URL: 'http://localhost:8081'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
 
 volumes:
-  dynamodata: {}
-# Un-comment out these secrets if you want to use Microsoft + FB Auth locally
-#secrets:
-#  Authentication.Microsoft.ApplicationId:
-#    file: ~/.docker/secrets/Authentication.Microsoft.ApplicationId.txt
-#  Authentication.Microsoft.Password:
-#    file: ~/.docker/secrets/Authentication.Microsoft.Password.txt
-#  Facebook.API.Key:
-#    file: ~/.docker/secrets/Facebook.API.Key.txt
-#  Facebook.API.Secret:
-#    file: ~/.docker/secrets/Facebook.API.Secret.txt
+  emulator_data: {}

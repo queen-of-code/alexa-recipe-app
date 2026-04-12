@@ -20,77 +20,83 @@ on:
         default: 'Dev'
 
 jobs:
-  #CI Pipeline
-    build_test:
-        runs-on: ubuntu-latest
-        steps:
-        - uses: actions/checkout@v4
-          with:
-            # Disabling shallow clone is recommended for improving relevancy of reporting
-            fetch-depth: 0
-        - name: Setup .NET Core
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: '9.0.x'
-        - name: Install dotnet tool
-          run: dotnet tool install --global dotnet-sonarscanner
-        - name: Install dependencies
-          run: dotnet restore RecipeApp/Website.sln
-        - name: Build
-          run: dotnet build --configuration Release --no-restore RecipeApp/Website.sln
-        - name: Test
-          run: dotnet test --no-restore --no-build --configuration Release --logger trx --verbosity minimal RecipeApp/Website.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
-          
-        - name: XUnit Test Report
-          uses: dorny/test-reporter@v1.8.0
-          if: success() || failure()    # run this step even if previous step failed
-          with:
-            name: XUnit Results
-            path: '**/*.trx'                     # Path to test results (inside artifact .zip)
-            reporter: dotnet-trx              # Format of test results
-            list-suites: all
-            list-tests: failed
-            token: ${{ github.token }}
-          
-        - name: ReportGenerator
-          uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
-          with:
-            # The coverage reports that should be parsed (separated by semicolon). Globbing is supported.
-            reports: "**/coverage.cobertura.xml"
-            # The directory where the generated report should be saved.
-            #targetdir: # default is coveragereport
-            # The output formats and scope (separated by semicolon) Values: Badges, Clover, Cobertura, CsvSummary, Html, HtmlChart, HtmlInline, HtmlInline_AzurePipelines, HtmlInline_AzurePipelines_Dark, HtmlSummary, JsonSummary, Latex, LatexSummary, lcov, MHtml, PngChart, SonarQube, TeamCitySummary, TextSummary, Xml, XmlSummary
-            reporttypes: "HtmlInline;lcov"
-            # Optional directories which contain the corresponding source code (separated by semicolon). The source directories are used if coverage report contains classes without path information.
-            #sourcedirs: # optional, default is 
-            # Optional directory for storing persistent coverage information. Can be used in future reports to show coverage evolution.
-            #historydir: # optional, default is 
-            # Default directory for installing the dotnet tool.
-            #toolpath: # optional, default is reportgeneratortool
-            # Optional plugin files for custom reports or custom history storage (separated by semicolon).
-            #plugins: # optional, default is 
-            # Optional list of assemblies that should be included or excluded in the report. Exclusion filters take precedence over inclusion filters. Wildcards are allowed.
-            assemblyfilters: "+Website;+RecipeAPI;+Core"
-            # Optional list of classes that should be included or excluded in the report. Exclusion filters take precedence over inclusion filters. Wildcards are allowed.
-            #classfilters: # optional, default is +*
-            # Optional list of files that should be included or excluded in the report. Exclusion filters take precedence over inclusion filters. Wildcards are allowed.
-            filefilters: +*
-            # The verbosity level of the log messages. Values: Verbose, Info, Warning, Error, Off
-            #verbosity: # optional, default is Info
-            # Optional title.
-            #title: # optional, default is 
-            # Optional tag or build version.
-            #tag: # optional, default is ${{ github.run_number }}_${{ github.run_id }}
-            # Optional custom settings (separated by semicolon). See: https://github.com/danielpalme/ReportGenerator/wiki/Settings
-            #customSettings: # optional, default is 
-        - name: Upload coverage report artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: CoverageReport # Artifact name        
-            path: coveragereport/index.htm # Directory containing files to upload
-            
-        - name: Report Code Coverage
-          uses: romeovs/lcov-reporter-action@v0.3.1
-          with:
-            lcov-file: coveragereport/lcov.info
-            github-token: ${{ github.token }}
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install dotnet tool
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Install dependencies
+        run: dotnet restore RecipeApp/RecipeApp.sln
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore RecipeApp/RecipeApp.sln
+
+      - name: Test
+        run: dotnet test --no-restore --no-build --configuration Release --logger trx --verbosity minimal RecipeApp/RecipeApp.sln --filter Category!=Integration --collect:"XPlat Code Coverage"
+
+      - name: XUnit Test Report
+        uses: dorny/test-reporter@v1.8.0
+        if: success() || failure()
+        with:
+          name: XUnit Results
+          path: '**/*.trx'
+          reporter: dotnet-trx
+          list-suites: all
+          list-tests: failed
+          token: ${{ github.token }}
+
+      - name: ReportGenerator
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
+        with:
+          reports: "**/coverage.cobertura.xml"
+          reporttypes: "HtmlInline;lcov"
+          filefilters: +*
+          assemblyfilters: "+RecipeAPI;+Core"
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoverageReport
+          path: coveragereport/index.htm
+
+      - name: Report Code Coverage
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: coveragereport/lcov.info
+          github-token: ${{ github.token }}
+
+  build_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: RecipeApp/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: RecipeApp/frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: RecipeApp/frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: queen-of-code
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_API_URL: https://placeholder.run.app
+        run: npm run build

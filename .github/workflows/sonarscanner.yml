@@ -25,8 +25,8 @@ jobs:
     - name: Sonarscanner for dotnet
       uses: Secbyte/dotnet-sonarscanner@v2.2
       with:
-        buildCommand: dotnet build  RecipeApp/Website.sln
-        testCommand: dotnet test RecipeApp/Website.sln --verbosity Normal --filter Category!=Integration  --collect:"XPlat Code Coverage"  
+        buildCommand: dotnet build  RecipeApp/RecipeApp.sln
+        testCommand: dotnet test RecipeApp/RecipeApp.sln --verbosity Normal --filter Category!=Integration  --collect:"XPlat Code Coverage"
         projectKey: gh_alexa_recipe_app
         projectName: Github Alexa Recipe App
         sonarOrganisation: queen-of-code-github
