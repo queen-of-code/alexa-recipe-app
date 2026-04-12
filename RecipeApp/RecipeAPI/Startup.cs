@@ -61,20 +61,19 @@ namespace RecipeAPI
             });
 
             // Firebase Admin SDK.
-            // When FIREBASE_AUTH_EMULATOR_HOST is set (local dev), skip credential file — emulator
-            // handles auth without real GCP credentials. In production, use the mounted SA key.
+            // In local dev (FIREBASE_AUTH_EMULATOR_HOST set), use a fake token — the emulator
+            // accepts any credential. In production, use Application Default Credentials (ADC),
+            // which resolves to the Cloud Run service account identity automatically.
             var projectId = Configuration["GCP_PROJECT_ID"] ?? "queen-of-code";
             var isEmulator = !string.IsNullOrEmpty(
                 Environment.GetEnvironmentVariable("FIREBASE_AUTH_EMULATOR_HOST"));
 
             // FirebaseAdmin v3 requires Credential to be set even in emulator mode.
-            // Use a fake access token for local dev — the emulator accepts any credential.
             var appOptions = isEmulator
                 ? new AppOptions { ProjectId = projectId, Credential = GoogleCredential.FromAccessToken("owner") }
                 : new AppOptions
                 {
-                    Credential = GoogleCredential.FromFile(
-                        Configuration["GOOGLE_APPLICATION_CREDENTIALS"]),
+                    Credential = GoogleCredential.GetApplicationDefault(),
                     ProjectId = projectId
                 };
 

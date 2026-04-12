@@ -35,10 +35,9 @@ jobs:
           service: recipe-api
           region: us-central1
           image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/recipe-docker/recipeapi:${{ github.sha }}
+          service_account: recipe-app-backend@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           env_vars: |
             GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
-          secrets: |
-            GOOGLE_APPLICATION_CREDENTIALS=recipe-app-backend-sa:latest
 
   deploy_frontend:
     runs-on: ubuntu-latest
