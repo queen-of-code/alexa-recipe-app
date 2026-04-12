@@ -1,68 +1,81 @@
-name: Deploy PR Preview
+name: Integration Tests (PR)
 
 on:
   pull_request:
     branches: [master]
 
 jobs:
-  preview_frontend:
+  integration_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build firebase-emulator image (cached)
+        uses: docker/build-push-action@v6
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: RecipeApp/frontend/package-lock.json
+          context: RecipeApp
+          file: RecipeApp/firebase-emulator/Dockerfile
+          load: true
+          tags: recipeapp-firebase-emulator:latest
+          cache-from: type=gha,scope=firebase-emulator
+          cache-to: type=gha,mode=max,scope=firebase-emulator
 
-      - name: Install frontend dependencies
-        working-directory: RecipeApp/frontend
-        run: npm ci
-
-      - name: Build frontend
-        working-directory: RecipeApp/frontend
-        env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: queen-of-code
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_API_URL: ${{ secrets.CLOUD_RUN_API_URL }}
-        run: npm run build
-
-      - name: Deploy PR preview to Firebase Hosting
-        id: deploy
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Build recipeapi image (cached)
+        uses: docker/build-push-action@v6
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: queen-of-code
-          target: qoc-recipe-app
-          entryPoint: RecipeApp/frontend
-          channelId: pr-${{ github.event.number }}
-          expires: 7d
+          context: RecipeApp
+          file: RecipeApp/RecipeAPI/Dockerfile.dev
+          load: true
+          tags: recipeapp-recipeapi:latest
+          cache-from: type=gha,scope=recipeapi
+          cache-to: type=gha,mode=max,scope=recipeapi
 
-      - name: Smoke test preview
-        env:
-          PREVIEW_URL: ${{ steps.deploy.outputs.details_url }}
+      - name: Start backend services
+        run: docker compose -f RecipeApp/docker-compose.yml up -d firebase-emulator recipeapi
+
+      - name: Wait for API to be ready
         run: |
-          echo "Testing $PREVIEW_URL"
-          # Retry up to 5 times — CDN propagation can take a few seconds
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /tmp/preview.html -w "%{http_code}" "$PREVIEW_URL")
-            if [ "$STATUS" = "200" ]; then break; fi
-            echo "Attempt $i: got $STATUS, retrying..."
+          echo "Waiting for API..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8081/health > /dev/null 2>&1; then
+              echo "API is ready"
+              exit 0
+            fi
+            echo "  attempt $i/30..."
             sleep 5
           done
+          echo "API did not become ready in time"
+          docker compose -f RecipeApp/docker-compose.yml logs
+          exit 1
 
-          echo "HTTP status: $STATUS"
-          [ "$STATUS" = "200" ] || { echo "ERROR: expected 200, got $STATUS"; exit 1; }
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
 
-          grep -q "<title>Recipe App</title>" /tmp/preview.html \
-            || { echo "ERROR: page title not found"; cat /tmp/preview.html; exit 1; }
+      - name: Run integration tests
+        env:
+          RecipeEnv: local
+        run: |
+          dotnet test RecipeApp/RecipeApp.sln \
+            --filter Category=Integration \
+            --logger trx \
+            --verbosity normal
 
-          grep -q "<script" /tmp/preview.html \
-            || { echo "ERROR: no script tag — JS bundle missing"; cat /tmp/preview.html; exit 1; }
+      - name: Integration test report
+        uses: dorny/test-reporter@v1.8.0
+        if: success() || failure()
+        with:
+          name: Integration Test Results
+          path: '**/*.trx'
+          reporter: dotnet-trx
+          list-suites: all
+          list-tests: failed
+          token: ${{ github.token }}
 
-          echo "Smoke test passed: 200, title present, JS bundle referenced"
+      - name: Tear down
+        if: always()
+        run: docker compose -f RecipeApp/docker-compose.yml down -v
