@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ProjectGuid>FFF7DCD8-ABCD-4438-AFCB-990FD2676666</ProjectGuid>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -21,7 +21,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
   </ItemGroup>
 
   <ItemGroup>

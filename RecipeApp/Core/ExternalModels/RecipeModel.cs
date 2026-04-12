@@ -11,7 +11,7 @@ namespace RecipeApp.Core.ExternalModels
         public string UserId { get; set; }
 
         [JsonPropertyName("recipeId")]
-        public long RecipeId { get; set; }
+        public string RecipeId { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }

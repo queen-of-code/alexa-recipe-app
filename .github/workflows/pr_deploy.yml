@@ -1,85 +1,81 @@
-name: Deploy PR to Dev
+name: Integration Tests (PR)
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   pull_request:
-    branches: [ master ]
-    types: [ labeled ]
+    branches: [master]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-    pkg_dev:
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
-      runs-on: ubuntu-latest
-      steps:
-          - uses: actions/checkout@v4
-          - name: Docker Login
-            uses: docker/login-action@v3
-            with:
-                username: ${{ secrets.DOCKERHUB_USERNAME }}
-                # Password or personal access token used to log against the Docker registry
-                password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          - name: Build
-            env:
-                TAG: dev
-                #TAG: ${{ github.sha }}
-            run: docker-compose -f RecipeApp/docker-compose.yml build
-          - name: Push
-            env:
-                TAG: dev
-                #TAG: ${{ github.sha }}
-            run: docker-compose -f RecipeApp/docker-compose.yml push
-    deploy_dev:
-      runs-on: ubuntu-latest
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
-      needs: pkg_dev
-      steps:
-          - name: Azure authentication
-            uses: azure/login@v2
-            with:
-                creds: ${{ secrets.AZURE_CREDENTIALS }}
-          - name: Deploy UI to Azure
-            uses: azure/webapps-deploy@v3
-            with:
-               app-name: 'recipe-ui'
-               slot-name: 'qa'
-               images: 'index.docker.io/queenofcode/recipe_website:dev'
-          - name: Deploy API to Azure
-            uses: azure/webapps-deploy@v3
-            with:
-               app-name: 'recipe-dataapi'
-               slot-name: 'qa'
-               images: 'index.docker.io/queenofcode/recipeapi:dev'
-    integration_test: 
-      runs-on: ubuntu-latest
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'deploy_pr') }}
-      needs: deploy_dev
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            # Disabling shallow clone is recommended for improving relevancy of reporting
-            fetch-depth: 1
-        - name: Setup .NET Core
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: '9.0.x'
-        - name: Install dependencies
-          run: dotnet restore RecipeApp/Website.sln
-        - name: Build
-          run: dotnet build --no-restore --verbosity minimal --configuration Release RecipeApp/Website.sln
-        - name: Test
-          env:
-             RecipeEnv: QA
-             RECIPE-INTERNAL-AUTH: ${{ secrets.RECIPE_INTERNAL_AUTH }}
-          run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/Website.sln --filter Category=Integration --logger trx
-        - name: XUnit Test Report
-          uses: dorny/test-reporter@v1.8.0
-          if: success() || failure()    # run this step even if previous step failed
-          with:
-            name: XUnit Results
-            path: '**/*.trx'                     # Path to test results (inside artifact .zip)
-            reporter: dotnet-trx              # Format of test results
-            list-suites: all
-            list-tests: failed
-            token: ${{ github.token }}
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build firebase-emulator image (cached)
+        uses: docker/build-push-action@v6
+        with:
+          context: RecipeApp
+          file: RecipeApp/firebase-emulator/Dockerfile
+          load: true
+          tags: recipeapp-firebase-emulator:latest
+          cache-from: type=gha,scope=firebase-emulator
+          cache-to: type=gha,mode=max,scope=firebase-emulator
+
+      - name: Build recipeapi image (cached)
+        uses: docker/build-push-action@v6
+        with:
+          context: RecipeApp
+          file: RecipeApp/RecipeAPI/Dockerfile.dev
+          load: true
+          tags: recipeapp-recipeapi:latest
+          cache-from: type=gha,scope=recipeapi
+          cache-to: type=gha,mode=max,scope=recipeapi
+
+      - name: Start backend services
+        run: docker compose -f RecipeApp/docker-compose.yml up -d firebase-emulator recipeapi
+
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8081/health > /dev/null 2>&1; then
+              echo "API is ready"
+              exit 0
+            fi
+            echo "  attempt $i/30..."
+            sleep 5
+          done
+          echo "API did not become ready in time"
+          docker compose -f RecipeApp/docker-compose.yml logs
+          exit 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run integration tests
+        env:
+          RecipeEnv: local
+        run: |
+          dotnet test RecipeApp/RecipeApp.sln \
+            --filter Category=Integration \
+            --logger trx \
+            --verbosity normal
+
+      - name: Integration test report
+        uses: dorny/test-reporter@v1.8.0
+        if: success() || failure()
+        with:
+          name: Integration Test Results
+          path: '**/*.trx'
+          reporter: dotnet-trx
+          list-suites: all
+          list-tests: failed
+          token: ${{ github.token }}
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f RecipeApp/docker-compose.yml down -v

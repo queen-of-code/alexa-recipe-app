@@ -1,16 +1,17 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
+using System;
 
-using Amazon.DynamoDBv2;
+using FirebaseAdmin;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
+
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
+
+using RecipeAPI.Auth;
 
 namespace RecipeAPI
 {
@@ -32,78 +33,84 @@ namespace RecipeAPI
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
             ConfigureCommonServices(services);
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging locally.
-            var key = Configuration["RecipeConnectionKey"];
-            Console.WriteLine($"Key starts with {key.Substring(0, 4)}");
             Console.WriteLine("Using development environment.");
         }
 
         public void ConfigureStagingServices(IServiceCollection services)
         {
             ConfigureCommonServices(services);
-            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; // More detailed logging in Staging
-            var key = Configuration["RecipeConnectionKey"];
-            Console.WriteLine($"Key starts with {key.Substring(0, 4)}");
             Console.WriteLine("Using staging environment.");
         }
 
         private void ConfigureCommonServices(IServiceCollection services)
         {
             services.AddMvc();
-
-            var awsOptions = Configuration.GetAWSOptions();
-            services.AddDefaultAWSOptions(awsOptions);
-            services.AddAWSService<IAmazonDynamoDB>(awsOptions);
             services.AddControllers(o => o.AllowEmptyInputInBodyModelBinding = true);
             services.AddHealthChecks();
 
-            // Add JWT Authentication 
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // => remove default claims
-            services
-                .AddAuthentication(options =>
+            // CORS — allow the React SPA to call this API
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                    policy.WithOrigins(
+                        "http://localhost:5173",            // Vite dev server
+                        "https://qoc-recipe-app.web.app"   // Firebase Hosting
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod());
+            });
+
+            // Firebase Admin SDK.
+            // When FIREBASE_AUTH_EMULATOR_HOST is set (local dev), skip credential file — emulator
+            // handles auth without real GCP credentials. In production, use the mounted SA key.
+            var projectId = Configuration["GCP_PROJECT_ID"] ?? "queen-of-code";
+            var isEmulator = !string.IsNullOrEmpty(
+                Environment.GetEnvironmentVariable("FIREBASE_AUTH_EMULATOR_HOST"));
+
+            // FirebaseAdmin v3 requires Credential to be set even in emulator mode.
+            // Use a fake access token for local dev — the emulator accepts any credential.
+            var appOptions = isEmulator
+                ? new AppOptions { ProjectId = projectId, Credential = GoogleCredential.FromAccessToken("owner") }
+                : new AppOptions
                 {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    Credential = GoogleCredential.FromFile(
+                        Configuration["GOOGLE_APPLICATION_CREDENTIALS"]),
+                    ProjectId = projectId
+                };
 
-                })
-                .AddJwtBearer(cfg =>
-                {
-                    cfg.RequireHttpsMetadata = false;
-                    cfg.SaveToken = true;
-                    cfg.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidIssuer = Configuration["JwtIssuer"],
-                        ValidAudience = "API",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["RecipeConnectionKey"])),
-                        ClockSkew = TimeSpan.FromSeconds(60) // remove delay of token when expire
-                    };
-                });
+            FirebaseApp.Create(appOptions);
 
+            // Firestore — use EmulatorDetection so it connects to the emulator when
+            // FIRESTORE_EMULATOR_HOST is set (local dev), or uses ADC in production.
+            var firestoreDb = new FirestoreDbBuilder
+            {
+                ProjectId = projectId,
+                EmulatorDetection = Google.Api.Gax.EmulatorDetection.EmulatorOrProduction
+            }.Build();
+            services.AddSingleton(firestoreDb);
+            services.AddSingleton<IFirestoreRecipeService, FirestoreRecipeService>();
 
-            services.AddSingleton<IDynamoRecipeService, DynamoRecipeService>();
+            // Firebase Auth middleware
+            services.AddAuthentication("Firebase")
+                .AddScheme<AuthenticationSchemeOptions, FirebaseAuthHandler>("Firebase", _ => { });
         }
 
-        /// <summary>
-        ///  This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        /// </summary>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            
             if ("development".Equals(env.EnvironmentName, StringComparison.OrdinalIgnoreCase))
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllers();
-                    endpoints.MapHealthChecks("/health");
-                }
-            );
+            {
+                endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
+            });
         }
     }
 }

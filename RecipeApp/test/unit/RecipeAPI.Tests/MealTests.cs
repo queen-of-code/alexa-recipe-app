@@ -1,5 +1,4 @@
-﻿using RecipeAPI.DynamoModels;
-using System;
+using RecipeAPI.FirestoreModels;
 using Xunit;
 
 namespace RecipeAPI.Tests
@@ -9,10 +8,9 @@ namespace RecipeAPI.Tests
     {
         private static readonly Meal Meal1 = new Meal
         {
-            LastUpdateTime = DateTime.UtcNow,
+            Id = "meal-123",
             MealName = "Meal123",
             PrepTimeMins = 2,
-            EntityId = 123,
             Servings = 4,
             UserId = "5"
         };
@@ -20,8 +18,21 @@ namespace RecipeAPI.Tests
         [Fact]
         public void IsValid_Valid()
         {
-            var result = Meal1.IsValid();
-            Assert.True(result);
+            Assert.True(Meal1.IsValid());
+        }
+
+        [Fact]
+        public void IsValid_MissingName_ReturnsFalse()
+        {
+            var meal = new Meal { Id = "m1", UserId = "u1", MealName = "" };
+            Assert.False(meal.IsValid());
+        }
+
+        [Fact]
+        public void IsValid_MissingId_ReturnsFalse()
+        {
+            var meal = new Meal { UserId = "u1", MealName = "Breakfast" };
+            Assert.False(meal.IsValid());
         }
     }
 }

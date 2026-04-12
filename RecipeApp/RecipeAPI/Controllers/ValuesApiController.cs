@@ -1,30 +1,28 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-using RecipeAPI.DynamoModels;
+using RecipeAPI.FirestoreModels;
 
 using RecipeApp.Core.ExternalModels;
 
 namespace RecipeAPI.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = "Firebase")]
     [ApiController]
     [Route("api/values")]
     public class ValuesApiController : ControllerBase
     {
         private readonly ILogger Logger;
-        private readonly IDynamoRecipeService RecipeService;
+        private readonly IFirestoreRecipeService RecipeService;
 
-        public ValuesApiController(IDynamoRecipeService service,
-                                ILogger<ValuesApiController> logger)
+        public ValuesApiController(IFirestoreRecipeService service,
+                                   ILogger<ValuesApiController> logger)
         {
             this.RecipeService = service;
             this.Logger = logger;
@@ -37,29 +35,23 @@ namespace RecipeAPI.Controllers
             return new BadRequestResult();
         }
 
-        // GET api/values/5
+        // GET api/values/{userId}
         [HttpGet("{userId}")]
         public async Task<IEnumerable<RecipeModel>> Get(string userId)
         {
             var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
-
-            var converted = recipes?.Select(s => s.GenerateExternalRecipe());
-
-            return converted;
+            return recipes?.Select(s => s.GenerateExternalRecipe());
         }
-        
-        // GET api/values/5/123
+
+        // GET api/values/{userId}/{recipeId}
         [HttpGet("{userId}/{recipeId}")]
-        public async Task<RecipeModel> Get(string userId, long recipeId)
+        public async Task<RecipeModel> Get(string userId, string recipeId)
         {
             var recipe = await RecipeService.RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
-
-            var converted = recipe.GenerateExternalRecipe();
-
-            return converted;
+            return recipe?.GenerateExternalRecipe();
         }
 
-        // POST api/values
+        // POST api/values/{userId}
         [HttpPost("{userId}")]
         public async Task<IActionResult> Post(string userId, RecipeModel value)
         {
@@ -71,58 +63,41 @@ namespace RecipeAPI.Controllers
 
             if (value.UserId != userId)
             {
-                Logger.LogWarning($"Recipe had userid of {value.UserId} and it was posted to {userId}");
+                Logger.LogWarning($"Recipe had userId of {value.UserId} and it was posted to {userId}");
                 return new BadRequestResult();
             }
 
             try
             {
                 var result = await RecipeService.SaveRecipe(new Recipe(value)).ConfigureAwait(false);
-                if (result)
-                {
-                    return new OkResult();
-                }
-                else
-                {
-                    Logger.LogWarning($"Failed to save the recipe into Dynamo for some reason.");
-                    return new BadRequestResult();
-                }
+                return result ? new OkResult() : new BadRequestResult();
             }
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning restore CA1031
             {
                 return new BadRequestResult();
             }
-
         }
 
-        // PUT api/values/5
+        // PUT api/values/{userId}/{recipeId}
         [HttpPut("{userId}/{recipeId}")]
         public async Task<IActionResult> Put(string userId, string recipeId, RecipeModel value)
         {
             var converted = new Recipe(value);
-            if (converted.EntityId == default(long)) converted.EntityId = Convert.ToInt64(recipeId, NumberFormatInfo.InvariantInfo);
+            if (string.IsNullOrWhiteSpace(converted.Id)) converted.Id = recipeId;
             if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
 
             var result = await RecipeService.SaveRecipe(converted).ConfigureAwait(false);
-
-            if (result)
-                return new AcceptedResult();
-
-            return new BadRequestResult();
+            return result ? new AcceptedResult() : new BadRequestResult();
         }
 
-        // DELETE api/values/5/1223
+        // DELETE api/values/{userId}/{recipeId}
         [HttpDelete("{userId}/{recipeId}")]
-        public async Task<IActionResult> Delete(string userId, long recipeId)
+        public async Task<IActionResult> Delete(string userId, string recipeId)
         {
             var result = await RecipeService.DeleteRecipe(userId, recipeId).ConfigureAwait(false);
-
-            if (result)
-                return new OkResult();
-
-            return new BadRequestResult();
+            return result ? new OkResult() : new BadRequestResult();
         }
     }
 }
