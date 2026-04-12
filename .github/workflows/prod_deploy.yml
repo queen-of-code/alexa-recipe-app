@@ -35,7 +35,6 @@ jobs:
           service: recipe-api
           region: us-central1
           image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/recipe-docker/recipeapi:${{ github.sha }}
-          service_account: recipe-app-backend@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           env_vars: |
             GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
           flags: --remove-secrets=GOOGLE_APPLICATION_CREDENTIALS --service-account=recipe-app-backend@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
@@ -99,5 +98,7 @@ jobs:
         env:
           RecipeEnv: Production
           CLOUD_RUN_API_URL: ${{ secrets.CLOUD_RUN_API_URL }}
-          FIREBASE_TEST_USER_TOKEN: ${{ secrets.FIREBASE_TEST_USER_TOKEN }}
+          FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          FIREBASE_TEST_EMAIL: ${{ secrets.FIREBASE_TEST_EMAIL }}
+          FIREBASE_TEST_PASSWORD: ${{ secrets.FIREBASE_TEST_PASSWORD }}
         run: dotnet test --no-restore --no-build --configuration Release --verbosity normal RecipeApp/RecipeApp.sln --filter Category=Integration

@@ -33,50 +33,50 @@ namespace RecipeAPI.TestInt
 
         // Gets a Firebase ID token for the test user.
         // - Local: uses the Auth Emulator REST API (no real credentials needed).
-        // - Production/QA: expects a pre-issued token in FIREBASE_TEST_USER_TOKEN env var.
+        // - Production/QA: signs in via Firebase REST API using FIREBASE_TEST_EMAIL,
+        //   FIREBASE_TEST_PASSWORD, and FIREBASE_API_KEY env vars.
         private async Task<string> GetTestTokenAsync()
         {
-            if (!string.Equals(TestEnvironment, "local", StringComparison.OrdinalIgnoreCase))
-            {
-                var token = Environment.GetEnvironmentVariable("FIREBASE_TEST_USER_TOKEN");
-                if (string.IsNullOrEmpty(token))
-                    throw new InvalidOperationException("FIREBASE_TEST_USER_TOKEN env var must be set for non-local integration tests.");
-                return token;
-            }
+            string host, apiKey, email, password;
 
-            // Firebase Auth Emulator: sign in (or create) a test user and get an ID token.
-            const string emulatorHost = "http://localhost:9099";
-            const string email = "integration-test@example.com";
-            const string password = "test-password-123";
+            if (string.Equals(TestEnvironment, "local", StringComparison.OrdinalIgnoreCase))
+            {
+                host = "http://localhost:9099";
+                apiKey = "fake-api-key";
+                email = "integration-test@example.com";
+                password = "test-password-123";
+            }
+            else
+            {
+                apiKey = Environment.GetEnvironmentVariable("FIREBASE_API_KEY")
+                    ?? throw new InvalidOperationException("FIREBASE_API_KEY env var must be set for non-local integration tests.");
+                email = Environment.GetEnvironmentVariable("FIREBASE_TEST_EMAIL")
+                    ?? throw new InvalidOperationException("FIREBASE_TEST_EMAIL env var must be set for non-local integration tests.");
+                password = Environment.GetEnvironmentVariable("FIREBASE_TEST_PASSWORD")
+                    ?? throw new InvalidOperationException("FIREBASE_TEST_PASSWORD env var must be set for non-local integration tests.");
+                host = "https://identitytoolkit.googleapis.com";
+            }
 
             using var http = new HttpClient();
 
-            // Try to sign in first.
-            var signInPayload = JsonSerializer.Serialize(new
-            {
-                email,
-                password,
-                returnSecureToken = true
-            });
-
+            var signInPayload = JsonSerializer.Serialize(new { email, password, returnSecureToken = true });
             var signInRes = await http.PostAsync(
-                $"{emulatorHost}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=fake-api-key",
+                $"{host}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={apiKey}",
                 new StringContent(signInPayload, Encoding.UTF8, "application/json"));
 
-            if (!signInRes.IsSuccessStatusCode)
+            if (!signInRes.IsSuccessStatusCode && string.Equals(TestEnvironment, "local", StringComparison.OrdinalIgnoreCase))
             {
-                // User doesn't exist yet — create them.
-                var signUpPayload = JsonSerializer.Serialize(new
-                {
-                    email,
-                    password,
-                    returnSecureToken = true
-                });
+                // Emulator only: create the user if it doesn't exist yet.
+                var signUpPayload = JsonSerializer.Serialize(new { email, password, returnSecureToken = true });
                 var signUpRes = await http.PostAsync(
-                    $"{emulatorHost}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-api-key",
+                    $"{host}/identitytoolkit.googleapis.com/v1/accounts:signUp?key={apiKey}",
                     new StringContent(signUpPayload, Encoding.UTF8, "application/json"));
                 signUpRes.EnsureSuccessStatusCode();
                 signInRes = signUpRes;
+            }
+            else
+            {
+                signInRes.EnsureSuccessStatusCode();
             }
 
             var json = await signInRes.Content.ReadAsStringAsync();
