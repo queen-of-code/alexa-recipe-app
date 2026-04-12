@@ -50,8 +50,9 @@ namespace RecipeAPI.Auth
 
                 return AuthenticateResult.Success(ticket);
             }
-            catch (FirebaseAuthException ex)
+            catch (Exception ex)
             {
+                Logger.LogError(ex, "Firebase token verification failed: {Message}", ex.Message);
                 return AuthenticateResult.Fail(ex.Message);
             }
         }
