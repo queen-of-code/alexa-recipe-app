@@ -1,152 +1,86 @@
-# Resets `aidlc_work:*` labels when a linked issue's Project (v2) Status field changes.
-# Secret: AIDLC_PROJECT_PAT — classic PAT with `repo` + `project` (and `read:org` if needed).
-# Repository Variables: AIDLC_PROJECT_NUMBER (required for projects_v2_item path), optional AIDLC_ORG, AIDLC_STATUS_FIELD_NAME (default Status).
-# If `projects_v2_item` does not fire in your setup, use Actions "Run workflow" with issue number + status.
+# AIDLC: reset aidlc_work:* labels when Project Status changes (template)
+#
+# Copy into your application repository. AI-DLC is a skills library — this workflow
+# is documentation-as-code; enable it where you track Features on GitHub Projects v2.
+#
+# Requires labels: aidlc_work:unstarted, aidlc_work:in_progress (create in repo Settings).
+#
+# - workflow_dispatch: manual reset for one issue (always works with GITHUB_TOKEN).
+# - projects_v2_item: fires when a project item is edited; tries to set unstarted on
+#   linked Issues. Org projects may need a PAT with project scope (secrets.AIDLC_PROJECT_PAT).
 
 name: AIDLC project label sync
 
 on:
-  projects_v2_item:
-    types: [edited]
   workflow_dispatch:
     inputs:
       issue_number:
-        description: Issue number in this repository (manual test)
+        description: Issue number to mark aidlc_work:unstarted (and remove in_progress)
         required: true
         type: string
-      status_name:
-        description: Current Status value (e.g. Plan, Idea, Won't do)
-        required: true
-        type: string
+
+  projects_v2_item:
+    types: [edited]
 
 permissions:
   contents: read
   issues: write
 
 jobs:
-  sync:
+  manual-reset:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - name: Reset aidlc_work labels on issue
         env:
-          AIDLC_ORG: ${{ vars.AIDLC_ORG }}
-          AIDLC_PROJECT_NUMBER: ${{ vars.AIDLC_PROJECT_NUMBER }}
-          AIDLC_STATUS_FIELD_NAME: ${{ vars.AIDLC_STATUS_FIELD_NAME }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ISSUE="${{ github.event.inputs.issue_number }}"
+          REPO="${{ github.repository }}"
+          gh issue edit "$ISSUE" --repo "$REPO" --remove-label "aidlc_work:in_progress" 2>/dev/null || true
+          gh issue edit "$ISSUE" --repo "$REPO" --add-label "aidlc_work:unstarted"
+
+  on-project-item-edited:
+    if: github.event_name == 'projects_v2_item'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set aidlc_work:unstarted on linked Issue (non-terminal moves)
+        uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.AIDLC_PROJECT_PAT }}
+          # For org-linked Projects v2, set repo secret AIDLC_PROJECT_PAT with project+issues scope and use it here instead of github.token.
+          github-token: ${{ github.token }}
           script: |
-            const core = require('@actions/core');
-
-            const orgVar = (process.env.AIDLC_ORG || '').trim();
-            const owner = orgVar || context.repo.owner;
+            const item = context.payload.projects_v2_item;
+            if (!item) {
+              core.info("No projects_v2_item in payload; skip.");
+              return;
+            }
+            const content = item.content;
+            if (!content || content.type !== "Issue") {
+              core.info("Project item is not linked to an Issue; skip.");
+              return;
+            }
+            const issue_number = content.number;
+            const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const repoFull = `${owner}/${repo}`;
-            const projectNumber = parseInt(process.env.AIDLC_PROJECT_NUMBER || '', 10);
-            const statusFieldName = process.env.AIDLC_STATUS_FIELD_NAME || 'Status';
-            const aidlcLabels = ['aidlc_work:unstarted', 'aidlc_work:in_progress'];
 
-            function isNoCron(name) {
-              if (!name) return false;
-              const n = name.trim();
-              if (n === 'Idea' || n === 'Done') return true;
-              return /^Won[\u2019']t do$/i.test(n);
-            }
+            // Optional: skip terminal Status values if present on payload (field names vary by project).
+            // If your project uses a "Status" single-select, inspect item.field_value or changes — extend here.
 
-            async function removeAidlcLabels(issueNumber) {
-              for (const name of aidlcLabels) {
-                try {
-                  await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNumber, name });
-                } catch (e) {
-                  if (e.status !== 404) throw e;
-                }
-              }
-            }
-
-            async function addUnstarted(issueNumber) {
-              await github.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: issueNumber,
-                labels: ['aidlc_work:unstarted'],
-              });
-            }
-
-            let issueNumber;
-            let statusName;
-
-            if (context.eventName === 'workflow_dispatch') {
-              issueNumber = parseInt(context.payload.inputs.issue_number, 10);
-              statusName = context.payload.inputs.status_name;
-              if (!Number.isFinite(issueNumber)) {
-                core.setFailed('issue_number must be a number.');
-                return;
-              }
-            } else {
-              if (!Number.isFinite(projectNumber)) {
-                core.warning('Set repository Variable AIDLC_PROJECT_NUMBER (from the project URL). Skipping.');
-                return;
-              }
-
-              const pv2 = context.payload.projects_v2_item;
-              const changes = context.payload.changes;
-              if (!pv2 || pv2.content_type !== 'Issue') {
-                core.info('Skip: not an issue item.');
-                return;
-              }
-              if (changes && changes.field_value && changes.field_value.field_type !== 'single_select') {
-                core.info('Skip: not a single-select field change.');
-                return;
-              }
-
-              const itemId = pv2.node_id;
-              const q = `query($id: ID!) {
-                node(id: $id) {
-                  ... on ProjectV2Item {
-                    fieldValues(first: 40) {
-                      nodes {
-                        ... on ProjectV2ItemFieldSingleSelectValue {
-                          name
-                          field { ... on ProjectV2SingleSelectField { name } }
-                        }
-                      }
-                    }
-                    content {
-                      ... on Issue {
-                        number
-                        repository { nameWithOwner }
-                      }
-                    }
-                  }
-                }
-              }`;
-
-              const data = await github.graphql(q, { id: itemId });
-              const node = data.node;
-              if (!node || !node.content) {
-                core.warning('Could not resolve issue from project item.');
-                return;
-              }
-              if (node.content.repository.nameWithOwner !== repoFull) {
-                core.info(`Skip: issue is in ${node.content.repository.nameWithOwner}, not this repo.`);
-                return;
-              }
-              issueNumber = node.content.number;
-
-              for (const fv of node.fieldValues.nodes) {
-                if (fv.field && fv.field.name === statusFieldName) {
-                  statusName = fv.name;
-                  break;
-                }
-              }
-              if (!statusName) {
-                core.info(`Skip: no "${statusFieldName}" value on item.`);
-                return;
-              }
-            }
-
-            core.info(`Issue #${issueNumber}, Status="${statusName}" — syncing aidlc_work labels.`);
-
-            await removeAidlcLabels(issueNumber);
-            if (!isNoCron(statusName)) {
-              await addUnstarted(issueNumber);
-            }
+            await github.rest.issues.removeLabel({
+              owner,
+              repo,
+              issue_number,
+              name: "aidlc_work:in_progress",
+            }).catch(() => {});
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: ["aidlc_work:unstarted"],
+            }).catch((e) => {
+              if (e.status === 422) core.info("Label already present; ok.");
+              else core.warning(e.message);
+            });
+            core.info(`Set aidlc_work:unstarted on #${issue_number}`);
