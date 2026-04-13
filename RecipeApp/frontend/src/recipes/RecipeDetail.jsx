@@ -14,41 +14,58 @@ export default function RecipeDetail() {
     if (!user) return
     getRecipe(user.uid, recipeId)
       .then(setRecipe)
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
   }, [user, recipeId])
 
   async function handleDelete() {
-    if (!confirm('Delete this recipe?')) return
+    if (!window.confirm('Delete this recipe?')) return
     await deleteRecipe(user.uid, recipeId)
     navigate('/recipes')
   }
 
-  if (error) return <p style={{ color: 'red' }}>{error}</p>
-  if (!recipe) return <p>Loading...</p>
+  if (error) return <p className="container mt-4 text-danger">{error}</p>
+  if (!recipe) return <p className="container mt-4">Loading...</p>
 
   return (
-    <div style={{ maxWidth: 700, margin: '40px auto', padding: 24 }}>
-      <Link to="/recipes">← Back</Link>
-      <h1>{recipe.name}</h1>
-      <p>
-        {recipe.servings} servings · {recipe.prepTimeMins} min prep · {recipe.cookTimeMins} min cook
-      </p>
-      <h2>Ingredients</h2>
-      <ul>
-        {recipe.ingredients?.map((ing, i) => <li key={i}>{ing}</li>)}
-      </ul>
-      <h2>Steps</h2>
-      <ol>
-        {recipe.steps?.map((step, i) => <li key={i}>{step}</li>)}
-      </ol>
-      <div style={{ marginTop: 24 }}>
-        <Link to={`/recipes/${recipeId}/edit`}>
-          <button>Edit</button>
-        </Link>
-        <button onClick={handleDelete} style={{ marginLeft: 8, color: 'red' }}>
-          Delete
-        </button>
-      </div>
+    <div className="container mt-4">
+      <dl className="dl-horizontal">
+        <dt>Name</dt>
+        <dd>{recipe.name}</dd>
+
+        <dt>Prep Time (mins)</dt>
+        <dd>{recipe.prepTime}</dd>
+
+        <dt>Servings</dt>
+        <dd>{recipe.servings}</dd>
+
+        <dt>Cook Time (mins)</dt>
+        <dd>{recipe.cookTime}</dd>
+
+        <dt>Ingredients</dt>
+        <dd>
+          <ul>
+            {recipe.ingredients?.map((ing, i) => (
+              <li key={i}>{ing}</li>
+            ))}
+          </ul>
+        </dd>
+
+        <dt>Steps</dt>
+        <dd>
+          <ol>
+            {recipe.steps?.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </dd>
+      </dl>
+
+      <Link to={`/recipes/${recipeId}/edit`} className="btn btn-primary mr-2">
+        Edit
+      </Link>
+      <Link to="/recipes" className="btn btn-secondary">
+        Back to List
+      </Link>
     </div>
   )
 }
