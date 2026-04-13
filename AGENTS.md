@@ -6,15 +6,15 @@ Humans: use [README.md](README.md) and [docs/aidlc-showcase.md](docs/aidlc-showc
 
 - **AIDLC:** [docs/AIDLC.md](docs/AIDLC.md) — do not invent process outside this document.
 
-## Skill library (ground in awesome-cursor)
+## Skill library (awesome-cursor)
 
-- **Bundle format & IDs:** [awesome-cursor/docs/SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)
-- **Install plugin (Claude Code):** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md)
-- **Naming:** Plugin skills are namespaced, e.g. `awesome-cursor-skills:architecture`. That is **not** a Claude Code **subagent** (subagents live under `.claude/agents/` per Anthropic docs).
+- **Upstream catalog & format:** [awesome-cursor/docs/SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)
+- **Submodule (source for updates):** [vendor/awesome-cursor](vendor/awesome-cursor) — sync into `.claude/skills/` with [`scripts/sync-awesome-cursor-skills.sh`](scripts/sync-awesome-cursor-skills.sh)
+- **Optional global install:** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md) — not required for this repo; prefer **vendored** paths under `.claude/skills/<bundle>/SKILL.md`.
 
-## Phase orchestrators (this repo)
+## Phase orchestrators (vendored from awesome-cursor)
 
-Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** — implemented as Claude Code **skills** (Agent Skills standard):
+Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** — implemented as Claude Code **skills** (Agent Skills standard). Canonical definitions live in **awesome-cursor**; this repo **copies** them into `.claude/skills/` for idempotent tutorials.
 
 | Skill | Path |
 |-------|------|
@@ -23,7 +23,7 @@ Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** 
 | `/review` | [.claude/skills/review/SKILL.md](.claude/skills/review/SKILL.md) |
 | `/ship` | [.claude/skills/ship/SKILL.md](.claude/skills/ship/SKILL.md) |
 
-These **orchestrate** AIDLC phases and **pull in** awesome-cursor **library** skills (`architecture`, `frontend-web`, `backend-saas`, `testing`, `git-workflow`, `spec-management`, …) and **library agent bundles** (`agent-product-manager`, `agent-grounding-reviewer`, `agent-reviewer`, …) as **nested** playbooks — users are not expected to run those slashes separately for the default tutorial path.
+These **orchestrate** AIDLC phases and **pull in** **library** skills (`architecture`, `frontend-web`, `backend-saas`, `testing`, `git-workflow`, `spec-management`, …) and **agent bundles** (e.g. `agent-product-manager`, `agent-grounding-reviewer`, `agent-reviewer`, `agent-security-review`, `agent-devops-review`, …) as **nested** playbooks — users are not expected to run those slashes separately for the default tutorial path.
 
 **Cursor:** discovers `.claude/skills/` per [Cursor Agent Skills](https://www.cursor.com/docs/context/skills) compatibility paths; same `/` names. Optional rule: [.cursor/rules/aidlc.md](.cursor/rules/aidlc.md).
 
@@ -44,7 +44,9 @@ The **`/review`** phase skill is not a shallow CI check. It must drive evaluatio
 2. **Practical testing sufficiency** — right behaviors proven, not coverage theater.
 3. **DevOps** — rollout, deploy path, rollback, monitoring/observability vs Tech Spec.
 4. **Frontend/UI** — when applicable: **`frontend-web`** skill plus **browser MCP** (e.g. Cursor IDE browser tools) to exercise flows, usability, and design compliance; if MCP unavailable, ship a manual browser script and mark gaps.
-5. **Security** — lightweight pass: no leaked secrets; auth/access matches Tech Spec; dependency pinning (`package-lock`, NuGet, Docker `FROM`); obvious XSS/SQLi/config issues; use **`backend-saas`** for API/auth patterns (see skill §5 checklist).
+5. **Security** — lightweight pass via **`agent-security-review`** (and **`backend-saas`** for API/auth patterns); see [.claude/skills/agent-security-review/SKILL.md](.claude/skills/agent-security-review/SKILL.md).
+
+**DevOps dimension** is covered by **`agent-devops-review`**: [.claude/skills/agent-devops-review/SKILL.md](.claude/skills/agent-devops-review/SKILL.md).
 
 **Delivery:** each dimension should post feedback **as GitHub PR comments** (e.g. `### AIDLC Review — Tech Spec`, …) when tools allow; mirror in `feature/<slug>/review-report.md`.
 

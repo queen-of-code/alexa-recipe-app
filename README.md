@@ -7,7 +7,13 @@
 
 ## AI-DLC tutorial showcase
 
-This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AIDLC)**. The process definition is **[docs/AIDLC.md](docs/AIDLC.md)** (canonical copy for this repo). Reusable skill/agent content comes from **[awesome-cursor](https://github.com/queen-of-code/awesome-cursor)** ([skills index](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)).
+This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AIDLC)**. The process definition is **[docs/AIDLC.md](docs/AIDLC.md)** (canonical copy for this repo).
+
+**Bundled skills:** [`.claude/skills/`](.claude/skills/) contains a **committed copy** of the phase orchestrators (`plan`, `build`, `review`, `ship`) plus library skills and agent bundles from **[awesome-cursor](https://github.com/queen-of-code/awesome-cursor)** ([skills index](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)), so a plain `git clone` has everything needed. The upstream source is tracked as a **git submodule** at [`vendor/awesome-cursor`](vendor/awesome-cursor) (branch `feature/aidlc-cursor-orchestrators` until merged to `main`).
+
+**Refresh vendored skills** (maintainers): `git submodule update --init --remote vendor/awesome-cursor` then `./scripts/sync-awesome-cursor-skills.sh`, then commit changes under `.claude/skills/`.
+
+**Clone with submodule:** `git clone --recurse-submodules <url>` (or after clone: `git submodule update --init --recursive`).
 
 **What to run:** phase orchestrator skills **`/plan`**, **`/build`**, **`/review`**, **`/ship`** (Claude Code / Cursor Agent — see [.claude/skills/](.claude/skills/)). Those skills pull in domain skills (frontend, backend, testing, …) for you.
 

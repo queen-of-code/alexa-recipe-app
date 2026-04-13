@@ -1,29 +1,33 @@
 ---
 name: build
 description: AIDLC Build + Test orchestrator (TDD). Implements after Tech Spec approval; also re-enters to triage /review PR comments — fix or reply+resolve. Not for spec-only work.
-disable-model-invocation: true
-argument-hint: "[feature-slug]"
+type: skill
+aidlc_phases: [build, test]
+tags: [aidlc, orchestrator, build, test, tdd]
+requires: []
+author: Melissa Benua
+created_at: 2026-04-12
+updated_at: 2026-04-12
 ---
 
 # /build — Build + Test (phase orchestrator)
 
 You are the **phase orchestrator** for AIDLC **Build** and **Test** as **one practice**: tests are written **with** the code (TDD), not in a separate follow-up stage. Canonical definitions:
 
-- **AIDLC:** [docs/AIDLC.md — Build & Test](../../docs/AIDLC.md) (Build phase, Test phase, V-model).
+- **AIDLC:** `docs/AIDLC.md` at the repository root — Build phase, Test phase, V-model.
 
-**awesome-cursor** library: [SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md). Plugin install: [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md).
+**Library skills:** [docs/SKILLS.md](../../docs/SKILLS.md). Resolve bundles from your install or `.claude/skills/<bundle>/` in the workspace.
 
 ## Inputs
 
 - Approved `feature/<slug>/tech-spec.md`
-- Stack: `RecipeApp/` — .NET API + frontend (see repo `README.md` for ports and docker-compose).
-- **If re-entering after `/review`:** open **PR** with **AIDLC Review — …** comments (see below).
+- **If re-entering after `/review`:** open **PR** with **AIDLC Review — …** comments (see `/review` orchestrator).
 
 ## Orchestration — initial implementation
 
-1. **Branch:** use a descriptive branch (e.g. `feature/<slug>-short-name`). Apply **`git-workflow`** library skill for commit/branch conventions.
+1. **Branch:** use a descriptive branch (e.g. `feature/<slug>-short-name`). Apply **`git-workflow`** ([skills/git-workflow/SKILL.md](../git-workflow/SKILL.md)).
 2. **Implement by Tech Spec section:** in PR/commits, reference which section you are implementing (AIDLC Build guidance).
-3. **TDD:** for each unit of work, prefer **test first or alongside** — frontend (`npm test` / vitest as applicable), backend (`dotnet test`). Load **`testing`** skill; use **`frontend-web`** for UI, **`backend-saas`** for API layers.
+3. **TDD:** for each unit of work, prefer **test first or alongside** — frontend (`npm test` / vitest as applicable), backend (`dotnet test`, etc.). Load **`testing`** ([skills/testing/SKILL.md](../testing/SKILL.md)); use **`frontend-web`** for UI, **`backend-saas`** for API layers.
 4. **Do not** “finish code” and add tests only at the end unless the Tech Spec explicitly sequenced an exception.
 5. **CI:** ensure local build/test pass before handoff to `/review`.
 

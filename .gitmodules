@@ -1,0 +1,4 @@
+[submodule "vendor/awesome-cursor"]
+	path = vendor/awesome-cursor
+	url = https://github.com/queen-of-code/awesome-cursor.git
+	branch = feature/aidlc-cursor-orchestrators
