@@ -46,4 +46,8 @@ The **`/review`** phase skill is not a shallow CI check. It must drive evaluatio
 4. **Frontend/UI** — when applicable: **`frontend-web`** skill plus **browser MCP** (e.g. Cursor IDE browser tools) to exercise flows, usability, and design compliance; if MCP unavailable, ship a manual browser script and mark gaps.
 5. **Security** — lightweight pass: no leaked secrets; auth/access matches Tech Spec; dependency pinning (`package-lock`, NuGet, Docker `FROM`); obvious XSS/SQLi/config issues; use **`backend-saas`** for API/auth patterns (see skill §5 checklist).
 
+**Delivery:** each dimension should post feedback **as GitHub PR comments** (e.g. `### AIDLC Review — Tech Spec`, …) when tools allow; mirror in `feature/<slug>/review-report.md`.
+
+**Handoff to `/build`:** after review comments exist, **`/build`** triages each thread — **fix** valid findings or **reply** with why invalid, then **resolve** the conversation. See [.claude/skills/build/SKILL.md](.claude/skills/build/SKILL.md) (“Review feedback loop”).
+
 See [.claude/skills/review/SKILL.md](.claude/skills/review/SKILL.md).

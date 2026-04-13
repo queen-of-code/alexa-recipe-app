@@ -16,8 +16,8 @@ You primarily invoke **four phase skills** — they **orchestrate** the lifecycl
 | Slash | AIDLC phases | Artifacts |
 |-------|----------------|-----------|
 | `/plan` | Plan + Design | `feature/<slug>/product-spec.md`, `tech-spec.md` |
-| `/build` | Build + Test (TDD) | Code + tests on a branch |
-| `/review` | Test gate + Review | `review-report.md`: Tech Spec trace, test sufficiency, DevOps, (if UI) browser UX, **security pass** (secrets, auth, pins) |
+| `/build` | Build + Test (TDD) | Code + tests; **after review**, triage PR comments (fix or reply + resolve) |
+| `/review` | Test gate + Review | **PR comments** per dimension (spec, tests, DevOps, UI, security) + `review-report.md`; then hand off to `/build` for triage |
 | `/ship` | Validate + Learn | `validate-scorecard.md`, `learn-notes.md` |
 
 Skill definitions: [.claude/skills/](../.claude/skills/) (same paths work in Cursor via [compatibility loading](https://www.cursor.com/docs/context/skills)).

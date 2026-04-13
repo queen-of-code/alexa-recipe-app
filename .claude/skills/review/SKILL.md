@@ -1,6 +1,6 @@
 ---
 name: review
-description: AIDLC Test gate + Review — Tech Spec, tests, DevOps, browser UX (if UI), and security pass (secrets, auth, dependency pinning). Run after Build+Test; not a substitute for human sign-off.
+description: AIDLC Test gate + Review — runs five review passes (spec, tests, DevOps, UI, security); post feedback as GitHub PR comments; then hand off to /build for triage. Not a substitute for human sign-off.
 disable-model-invocation: true
 argument-hint: "[feature-slug]"
 ---
@@ -13,70 +13,85 @@ You are the **phase orchestrator** for the **human gate after Build+Test** (“a
 
 **awesome-cursor** library: apply **`agent-reviewer`**, **`testing`**, **`architecture`**, **`frontend-web`**, **`backend-saas`**, **`git-workflow`** as needed. Index: [SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md).
 
-There is **no separate “security” skill bundle** in the library today — run a dedicated **security reviewer pass** inside this orchestrator using the checklist in **§5** and **`backend-saas`** for auth/API patterns.
+There is **no separate “security” skill bundle** in the library today — run the **security reviewer pass** inside this orchestrator using **§5** and **`backend-saas`** for auth/API patterns.
+
+## How this phase interacts with GitHub (preferred)
+
+Each review **dimension** below behaves like a **dedicated reviewer**: it should produce **actionable feedback**.
+
+**Preferred delivery:** post feedback **directly on the open PR** as **GitHub comments** so the **build** phase can respond in-thread.
+
+- **One top-level PR comment per dimension** (§1–§5), using a clear header, e.g. `### AIDLC Review — Tech Spec`, `### AIDLC Review — Testing`, … so threads stay scannable.
+- Within each comment, list findings with **blocking** vs **advisory** and file references.
+- If **GitHub MCP**, **`gh pr comment`**, or the GitHub API is **not** available: write the same content into **`feature/<slug>/review-report.md`** and tell the user to paste or post manually — but **prefer automation** when tools exist.
+
+Also write or update **`feature/<slug>/review-report.md`** as a **durable mirror** of the same content (copy from posted comments or generate once and post from the file).
 
 ## Inputs
 
 - `feature/<slug>/tech-spec.md` (approved) — **source of truth for “done”**
-- Current branch / PR; **CI** (GitHub Actions) results
+- **Open PR** URL or number for this branch; **CI** (GitHub Actions) results
 - Diff vs `master` — infer whether **frontend/UI**, **API**, **infra**, or mixed
 
-## Orchestration — five review dimensions
+## Orchestration — five review dimensions (each posts feedback)
 
-Produce **`feature/<slug>/review-report.md`** with **five numbered sections** below (use those headings). Each section: **findings**, **blocking vs advisory**, **what to fix or verify**.
+Run each pass **as if** a separate reviewer; consolidate only at the end for the summary comment if useful.
 
 ### 1. Tech Spec compliance
 
 - Walk **`tech-spec.md`**: acceptance criteria, API/UI contracts, data model, out-of-scope boundaries.
 - For each major item: **where in code/tests/PR** it is satisfied; **gaps** if not.
 - Apply **`agent-reviewer`** behavior for spec-to-implementation trace and regression risk.
+- **Output:** PR comment `AIDLC Review — Tech Spec` + section in `review-report.md`.
 
 ### 2. Practical testing sufficiency
 
 - Apply **`testing`** skill: judge whether tests prove **the right behaviors** — not coverage percentage as a vanity metric.
 - Distinguish **unit** vs **integration** appropriateness; flag missing cases that the Tech Spec implies.
 - **CI must be green**; flag flakiness or skipped tests.
-- Human gate: document whether **test sufficiency** is acceptable before treating Review as complete.
+- **Output:** PR comment `AIDLC Review — Testing` + section in `review-report.md`.
 
 ### 3. DevOps — rollout, deploy, monitoring
 
 - Apply **`architecture`** + this repo’s **delivery surface**: `docker-compose`, `Dockerfile`, `.github/workflows`, Cloud Run / deployment docs in README or Tech Spec.
-- Evaluate: **safe rollout** (ordering, migrations, config, secrets), **rollback path**, **feature flags** if specified.
-- **Monitoring & operations:** logs, health checks, metrics, alerts — per Tech Spec or flag **explicit deferrals** as advisory gaps.
-- If the feature changes runtime behavior without observability hooks the Spec requires — **blocking** finding.
+- Evaluate: **safe rollout**, **rollback path**, **feature flags** if specified; **monitoring** (logs, health, metrics, alerts) per Tech Spec.
+- **Output:** PR comment `AIDLC Review — DevOps` + section in `review-report.md`.
 
 ### 4. Frontend / UX — when the change touches UI
 
-**Trigger this section** if the PR touches **Website**, **Razor**, **wwwroot**, **CSS/JS**, **SPA/frontend** under `RecipeApp`, or **Tech Spec** lists UI acceptance criteria.
+**Trigger** if the PR touches **Website**, **Razor**, **wwwroot**, **CSS/JS**, **SPA/frontend** under `RecipeApp`, or **Tech Spec** lists UI acceptance criteria.
 
 1. Apply **`frontend-web`** for code patterns, accessibility basics, and alignment with stated UI/UX in the Tech Spec.
-2. **Browser or computer-use validation (required when UI is in scope):**
-   - If **Cursor IDE browser MCP** tools are available (e.g. `browser_navigate`, `browser_snapshot`, screenshots) **or** another **browser / computer-use MCP** (e.g. Chrome DevTools MCP): **exercise the feature in a real browser** — happy path, obvious edge cases, layout/visual checks, and **usability** (clarity, errors, empty states as relevant).
-   - Compare observed behavior to **Tech Spec** and **design compliance** (copy, hierarchy, components — as specified in Spec; call out deviations with severity).
-   - Capture **evidence** in the review report (snapshot refs, screenshot paths, or short descriptions of what was exercised).
-3. If **no** browser MCP or automated UI runner is available in this session: write a **step-by-step manual browser test script** for the human, and mark **“Browser MCP validation not run — manual execution required”** as **advisory** (or **blocking** if the team policy says UI must be agent-verified before merge).
+2. **Browser / computer-use validation** when UI is in scope: use browser MCP if available; capture evidence; compare to Tech Spec for **usability and design compliance**.
+3. If no browser MCP: **manual browser test script** in the comment; mark validation pending.
+4. **Output:** PR comment `AIDLC Review — Frontend/UX` + section in `review-report.md`. Omit only if UI is out of scope — state **N/A** in a short comment or skip with explanation on the PR.
 
 ### 5. Security review (lightweight, obvious issues)
 
-Act as a **security reviewer**: not a full pentest — catch **obvious** mistakes before merge. Use **`backend-saas`** for API/auth patterns; scan the **PR diff** and touched files.
+Act as a **security reviewer**; use **`backend-saas`** for API/auth patterns; scan **PR diff** and touched files.
 
 | Area | What to check |
 |------|----------------|
-| **Secrets & credentials** | No committed API keys, tokens, private keys, or live connection strings; no `sk-`, AWS key patterns, or `BEGIN OPENSSH/PRIVATE KEY` in source; `.env` / secrets files not tracked unless documented as safe placeholders; no passwords in config checked in. |
-| **Auth & access** | Handlers/endpoints match **authorization** expectations in Tech Spec; no missing `[Authorize]` / policy where required; **IDOR**-style risks (user A accessing user B’s resources); public endpoints intentional. |
-| **Dependencies** | **npm:** `package-lock.json` committed when `package.json` changes; avoid unbounded `latest` where team pins; **NuGet:** sensible version constraints; **Docker:** `FROM` images pinned or tagged (not bare `latest` without justification). |
-| **Web & data** | Razor/HTML: unsafe raw HTML where user content flows; SQL/command construction — parameterization; CSRF for state-changing forms where applicable to this stack. |
-| **Config & debug** | Debug/verbose modes not enabled for production paths; no default admin credentials introduced. |
+| **Secrets & credentials** | No committed keys/tokens/PEM/live connection strings; patterns like `sk-`, AWS keys; `.env` misuse. |
+| **Auth & access** | Authorization vs Tech Spec; missing `[Authorize]` / policy; **IDOR** risks; intentional public endpoints. |
+| **Dependencies** | **npm** lockfile with package changes; avoid careless `latest`; **NuGet**; **Docker** `FROM` pinning. |
+| **Web & data** | Unsafe HTML, parameterization, CSRF where applicable. |
+| **Config & debug** | Debug in prod, default creds. |
 
-Flag each finding **blocking** (must fix) vs **advisory** (follow-up). If uncertain, mark **advisory** and recommend human or SAST review.
+**Output:** PR comment `AIDLC Review — Security` + section in `review-report.md`. For docs-only PRs, state **N/A** briefly.
 
-## Synthesis
+## After posting — handoff to **build**
 
-- Consolidate **blocking** items (must fix before ship) vs **advisory**.
-- PR clarity: does the description list what changed and what reviewers should focus on?
+When review feedback is on the PR (and mirrored in `review-report.md`), **stop** — the next step is **`/build`** (build orchestrator), **not** another full review pass.
+
+The **build** orchestrator **triages** each review thread: fix valid issues or **reply** with why a finding is invalid and **resolve** the conversation. See [.claude/skills/build/SKILL.md](../build/SKILL.md) § “Review feedback loop”.
+
+## Synthesis (optional)
+
+- One short **summary** PR comment listing **blocking** vs **advisory** counts if helpful.
 
 ## Outputs
 
-- **`feature/<slug>/review-report.md`** with sections **1–5** (omit **§4** only if UI is genuinely out of scope per Tech Spec — state why; **§5** runs for every review unless the PR is docs-only — state if N/A).
-- Optional: duplicate summary as PR comment.
-- **Human sign-off** still required per AIDLC — this report feeds the human reviewer, not replaces them.
+- **GitHub PR comments** for §1–§5 (preferred).
+- **`feature/<slug>/review-report.md`** mirror.
+- **Human sign-off** still required per AIDLC.

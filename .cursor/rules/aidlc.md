@@ -12,4 +12,4 @@ alwaysApply: false
 
 When the user is doing feature work, prefer walking them through the phase skills in order unless they explicitly skip a gate.
 
-**`/review`** must be substantive: Tech Spec compliance, testing sufficiency, DevOps/monitoring, browser-based UI validation when frontend changes, and a **security** pass (secrets, auth/access, dependency pinning, obvious web/config issues).
+**`/review`** posts **GitHub PR comments** per review dimension (mirror in `review-report.md`). **`/build`** then **triages** each thread: fix valid items, or **reply** why invalid and **resolve**. Same dimensions: spec, tests, DevOps, UI/browser, security.
