@@ -6,20 +6,22 @@
 
 **Problem:** People accumulate many saved recipes. When they have specific ingredients on hand, scanning the full list to see which recipes use those ingredients is slow and error-prone—especially when they are not at a keyboard.
 
-**Audience:** Authenticated users with a personal recipe library. The **primary experience** is **agentic / conversational** (e.g. at home: “I have tomatoes and cheddar cheese—what recipes do I have that use those?”). A **web or other UI** may reuse the same capability later, but the Product outcome is defined around that ask-and-answer loop.
+**Audience:** Authenticated users with a personal recipe library. We need **two first-class surfaces**: (1) **agentic / conversational** (e.g. at home: “I have tomatoes and cheddar—what recipes use those?”) and (2) the **web app recipe list**, where users can **search or filter by ingredients** without voice. Both should hit the same backend behavior so AND/OR rules stay consistent.
 
 ## Customer outcomes
 
-- Users can **ask in natural language** (via an agent or voice path) which of **their** recipes match ingredients they care about, and get a **trustworthy list** (or a clear “none” answer).
-- The **backend** is responsible for interpreting the request—including accepting a **raw string** from the client or agent and doing the **heavy lifting** (normalization, tokenization, and application of matching rules)—so clients stay thin.
-- Matching supports **compound intent**: not only single ingredients, but **logical combinations**—at minimum **AND** and **OR** (e.g. “tomatoes AND cheddar” vs “basil OR oregano”). Exact grammar and nesting are specified in Design/Tech so behavior is testable and consistent.
-- Responses stay **fast enough** for conversational use with typical personal library sizes (dozens to hundreds of recipes per user).
+- On the **recipe list** page, users can **narrow recipes by ingredients** (search and/or filter—exact control pattern is Design) with an explicit **AND vs OR** choice. For **simplicity**, Product expects something like a **dropdown** (AND / OR) next to the ingredient input rather than a full boolean expression builder in v1.
+- Users can **ask in natural language** via an **agent or voice path** which of **their** recipes match ingredients they care about, and get the same **trustworthy list** (or a clear “none” answer) as the web flow.
+- The **backend** does the **heavy lifting** on matching (normalization, applying rules)—including accepting a **raw string** when that keeps clients thin—while the **web UI** sends ingredient text plus the selected **AND/OR** mode so behavior stays predictable without requiring users to type “AND” in the box.
+- Matching supports **compound intent**: at minimum **AND** and **OR** across multiple ingredients. Nested boolean expressions beyond “one mode for this query” are optional in v1 if Tech can keep them testable; otherwise defer.
+- Responses stay **fast enough** for both web and conversational use with typical personal library sizes (dozens to hundreds of recipes per user).
 
 ## Success criteria (for Validate / scorecard)
 
-- A **documented API** (or equivalent contract) returns recipe matches for a signed-in user given ingredient-related input, with **explicit, testable rules** for AND/OR (and any nesting we support).
-- **Automated tests** prove those rules end-to-end at the appropriate layer (unit and/or API tests per Tech Spec).
-- The **primary user story** (natural-language style ask → list of matching recipes) is demonstrable in Validate (agent or scripted client acceptable if voice is not automated).
+- **Web:** From the recipe list, a user can enter ingredient criteria, choose **AND or OR**, and see a **filtered list** (or empty state). **Automated frontend tests** cover the control and that results reflect the selected mode (per Tech Spec mocking strategy).
+- **API:** A **documented contract** returns recipe matches for a signed-in user given ingredient input and **AND/OR** semantics, with **explicit, testable rules**.
+- **Backend tests** prove matching rules at the appropriate layer (unit and/or API per Tech Spec).
+- **Agent / voice story** is demonstrable in Validate (agent or scripted client acceptable if voice is not automated).
 
 ## Out of scope
 
@@ -37,9 +39,10 @@
 
 ## Decisions (resolved in Plan)
 
-- **Primary surface:** Agentic / conversational (“what can I make with X?”), not a web-only filter as the definition of done.
-- **Backend-heavy:** Sending a **raw string** (or agent-produced text) to the **backend** for interpretation and matching is **in scope** and preferred over pushing all parsing to thin clients.
-- **Boolean logic:** Support **AND** and **OR** (and **nested** combinations if we can specify and test them clearly). How this is represented in code (e.g. expression trees in .NET) is a Design detail, not a Product requirement by name.
+- **Surfaces:** **Web recipe list** ingredient search/filter **and** **agentic / conversational** use are both **in scope** for this Feature—not optional add-ons.
+- **Web AND/OR UX:** Use a simple control (e.g. **dropdown**: AND / OR) next to ingredient input for v1; avoid a full expression UI unless we expand later.
+- **Backend-heavy:** Server applies matching rules; web sends **ingredients + mode**; agent path may still send **raw natural language** for the backend to interpret—Tech Spec unifies these so rules do not diverge.
+- **Boolean logic:** At minimum **AND** and **OR** across multiple ingredients; nested expressions are optional in v1. Internal representation (e.g. expression trees in .NET) is a Design detail.
 
 ## Human approval
 
