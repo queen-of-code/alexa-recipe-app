@@ -46,4 +46,4 @@
 
 ## Human approval
 
-- [ ] Product owner approved before Design
+- [x] Product owner approved before Design

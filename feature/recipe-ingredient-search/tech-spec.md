@@ -105,4 +105,4 @@ Server parses `query` into terms + combine mode per Tech rules below. If both `q
 
 ## Human approval
 
-- [ ] Engineering approved before Build
+- [x] Engineering approved before Build
