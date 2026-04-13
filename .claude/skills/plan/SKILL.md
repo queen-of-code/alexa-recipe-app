@@ -16,7 +16,7 @@ You are the **phase orchestrator** for AIDLC **Plan** and **Design**. Ground tru
 
 - **AIDLC (canonical):** `docs/AIDLC.md` at the repository root (each project vendors or links this; e.g. [alexa-recipe-app](https://github.com/queen-of-code/alexa-recipe-app) tutorial uses `docs/AIDLC.md`).
 
-**Library skills and agents** live in this repo under `skills/` — resolve them from your install (global awesome-cursor / plugin) or from a vendored copy (e.g. `.claude/skills/<bundle>/` in the consumer repo). Catalog: [docs/SKILLS.md](../../docs/SKILLS.md).
+**Library skills and agents** live in this repo under `skills/` — resolve them from your install (global AI-DLC / Claude plugin `ai-dlc-skills`) or from a vendored copy (e.g. `.claude/skills/<bundle>/` in the consumer repo). Catalog: [docs/SKILLS.md](../../docs/SKILLS.md).
 
 ## Before you start
 

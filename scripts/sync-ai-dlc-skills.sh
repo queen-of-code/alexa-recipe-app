@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Idempotent: copy allowlisted awesome-cursor skill bundles into .claude/skills/
-# Prerequisites: git submodule at vendor/awesome-cursor (see README).
+# Idempotent: copy allowlisted AI-DLC skill bundles into .claude/skills/
+# Prerequisites: git submodule at vendor/ai-dlc (see README).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="${REPO_ROOT}/vendor/awesome-cursor/skills"
+SRC="${REPO_ROOT}/vendor/ai-dlc/skills"
 DST="${REPO_ROOT}/.claude/skills"
 
-if [[ ! -d "${REPO_ROOT}/vendor/awesome-cursor/skills" ]]; then
-  echo "error: vendor/awesome-cursor/skills missing. Run: git submodule update --init --recursive" >&2
+if [[ ! -d "${REPO_ROOT}/vendor/ai-dlc/skills" ]]; then
+  echo "error: vendor/ai-dlc/skills missing. Run: git submodule update --init --recursive" >&2
   exit 1
 fi
 

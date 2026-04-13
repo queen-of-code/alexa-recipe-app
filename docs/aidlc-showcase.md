@@ -4,10 +4,10 @@ This repository demonstrates **Melissa’s AIDLC** (AI Development Lifecycle) on
 
 - **[AIDLC.md](AIDLC.md)** — phases, gates, V-model, nomenclature.
 
-**Reusable prompts and agents** come from **awesome-cursor**:
+**Reusable prompts and agents** come from **[AI-DLC](https://github.com/queen-of-code/AI-DLC)** (public skills library):
 
-- **[docs/SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)** — skill vs agent bundles, `aidlc_phases`, tool contracts.
-- **Install** the skills plugin: [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md) (Claude Code). For Cursor, use the [awesome-cursor install](https://github.com/queen-of-code/awesome-cursor/blob/main/README.md) script or clone the repo; skills land under `~/.cursor/skills/`.
+- **[docs/SKILLS.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/SKILLS.md)** — skill vs agent bundles, `aidlc_phases`, tool contracts.
+- **Install** the skills plugin: [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/CLAUDE-MARKETPLACE.md) (Claude Code). For Cursor, use the [AI-DLC install](https://github.com/queen-of-code/AI-DLC/blob/main/README.md) script or rely on vendored `.claude/skills/` in this repo; global install lands skills under `~/.cursor/skills/`.
 
 ## What you run (phase orchestrators)
 
@@ -26,7 +26,7 @@ Skill definitions: [.claude/skills/](../.claude/skills/) (same paths work in Cur
 
 | Tool | Phase skills | Library skills |
 |------|----------------|----------------|
-| **Claude Code** | Project `.claude/skills/{plan,build,review,ship}/` → `/plan` etc. | Plugin: `awesome-cursor-skills:<skill-id>` per marketplace install |
+| **Claude Code** | Project `.claude/skills/{plan,build,review,ship}/` → `/plan` etc. | Plugin: `ai-dlc-skills:<skill-id>` per marketplace install |
 | **Cursor** | Loads `.claude/skills/` automatically; type `/` in Agent chat | Same Agent Skills standard; global `~/.cursor/skills/` + plugin paths |
 
 Vendor references: [Claude Code — Skills](https://code.claude.com/docs/en/skills), [Cursor — Agent Skills](https://www.cursor.com/docs/context/skills).
@@ -37,8 +37,8 @@ Use a Project board as your queue: [github-queue.md](github-queue.md).
 
 ## Terminology (do not conflate)
 
-- **Phase skill** (`/plan`, …) — this repo’s orchestrator prompts.
-- **awesome-cursor library skill** — e.g. `testing`, `architecture` (bundle in Melissa’s library).
-- **awesome-cursor `type: agent` bundle** — composed library roles (e.g. `agent-reviewer`); not the same as “Cursor Agent” or Claude **subagents**.
+- **Phase skill** (`/plan`, …) — this repo’s orchestrator prompts (vendored from AI-DLC).
+- **AI-DLC library skill** — e.g. `testing`, `architecture` (bundle in the public library).
+- **AI-DLC `type: agent` bundle** — composed library roles (e.g. `agent-reviewer`); not the same as “Cursor Agent” or Claude **subagents**.
 
 See [AGENTS.md](../AGENTS.md) for assistant-facing detail.

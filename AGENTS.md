@@ -6,15 +6,15 @@ Humans: use [README.md](README.md) and [docs/aidlc-showcase.md](docs/aidlc-showc
 
 - **AIDLC:** [docs/AIDLC.md](docs/AIDLC.md) — do not invent process outside this document.
 
-## Skill library (awesome-cursor)
+## Skill library (AI-DLC)
 
-- **Upstream catalog & format:** [awesome-cursor/docs/SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)
-- **Submodule (source for updates):** [vendor/awesome-cursor](vendor/awesome-cursor) — sync into `.claude/skills/` with [`scripts/sync-awesome-cursor-skills.sh`](scripts/sync-awesome-cursor-skills.sh)
-- **Optional global install:** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md) — not required for this repo; prefer **vendored** paths under `.claude/skills/<bundle>/SKILL.md`.
+- **Upstream catalog & format:** [AI-DLC/docs/SKILLS.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/SKILLS.md)
+- **Submodule (source for updates):** [vendor/ai-dlc](vendor/ai-dlc) — sync into `.claude/skills/` with [`scripts/sync-ai-dlc-skills.sh`](scripts/sync-ai-dlc-skills.sh)
+- **Optional global install:** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/CLAUDE-MARKETPLACE.md) — not required for this repo; prefer **vendored** paths under `.claude/skills/<bundle>/SKILL.md`.
 
-## Phase orchestrators (vendored from awesome-cursor)
+## Phase orchestrators (vendored from AI-DLC)
 
-Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** — implemented as Claude Code **skills** (Agent Skills standard). Canonical definitions live in **awesome-cursor**; this repo **copies** them into `.claude/skills/` for idempotent tutorials.
+Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** — implemented as Claude Code **skills** (Agent Skills standard). Canonical definitions live in **[AI-DLC](https://github.com/queen-of-code/AI-DLC)**; this repo **copies** them into `.claude/skills/` for idempotent tutorials.
 
 | Skill | Path |
 |-------|------|
