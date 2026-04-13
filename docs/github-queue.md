@@ -20,7 +20,7 @@ Align **one** Status field (or columns) with development phases. **Build** and *
 | Validate | Validate + Learn |
 | Done | Closed after human sign-off |
 
-Canonical phase definitions: [AIDLC.md](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md).
+Canonical phase definitions: [AIDLC.md](AIDLC.md).
 
 ## Workflow
 

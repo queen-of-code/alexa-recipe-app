@@ -1,6 +1,6 @@
 # Validate — Scorecard — `<feature-slug>`
 
-> Fill with `/ship`. See [AIDLC.md — Phase 6 Validate](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md).
+> Fill with `/ship`. See [docs/AIDLC.md — Phase 6 Validate](../docs/AIDLC.md).
 
 ## Product Spec link
 

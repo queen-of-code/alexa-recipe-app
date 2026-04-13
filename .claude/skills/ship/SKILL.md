@@ -9,7 +9,7 @@ argument-hint: "[feature-slug]"
 
 You are the **phase orchestrator** for AIDLC **Validate** and **Learn**. Full definition:
 
-- **AIDLC:** [AIDLC.md — Validate (+ Learn)](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md) (scorecard, 90% default threshold, Learn outputs).
+- **AIDLC:** [docs/AIDLC.md — Validate (+ Learn)](../../docs/AIDLC.md) (scorecard, 90% default threshold, Learn outputs).
 
 **awesome-cursor:** use **`architecture`**, **`git-workflow`**, and **`agent-learn`** bundle if available in your install for ADR/doc capture — see [SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md) and `skills/agents/` in the repo.
 

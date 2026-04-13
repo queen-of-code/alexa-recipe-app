@@ -2,9 +2,9 @@
 
 Humans: use [README.md](README.md) and [docs/aidlc-showcase.md](docs/aidlc-showcase.md). This file is for AI assistants.
 
-## Canonical process (ground in external-brain)
+## Canonical process (this repo)
 
-- **AIDLC:** [AIDLC.md](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md) — clone [external-brain](https://github.com/queen-of-code/external-brain) locally if you need offline search; do not invent process outside this doc.
+- **AIDLC:** [docs/AIDLC.md](docs/AIDLC.md) — do not invent process outside this document.
 
 ## Skill library (ground in awesome-cursor)
 

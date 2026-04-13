@@ -7,7 +7,7 @@
 
 ## AI-DLC tutorial showcase
 
-This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AIDLC)**. Process definitions and gates are **not duplicated here** — they live in **[external-brain/AIDLC.md](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md)**. Reusable skill/agent content comes from **[awesome-cursor](https://github.com/queen-of-code/awesome-cursor)** ([skills index](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)).
+This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AIDLC)**. The process definition is **[docs/AIDLC.md](docs/AIDLC.md)** (canonical copy for this repo). Reusable skill/agent content comes from **[awesome-cursor](https://github.com/queen-of-code/awesome-cursor)** ([skills index](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)).
 
 **What to run:** phase orchestrator skills **`/plan`**, **`/build`**, **`/review`**, **`/ship`** (Claude Code / Cursor Agent — see [.claude/skills/](.claude/skills/)). Those skills pull in domain skills (frontend, backend, testing, …) for you.
 

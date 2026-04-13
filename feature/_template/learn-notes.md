@@ -1,6 +1,6 @@
 # Learn — `<feature-slug>`
 
-> Fill with `/ship` on success. See [AIDLC.md — Learn](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md).
+> Fill with `/ship` on success. See [docs/AIDLC.md — Learn](../docs/AIDLC.md).
 
 ## ADRs added or updated
 

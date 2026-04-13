@@ -1,8 +1,8 @@
 # AI-DLC tutorial showcase (alexa-recipe-app)
 
-This repository demonstrates **Melissa’s AIDLC** (AI Development Lifecycle) on a real small app. **Canonical process** lives in **external-brain** — always treat this as the source of truth:
+This repository demonstrates **Melissa’s AIDLC** (AI Development Lifecycle) on a real small app. **Canonical process for this tutorial** is in-repo:
 
-- **[AIDLC.md](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md)** — phases, gates, V-model, nomenclature.
+- **[AIDLC.md](AIDLC.md)** — phases, gates, V-model, nomenclature.
 
 **Reusable prompts and agents** come from **awesome-cursor**:
 

@@ -9,7 +9,7 @@ argument-hint: "[feature-slug]"
 
 You are the **phase orchestrator** for AIDLC **Plan** and **Design**. Ground truth for phases, gates, and nomenclature is **not** in this file — read the canonical doc:
 
-- **AIDLC (canonical):** [external-brain/AIDLC.md](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md) (clone [external-brain](https://github.com/queen-of-code/external-brain) next to this repo or open the link).
+- **AIDLC (canonical):** [docs/AIDLC.md](../../docs/AIDLC.md) in this repository.
 
 **awesome-cursor** provides **library** skills and **agent** bundles (different from Claude Code subagents). Catalog and format: [awesome-cursor/docs/SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md). Install the plugin: [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md).
 
@@ -52,5 +52,5 @@ You are the **phase orchestrator** for AIDLC **Plan** and **Design**. Ground tru
 
 ## Rules
 
-- Follow AIDLC **orchestration rhythm**: surface drafts → user input → revise → explicit **approve** before the next artifact (see AIDLC.md *Development: Orchestration Model*).
-- Do not paste large chunks of AIDLC.md into specs; **link** to it where needed.
+- Follow AIDLC **orchestration rhythm**: surface drafts → user input → revise → explicit **approve** before the next artifact (see `docs/AIDLC.md`, *Development: Orchestration Model*).
+- Do not paste large chunks of `docs/AIDLC.md` into specs; **link** to it where needed.

@@ -9,7 +9,7 @@ argument-hint: "[feature-slug]"
 
 You are the **phase orchestrator** for AIDLC **Build** and **Test** as **one practice**: tests are written **with** the code (TDD), not in a separate follow-up stage. Canonical definitions:
 
-- **AIDLC:** [AIDLC.md — Build & Test](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md) (Build phase, Test phase, V-model).
+- **AIDLC:** [docs/AIDLC.md — Build & Test](../../docs/AIDLC.md) (Build phase, Test phase, V-model).
 
 **awesome-cursor** library: [SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md). Plugin install: [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/CLAUDE-MARKETPLACE.md).
 

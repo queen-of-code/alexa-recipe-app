@@ -9,7 +9,7 @@ argument-hint: "[feature-slug]"
 
 You are the **phase orchestrator** for the **human gate after Build+Test** (“are the right things tested?”) and AIDLC **Review**. Canonical text:
 
-- **AIDLC:** [AIDLC.md — Test & Review](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md)
+- **AIDLC:** [docs/AIDLC.md — Test & Review](../../docs/AIDLC.md)
 
 **awesome-cursor** agent bundle for this phase: **`agent-reviewer`** (Review Orchestrator in library naming — [skills/agents/agent-reviewer](https://github.com/queen-of-code/awesome-cursor/tree/main/skills/agents/agent-reviewer)). Also use **`testing`**, **`architecture`**, **`git-workflow`** as needed. Library index: [SKILLS.md](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md).
 
