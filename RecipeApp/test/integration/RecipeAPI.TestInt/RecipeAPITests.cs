@@ -19,8 +19,6 @@ namespace RecipeAPI.TestInt
         public override string QaBaseUrl => Environment.GetEnvironmentVariable("CLOUD_RUN_API_URL") ?? LocalBaseUrl;
         public override string ProdUrl => Environment.GetEnvironmentVariable("CLOUD_RUN_API_URL") ?? LocalBaseUrl;
 
-        private const string TestUserId = "integration-test-user";
-
         private readonly string ApiURL;
         private readonly string TestEnvironment;
 
@@ -85,10 +83,32 @@ namespace RecipeAPI.TestInt
             return node!["idToken"]!.GetValue<string>();
         }
 
+        /// <summary>
+        /// Firebase UID from the ID token (<c>sub</c> claim). Must match route <c>userId</c> after EnsureRouteUserMatchesToken.
+        /// </summary>
+        private static string GetUidFromIdToken(string idToken)
+        {
+            var parts = idToken.Split('.');
+            if (parts.Length != 3)
+                throw new InvalidOperationException("Expected a Firebase ID token (JWT with 3 segments).");
+            var payload = parts[1];
+            var padded = payload.Replace('-', '+').Replace('_', '/');
+            switch (padded.Length % 4)
+            {
+                case 2: padded += "=="; break;
+                case 3: padded += "="; break;
+            }
+
+            var json = Encoding.UTF8.GetString(Convert.FromBase64String(padded));
+            var node = JsonNode.Parse(json);
+            return node!["sub"]!.GetValue<string>();
+        }
+
         [Fact]
         public async Task TestSave_and_Delete()
         {
             var token = await GetTestTokenAsync();
+            var userId = GetUidFromIdToken(token);
             var testRecipeId = "integration-test-" + Guid.NewGuid().ToString("N")[..8];
 
             using var client = new HttpClient();
@@ -100,19 +120,19 @@ namespace RecipeAPI.TestInt
                 {
                     Name = "TESTINGTHIS",
                     RecipeId = testRecipeId,
-                    UserId = TestUserId
+                    UserId = userId
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(testRecipe), Encoding.UTF8, "application/json");
-                var result = await client.PutAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}", content);
+                var result = await client.PutAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}", content);
                 Assert.True(result.IsSuccessStatusCode, $"Received HTTP Status Code of {result.StatusCode}");
 
-                var delete = await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}");
+                var delete = await client.DeleteAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
                 Assert.True(delete.IsSuccessStatusCode, $"Delete received HTTP Status Code of {delete.StatusCode}");
             }
             finally
             {
-                await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}");
+                await client.DeleteAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
             }
         }
 
@@ -120,6 +140,7 @@ namespace RecipeAPI.TestInt
         public async Task SaveRecipe_WithSteps_PersistsAndRetrievesSteps()
         {
             var token = await GetTestTokenAsync();
+            var userId = GetUidFromIdToken(token);
             var testRecipeId = "integration-steps-" + Guid.NewGuid().ToString("N")[..8];
 
             using var client = new HttpClient();
@@ -134,7 +155,7 @@ namespace RecipeAPI.TestInt
                     PrepTimeMins = 15,
                     CookTimeMins = 30,
                     Servings = 4,
-                    UserId = TestUserId
+                    UserId = userId
                 };
                 testRecipe.Steps.AddRange(new[] {
                     "Preheat oven to 350°F",
@@ -146,10 +167,10 @@ namespace RecipeAPI.TestInt
                 testRecipe.Ingredients.AddRange(new[] { "Flour", "Sugar", "Eggs" });
 
                 var saveContent = new StringContent(JsonSerializer.Serialize(testRecipe), Encoding.UTF8, "application/json");
-                var saveResult = await client.PutAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}", saveContent);
+                var saveResult = await client.PutAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}", saveContent);
                 Assert.True(saveResult.IsSuccessStatusCode, $"Save failed with HTTP Status Code {saveResult.StatusCode}");
 
-                var getResult = await client.GetAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}");
+                var getResult = await client.GetAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
                 Assert.True(getResult.IsSuccessStatusCode, $"Get failed with HTTP Status Code {getResult.StatusCode}");
 
                 var responseJson = await getResult.Content.ReadAsStringAsync();
@@ -164,7 +185,7 @@ namespace RecipeAPI.TestInt
             }
             finally
             {
-                await client.DeleteAsync($"{ApiURL}/api/values/{TestUserId}/{testRecipeId}");
+                await client.DeleteAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
             }
         }
     }

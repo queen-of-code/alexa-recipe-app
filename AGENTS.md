@@ -9,7 +9,8 @@ Humans: use [README.md](README.md) and [docs/aidlc-showcase.md](docs/aidlc-showc
 ## Skill library (AI-DLC)
 
 - **Upstream catalog & format:** [AI-DLC/docs/SKILLS.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/SKILLS.md)
-- **Submodule:** [`.claude/deps/ai-dlc`](.claude/deps/ai-dlc) — branch `main`. [`.claude/skills`](.claude/skills) is a **symlink** to `deps/ai-dlc/skills` (no second copy committed).
+- **Submodule:** [`.claude/deps/ai-dlc`](.claude/deps/ai-dlc) — track branch **`main`**. Canonical bundles live under **`skills/`** in that repo. [`.claude/skills`](.claude/skills) is a **symlink** to `deps/ai-dlc/skills` (same tree as `skills/` — no second copy committed in *this* repo).
+- **AI-DLC plugin mirror (FYI):** Upstream also ships a **copied** bundle at `plugins/ai-dlc-skills/skills/` for the Claude Code marketplace (symlinks break in the plugin cache). It is kept in sync with `skills/` via `scripts/sync-plugin-skills.sh` in AI-DLC. **Do not** point this repo’s symlink at the plugin path — use `deps/ai-dlc/skills` as today.
 - **Optional global install:** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/CLAUDE-MARKETPLACE.md) — not required here; paths under `.claude/skills/<bundle>/SKILL.md` resolve through the symlink.
 
 ## Phase orchestrators (from AI-DLC submodule)
