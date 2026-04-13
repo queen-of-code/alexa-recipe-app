@@ -134,15 +134,16 @@ The AIDLC uses tracker-agnostic terminology that maps to common equivalents in J
 **Outputs:**
 - Implemented code per Tech Spec
 - Unit tests written alongside implementation (TDD preferred -- write the test first, implement to pass)
-- A PR or branch per Unit (or per Feature, depending on scope)
+- **An open pull request** per Unit (or one PR per Feature if the team groups Units that way) — **not** “branch only.” The PR is the handoff surface for Test and Review.
 
 **Key constraints for Build agents:**
 - Implement to the spec. Do not scope-creep, redesign, or make architectural decisions not covered by the Tech Spec. If the spec is ambiguous, surface it -- do not assume.
 - Follow existing patterns in the codebase. Prefer reuse over invention.
 - A Unit is not complete until its unit tests pass locally.
 - Agents should explicitly reference which Tech Spec section they are implementing, so Review can trace coverage.
+- **Open the PR before Build is done:** work may start on a branch, but **Build completes only when the PR exists** and **CI is green** (required status checks passing on the latest commit). Fix or iterate until green.
 
-**Success criteria leaving this phase:** Each Unit is implemented per its Tech Spec, with passing local unit tests, and a PR ready for the Test phase.
+**Success criteria leaving this phase:** Each Unit is implemented per its Tech Spec with unit tests; **an open PR** exists with **green CI**, and the work is ready for the Test phase to run against that PR.
 
 **Human gate:** None between Build and Test. This is the one automated transition in the AIDLC.
 
@@ -157,7 +158,7 @@ The AIDLC uses tracker-agnostic terminology that maps to common equivalents in J
 **Who does the work:** Test Orchestrator Agent, coordinating Test Specialist Agents. The Build→Test transition is a TDD cycle -- agents iterate between writing/refining tests and fixing implementation until all tests pass.
 
 **Inputs:**
-- Implemented code and unit tests from Build
+- **Open PR(s) from Build** with **green CI**, containing the implemented code and unit tests
 - Tech Specs (for integration test design -- what service boundaries and contracts need end-to-end validation?)
 - Existing test suites (for context on patterns, existing coverage, and avoiding duplication)
 
