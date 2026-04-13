@@ -113,4 +113,26 @@ describe('RecipeList', () => {
     })
     await waitFor(() => expect(screen.getByText('Filtered')).toBeInTheDocument())
   })
+
+  it('shows hint when Search submitted with empty ingredients', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockResolvedValue([])
+    renderPage()
+    await waitFor(() => expect(screen.getByText('My Recipes')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /^search$/i }))
+    expect(
+      screen.getByText(/enter at least one ingredient/i),
+    ).toBeInTheDocument()
+  })
+
+  it('shows dismissible error banner without hiding the table', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockRejectedValue(new Error('Network down'))
+    renderPage()
+    await waitFor(() => expect(screen.getByText(/network down/i)).toBeInTheDocument())
+    expect(screen.getByText('My Recipes')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^dismiss$/i }))
+    expect(screen.queryByText(/network down/i)).not.toBeInTheDocument()
+  })
 })

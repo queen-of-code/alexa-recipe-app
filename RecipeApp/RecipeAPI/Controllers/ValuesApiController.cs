@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
@@ -38,24 +39,36 @@ namespace RecipeAPI.Controllers
 
         // GET api/values/{userId}
         [HttpGet("{userId}")]
-        public async Task<IEnumerable<RecipeModel>> Get(string userId)
+        public async Task<IActionResult> Get(string userId)
         {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
             var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
-            return recipes?.Select(s => s.GenerateExternalRecipe());
+            return Ok(recipes?.Select(s => s.GenerateExternalRecipe()));
         }
 
         // GET api/values/{userId}/{recipeId}
         [HttpGet("{userId}/{recipeId}")]
-        public async Task<RecipeModel> Get(string userId, string recipeId)
+        public async Task<IActionResult> Get(string userId, string recipeId)
         {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
             var recipe = await RecipeService.RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
-            return recipe?.GenerateExternalRecipe();
+            return Ok(recipe?.GenerateExternalRecipe());
         }
 
         // POST api/values/{userId}/search
         [HttpPost("{userId}/search")]
         public async Task<IActionResult> Search(string userId, [FromBody] RecipeSearchRequest body)
         {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
             if (!TryResolveSearch(body, out var segmentGroups))
                 return new BadRequestResult();
 
@@ -68,6 +81,10 @@ namespace RecipeAPI.Controllers
         [HttpPost("{userId}")]
         public async Task<IActionResult> Post(string userId, RecipeModel value)
         {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
             if (value == null)
             {
                 Logger.LogWarning("Failed to parse a recipe on post.");
@@ -97,6 +114,10 @@ namespace RecipeAPI.Controllers
         [HttpPut("{userId}/{recipeId}")]
         public async Task<IActionResult> Put(string userId, string recipeId, RecipeModel value)
         {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
             var converted = new Recipe(value);
             if (string.IsNullOrWhiteSpace(converted.Id)) converted.Id = recipeId;
             if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
@@ -109,6 +130,10 @@ namespace RecipeAPI.Controllers
         [HttpDelete("{userId}/{recipeId}")]
         public async Task<IActionResult> Delete(string userId, string recipeId)
         {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
             var result = await RecipeService.DeleteRecipe(userId, recipeId).ConfigureAwait(false);
             return result ? new OkResult() : new BadRequestResult();
         }
@@ -157,6 +182,25 @@ namespace RecipeAPI.Controllers
             return combine.Equals("Any", StringComparison.OrdinalIgnoreCase)
                 ? IngredientCombineMode.Any
                 : IngredientCombineMode.All;
+        }
+
+        /// <summary>
+        /// Ensures the route <paramref name="routeUserId"/> matches the Firebase UID in the bearer token.
+        /// </summary>
+        /// <returns><c>null</c> if authorized; otherwise a <see cref="ForbidResult"/>.</returns>
+        private IActionResult EnsureRouteUserMatchesToken(string routeUserId)
+        {
+            var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(uid) || !string.Equals(uid, routeUserId, StringComparison.Ordinal))
+            {
+                Logger.LogWarning(
+                    "Route userId {RouteUserId} does not match token uid {Uid}",
+                    routeUserId,
+                    uid);
+                return Forbid();
+            }
+
+            return null;
         }
     }
 }

@@ -101,7 +101,7 @@ Server parses `query` into terms + combine mode per Tech rules below. If both `q
 | **NL ambiguity** (“chicken or fish and rice”) | v1 heuristic + tests; document limitations; structured API remains source of truth for exact AND/OR. |
 | **Performance** | Full scan of all recipes per search; acceptable for MVP; add profiling note if user libraries grow large. |
 | **Substring false positives** (“fish” vs “fishing”) | Accept for v1 or add word-boundary heuristic later; call out in Review if product wants tighter matching. |
-| **userId vs token** | Existing API pattern passes `userId` in URL; align with current app. **Review:** consider enforcing `userId == JWT subject` for defense in depth (follow-up if not already enforced). |
+| **userId vs token** | `ValuesApiController` enforces route `userId` == Firebase UID (`ClaimTypes.NameIdentifier`); mismatch returns **403 Forbidden**. |
 
 ## Human approval
 

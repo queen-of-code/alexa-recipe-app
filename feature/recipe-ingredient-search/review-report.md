@@ -12,9 +12,9 @@
 | In-memory filter after `GetAllRecipesForUser` | Met | Matches MVP approach. |
 | OR-of-AND NL parsing | Met | `IngredientQueryParser` + `IngredientMatcher`. |
 | Recipe list UI: ingredients + AND/OR | Met | `RecipeList.jsx` + `searchRecipes`. |
-| Per-user data only | **Gap** | Tech Spec risk row: *userId vs token* — path `userId` is **not** validated against Firebase UID (see Security). |
+| Per-user data only | Met | Route `userId` must match JWT UID (`ValuesApiController.EnsureRouteUserMatchesToken`); unit tests for forbid path. |
 
-**Blocking:** Spec intent (“per-user data only”) is not fully satisfied until the API binds requests to the authenticated principal.
+**Build triage (post-review):** Addressed — see GitHub PR **### AIDLC Build — Review triage** comment.
 
 ---
 
@@ -27,9 +27,9 @@
 
 **Gaps (advisory unless noted)**
 
-- **Auth / access:** No automated test that rejects `userId` ≠ JWT subject (would document expected 403/401 once enforced).
+- **Auth / access:** `Get_UserId_Mismatch_Forbid`, `Search_UserId_Mismatch_Forbid` assert **403** (`ForbidResult`) when route UID ≠ claim.
 - **Controller NL:** Parser has tests; controller has one NL case — consider one more edge (e.g. comma-only `query`) if regressions are a concern.
-- **Frontend:** Vitest covers search wiring; no test for error recovery or empty submit.
+- **Frontend:** Vitest covers search wiring, empty-submit hint, and dismissible error banner.
 
 ---
 
@@ -46,20 +46,20 @@
 
 - Labeled ingredient field and Match control; Search / Clear; distinct empty copy for “no match” vs “no recipes yet.”
 
-**Findings**
+**Findings (post–build triage)**
 
-- **Blocking (UX):** On any `error` (including failed search), `RecipeList` returns **only** the error paragraph — user loses the form and table with **no in-page recovery** (must reload). Prefer inline error + keep layout.
-- **Advisory:** Submitting Search with **no** ingredient terms does nothing (no feedback).
+- **Resolved:** Dismissible `role="alert"` error banner; form and table remain visible.
+- **Resolved:** Empty submit shows `role="status"` hint under the ingredient field.
 
-**Browser MCP:** Not run in this pass; manual spot-check recommended after error-handling improvements.
+**Browser MCP:** Optional manual spot-check of the banner + hint still welcome.
 
 ---
 
 ## 5. Security (auth / access)
 
-**Blocking**
+**Blocking (resolved in build triage)**
 
-- **IDOR-style access:** Endpoints use `userId` from the URL while auth only verifies a valid Firebase JWT. There is no check that `userId` equals the token’s UID (`ClaimTypes.NameIdentifier` in `FirebaseAuthHandler`). An authenticated user could pass another user’s `userId` and read/search/modify their recipes. This pattern predates search but **search extends** the same surface area.
+- **IDOR:** `EnsureRouteUserMatchesToken` on all `userId`-scoped routes; `403` when route UID ≠ JWT UID. Covered by `Get_UserId_Mismatch_Forbid` and `Search_UserId_Mismatch_Forbid`.
 
 **Advisory**
 
@@ -72,6 +72,6 @@
 
 | Severity | Topic |
 |----------|--------|
-| **Blocking** | Bind `userId` route parameter to authenticated Firebase UID (or derive user id only from claims). |
-| **Blocking** | Recipe list: do not replace entire page with error-only view on search failure. |
-| **Advisory** | Empty search submit feedback; extra NL/controller tests; confirm CI runs on PR. |
+| **Resolved** | `userId` vs Firebase UID enforced (`403` on mismatch). |
+| **Resolved** | Inline error banner + dismiss; empty-search hint. |
+| **Advisory** | Confirm CI runs on PR (DevOps); optional extra NL edge tests. |
