@@ -1,0 +1,4 @@
+[submodule ".claude/deps/ai-dlc"]
+	path = .claude/deps/ai-dlc
+	url = https://github.com/queen-of-code/AI-DLC.git
+	branch = main
