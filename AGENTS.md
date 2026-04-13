@@ -9,12 +9,12 @@ Humans: use [README.md](README.md) and [docs/aidlc-showcase.md](docs/aidlc-showc
 ## Skill library (AI-DLC)
 
 - **Upstream catalog & format:** [AI-DLC/docs/SKILLS.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/SKILLS.md)
-- **Submodule (source for updates):** [vendor/ai-dlc](vendor/ai-dlc) — sync into `.claude/skills/` with [`scripts/sync-ai-dlc-skills.sh`](scripts/sync-ai-dlc-skills.sh)
-- **Optional global install:** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/CLAUDE-MARKETPLACE.md) — not required for this repo; prefer **vendored** paths under `.claude/skills/<bundle>/SKILL.md`.
+- **Submodule:** [`.claude/deps/ai-dlc`](.claude/deps/ai-dlc) — branch `main`. [`.claude/skills`](.claude/skills) is a **symlink** to `deps/ai-dlc/skills` (no second copy committed).
+- **Optional global install:** [CLAUDE-MARKETPLACE.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/CLAUDE-MARKETPLACE.md) — not required here; paths under `.claude/skills/<bundle>/SKILL.md` resolve through the symlink.
 
-## Phase orchestrators (vendored from AI-DLC)
+## Phase orchestrators (from AI-DLC submodule)
 
-Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** — implemented as Claude Code **skills** (Agent Skills standard). Canonical definitions live in **[AI-DLC](https://github.com/queen-of-code/AI-DLC)**; this repo **copies** them into `.claude/skills/` for idempotent tutorials.
+Primary user invocations: **`/plan`**, **`/build`**, **`/review`**, **`/ship`** — implemented as Claude Code **skills** (Agent Skills standard). Canonical definitions live in **[AI-DLC](https://github.com/queen-of-code/AI-DLC)**; this repo exposes them via **`.claude/skills`** → submodule (symlink), not a second committed copy.
 
 | Skill | Path |
 |-------|------|

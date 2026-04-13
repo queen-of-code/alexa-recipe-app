@@ -9,11 +9,11 @@
 
 This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AIDLC)**. The process definition is **[docs/AIDLC.md](docs/AIDLC.md)** (canonical copy for this repo).
 
-**Bundled skills:** [`.claude/skills/`](.claude/skills/) contains a **committed copy** of the phase orchestrators (`plan`, `build`, `review`, `ship`) plus library skills and agent bundles from **[AI-DLC](https://github.com/queen-of-code/AI-DLC)** ([skills index](https://github.com/queen-of-code/AI-DLC/blob/main/docs/SKILLS.md)), so a plain `git clone` has everything needed. The upstream source is tracked as a **git submodule** at [`vendor/ai-dlc`](vendor/ai-dlc) (branch `main`).
+**Skills (no duplicate copies in git):** the public library **[AI-DLC](https://github.com/queen-of-code/AI-DLC)** is a **git submodule** at [`.claude/deps/ai-dlc`](.claude/deps/ai-dlc) (branch `main`). [`.claude/skills`](.claude/skills) is a **symlink** to `deps/ai-dlc/skills` — Cursor and Claude Code resolve the same paths as a normal skills directory ([skills index](https://github.com/queen-of-code/AI-DLC/blob/main/docs/SKILLS.md)). Edit skills **only** in the AI-DLC repo, then bump the submodule pointer here.
 
-**Refresh vendored skills** (maintainers): `git submodule update --init --remote vendor/ai-dlc` then `./scripts/sync-ai-dlc-skills.sh`, then commit changes under `.claude/skills/`.
+**Clone with submodule:** `git clone --recurse-submodules <url>` (or after clone: `git submodule update --init --recursive`). If you skip this, `.claude/skills` is a broken symlink until the submodule exists.
 
-**Clone with submodule:** `git clone --recurse-submodules <url>` (or after clone: `git submodule update --init --recursive`).
+**Bump AI-DLC** (maintainers): `cd .claude/deps/ai-dlc && git fetch origin && git checkout main && git pull`, then in the recipe repo root `git add .claude/deps/ai-dlc` and commit the new submodule SHA.
 
 **What to run:** phase orchestrator skills **`/plan`**, **`/build`**, **`/review`**, **`/ship`** (Claude Code / Cursor Agent — see [.claude/skills/](.claude/skills/)). Those skills pull in domain skills (frontend, backend, testing, …) for you.
 
