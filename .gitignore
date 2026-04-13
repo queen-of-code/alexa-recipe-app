@@ -321,3 +321,6 @@ out/
 
 # macOS Finder metadata files
 .DS_Store
+
+# Claude Code nested worktrees (separate git checkouts)
+.claude/worktrees/

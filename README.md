@@ -5,6 +5,18 @@
 
 ---
 
+## AI-DLC tutorial showcase
+
+This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AIDLC)**. Process definitions and gates are **not duplicated here** — they live in **[external-brain/AIDLC.md](https://github.com/queen-of-code/external-brain/blob/main/AIDLC.md)**. Reusable skill/agent content comes from **[awesome-cursor](https://github.com/queen-of-code/awesome-cursor)** ([skills index](https://github.com/queen-of-code/awesome-cursor/blob/main/docs/SKILLS.md)).
+
+**What to run:** phase orchestrator skills **`/plan`**, **`/build`**, **`/review`**, **`/ship`** (Claude Code / Cursor Agent — see [.claude/skills/](.claude/skills/)). Those skills pull in domain skills (frontend, backend, testing, …) for you.
+
+**Docs:** [docs/aidlc-showcase.md](docs/aidlc-showcase.md) · [docs/github-queue.md](docs/github-queue.md) · [AGENTS.md](AGENTS.md) (for AI assistants only)
+
+**Git:** this repository’s default branch is **`master`** — open PRs against `master`, not `main`.
+
+---
+
 # Introduction
 
 This is a simple dotnet core demo project for standing up a website / API / Database using Docker containers and docker-compose for local development.
