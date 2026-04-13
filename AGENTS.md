@@ -44,5 +44,6 @@ The **`/review`** phase skill is not a shallow CI check. It must drive evaluatio
 2. **Practical testing sufficiency** — right behaviors proven, not coverage theater.
 3. **DevOps** — rollout, deploy path, rollback, monitoring/observability vs Tech Spec.
 4. **Frontend/UI** — when applicable: **`frontend-web`** skill plus **browser MCP** (e.g. Cursor IDE browser tools) to exercise flows, usability, and design compliance; if MCP unavailable, ship a manual browser script and mark gaps.
+5. **Security** — lightweight pass: no leaked secrets; auth/access matches Tech Spec; dependency pinning (`package-lock`, NuGet, Docker `FROM`); obvious XSS/SQLi/config issues; use **`backend-saas`** for API/auth patterns (see skill §5 checklist).
 
 See [.claude/skills/review/SKILL.md](.claude/skills/review/SKILL.md).

@@ -12,4 +12,6 @@
 
 - Browser MCP evidence or manual script link:
 
+## 5. Security (secrets, auth/access, dependencies, web/injection, config)
+
 ## Blocking vs advisory summary
