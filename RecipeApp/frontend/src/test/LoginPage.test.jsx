@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import LoginPage from '../auth/LoginPage'
 
 const mockNavigate = vi.fn()
+const mockUseAuth = vi.fn(() => null)
 
 vi.mock('../firebase', () => ({ auth: {} }))
 
@@ -20,7 +21,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 })
 
 vi.mock('../auth/AuthContext', () => ({
-  useAuth: () => ({ uid: 'test-uid', email: 'test@example.com' }),
+  useAuth: () => mockUseAuth(),
 }))
 
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
@@ -28,6 +29,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseAuth.mockReturnValue(null)
   })
 
   function renderPage() {
@@ -79,6 +81,8 @@ describe('LoginPage', () => {
 
   it('navigates to /recipes on successful login', async () => {
     signInWithEmailAndPassword.mockResolvedValue({ user: { uid: 'test-uid' } })
+    // Simulate useAuth returning a user after sign-in resolves
+    mockUseAuth.mockReturnValueOnce(null).mockReturnValue({ uid: 'test-uid', email: 'test@example.com' })
     renderPage()
 
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } })
@@ -86,7 +90,7 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/recipes')
+      expect(mockNavigate).toHaveBeenCalledWith('/recipes', { replace: true })
     })
   })
 

@@ -16,19 +16,19 @@ describe('HomePage', () => {
     )
   }
 
-  it('renders "HELLO AND WELCOME TO ALEXA RECIPE APP"', () => {
+  it('renders "Alexa Recipe App" heading', () => {
     renderPage()
-    expect(screen.getByText(/HELLO AND WELCOME TO ALEXA RECIPE APP/i)).toBeInTheDocument()
+    expect(screen.getByText(/Alexa Recipe App/i)).toBeInTheDocument()
   })
 
-  it('renders "Store and Retrieve Recipes" section', () => {
+  it('renders "Store & Retrieve Recipes" section', () => {
     renderPage()
-    expect(screen.getByText(/Store and Retrieve Recipes/i)).toBeInTheDocument()
+    expect(screen.getByText(/Store & Retrieve Recipes/i)).toBeInTheDocument()
   })
 
-  it('renders "Backup Recipes to the Cloud" section', () => {
+  it('renders "Backup to the Cloud" section', () => {
     renderPage()
-    expect(screen.getByText(/Backup Recipes to the Cloud/i)).toBeInTheDocument()
+    expect(screen.getByText(/Backup to the Cloud/i)).toBeInTheDocument()
   })
 
   it('renders "Interact With Alexa" section', () => {

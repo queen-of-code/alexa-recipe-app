@@ -23,49 +23,62 @@ export default function RecipeDetail() {
     navigate('/recipes')
   }
 
-  if (error) return <p className="container mt-4 text-danger">{error}</p>
-  if (!recipe) return <p className="container mt-4">Loading...</p>
+  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>
+  if (!recipe) return <p className="text-center mt-8 text-gray-500">Loading...</p>
 
   return (
-    <div className="container mt-4">
-      <dl className="dl-horizontal">
-        <dt>Name</dt>
-        <dd>{recipe.name}</dd>
+    <div className="max-w-3xl mx-auto mt-8 px-4">
+      <div className="bg-white rounded-xl shadow p-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">{recipe.name}</h1>
 
-        <dt>Prep Time (mins)</dt>
-        <dd>{recipe.prepTime}</dd>
+        <div className="flex gap-3 mb-6">
+          <span className="text-xs bg-violet-100 text-violet-700 font-medium px-3 py-1 rounded-full">
+            Prep: {recipe.prepTime} mins
+          </span>
+          <span className="text-xs bg-indigo-100 text-indigo-700 font-medium px-3 py-1 rounded-full">
+            Cook: {recipe.cookTime} mins
+          </span>
+          <span className="text-xs bg-gray-100 text-gray-700 font-medium px-3 py-1 rounded-full">
+            Servings: {recipe.servings}
+          </span>
+        </div>
 
-        <dt>Servings</dt>
-        <dd>{recipe.servings}</dd>
-
-        <dt>Cook Time (mins)</dt>
-        <dd>{recipe.cookTime}</dd>
-
-        <dt>Ingredients</dt>
-        <dd>
-          <ul>
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">Ingredients</h2>
+          <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
             {recipe.ingredients?.map((ing, i) => (
               <li key={i}>{ing}</li>
             ))}
           </ul>
-        </dd>
+        </div>
 
-        <dt>Steps</dt>
-        <dd>
-          <ol>
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">Steps</h2>
+          <ol className="space-y-2">
             {recipe.steps?.map((step, i) => (
-              <li key={i}>{step}</li>
+              <li key={i} className="flex gap-3 items-start">
+                <span className="text-xs font-bold text-violet-700 mt-1 min-w-[1.5rem]">{i + 1}.</span>
+                <span className="p-3 bg-gray-50 rounded text-sm text-gray-700 flex-1">{step}</span>
+              </li>
             ))}
           </ol>
-        </dd>
-      </dl>
+        </div>
 
-      <Link to={`/recipes/${recipeId}/edit`} className="btn btn-primary mr-2">
-        Edit
-      </Link>
-      <Link to="/recipes" className="btn btn-secondary">
-        Back to List
-      </Link>
+        <div className="flex gap-3">
+          <Link
+            to={`/recipes/${recipeId}/edit`}
+            className="bg-violet-700 hover:bg-violet-800 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+          >
+            Edit
+          </Link>
+          <Link
+            to="/recipes"
+            className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+          >
+            Back to List
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }

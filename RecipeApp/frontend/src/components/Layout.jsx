@@ -14,80 +14,86 @@ export default function Layout() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <Link className="navbar-brand" to="/">
-          <img src="/logo.png" alt="Queen of Code" width="50" height="35" />
-        </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav mr-auto">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/">
-                Home
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/about">
-                About
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/contact">
-                Contact
-              </NavLink>
-            </li>
+      <nav className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
+          <Link to="/">
+            <img src="/logo.png" alt="Queen of Code" width="50" height="35" />
+          </Link>
+
+          <div className="flex items-center gap-6">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive ? 'text-violet-700 font-medium text-sm' : 'text-gray-600 hover:text-violet-700 text-sm'
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                isActive ? 'text-violet-700 font-medium text-sm' : 'text-gray-600 hover:text-violet-700 text-sm'
+              }
+            >
+              About
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                isActive ? 'text-violet-700 font-medium text-sm' : 'text-gray-600 hover:text-violet-700 text-sm'
+              }
+            >
+              Contact
+            </NavLink>
+
             {user && (
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/recipes">
-                  My Recipes
-                </NavLink>
-              </li>
+              <NavLink
+                to="/recipes"
+                className={({ isActive }) =>
+                  isActive ? 'text-violet-700 font-medium text-sm' : 'text-gray-600 hover:text-violet-700 text-sm'
+                }
+              >
+                My Recipes
+              </NavLink>
             )}
-          </ul>
-          <ul className="navbar-nav ml-auto">
+
             {!user ? (
               <>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/login">
-                    Register
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/login">
-                    Login
-                  </NavLink>
-                </li>
+                <NavLink
+                  to="/login"
+                  className="text-gray-600 hover:text-violet-700 text-sm"
+                >
+                  Register
+                </NavLink>
+                <NavLink
+                  to="/login"
+                  className="bg-violet-700 hover:bg-violet-800 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+                >
+                  Login
+                </NavLink>
               </>
             ) : (
               <>
-                <li className="nav-item">
-                  <span className="nav-link">Hello {user.email}!</span>
-                </li>
-                <li className="nav-item">
-                  <button className="btn btn-link nav-link" onClick={handleLogout}>
-                    Logout
-                  </button>
-                </li>
+                <span className="text-sm text-gray-600">Hello {user.email}</span>
+                <button
+                  className="text-sm text-gray-600 hover:text-violet-700"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
               </>
             )}
-          </ul>
+          </div>
         </div>
       </nav>
 
-      <main>
+      <main className="min-h-screen bg-gray-50">
         <Outlet />
       </main>
 
-      <footer className="footer mt-auto py-3 bg-light">
-        <div className="container">
-          <span className="text-muted">&copy; 2019 - Zeebee Technologies</span>
+      <footer className="bg-gray-100 py-4">
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+          &copy; 2019 - Zeebee Technologies
         </div>
       </footer>
     </>
