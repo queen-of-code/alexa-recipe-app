@@ -35,3 +35,14 @@ These **orchestrate** AIDLC phases and **pull in** awesome-cursor **library** sk
 ## GitHub queue
 
 - Parent Feature issue + sub-issues OK. Link body to `feature/<slug>/`. Manual Project Status — [docs/github-queue.md](docs/github-queue.md).
+
+## `/review` dimensions (orchestrator must cover all in scope)
+
+The **`/review`** phase skill is not a shallow CI check. It must drive evaluation of:
+
+1. **Tech Spec compliance** — trace criteria and contracts to code/tests.
+2. **Practical testing sufficiency** — right behaviors proven, not coverage theater.
+3. **DevOps** — rollout, deploy path, rollback, monitoring/observability vs Tech Spec.
+4. **Frontend/UI** — when applicable: **`frontend-web`** skill plus **browser MCP** (e.g. Cursor IDE browser tools) to exercise flows, usability, and design compliance; if MCP unavailable, ship a manual browser script and mark gaps.
+
+See [.claude/skills/review/SKILL.md](.claude/skills/review/SKILL.md).

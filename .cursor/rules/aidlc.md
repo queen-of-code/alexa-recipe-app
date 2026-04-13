@@ -11,3 +11,5 @@ alwaysApply: false
 - **Human vs robot docs:** [README.md](../README.md) for people; [AGENTS.md](../AGENTS.md) for assistants only.
 
 When the user is doing feature work, prefer walking them through the phase skills in order unless they explicitly skip a gate.
+
+**`/review`** must be substantive: Tech Spec compliance, testing sufficiency, DevOps/monitoring, and browser-based UI validation when the change touches the frontend (use browser MCP when available).
