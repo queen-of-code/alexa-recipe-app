@@ -17,6 +17,18 @@ export async function getAllRecipes(userId) {
   return res.json()
 }
 
+/** @param {{ ingredients?: string[], combine?: string, query?: string }} body */
+export async function searchRecipes(userId, body) {
+  const headers = await getAuthHeaders()
+  const res = await fetch(`${API_BASE}/api/values/${userId}/search`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error('Search failed')
+  return res.json()
+}
+
 export async function getRecipe(userId, recipeId) {
   const headers = await getAuthHeaders()
   const res = await fetch(`${API_BASE}/api/values/${userId}/${recipeId}`, { headers })

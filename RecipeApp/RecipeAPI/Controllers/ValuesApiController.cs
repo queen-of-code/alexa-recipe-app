@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using RecipeAPI.FirestoreModels;
+using RecipeAPI.IngredientMatching;
 
 using RecipeApp.Core.ExternalModels;
 
@@ -49,6 +50,18 @@ namespace RecipeAPI.Controllers
         {
             var recipe = await RecipeService.RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
             return recipe?.GenerateExternalRecipe();
+        }
+
+        // POST api/values/{userId}/search
+        [HttpPost("{userId}/search")]
+        public async Task<IActionResult> Search(string userId, [FromBody] RecipeSearchRequest body)
+        {
+            if (!TryResolveSearch(body, out var segmentGroups))
+                return new BadRequestResult();
+
+            var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
+            var filtered = IngredientMatcher.Filter(recipes, segmentGroups);
+            return Ok(filtered.Select(s => s.GenerateExternalRecipe()));
         }
 
         // POST api/values/{userId}
@@ -98,6 +111,52 @@ namespace RecipeAPI.Controllers
         {
             var result = await RecipeService.DeleteRecipe(userId, recipeId).ConfigureAwait(false);
             return result ? new OkResult() : new BadRequestResult();
+        }
+
+        /// <summary>
+        /// Structured <see cref="RecipeSearchRequest.Ingredients"/> wins over <see cref="RecipeSearchRequest.Query"/> when non-empty.
+        /// </summary>
+        private static bool TryResolveSearch(RecipeSearchRequest body, out IReadOnlyList<IReadOnlyList<string>> segmentGroups)
+        {
+            segmentGroups = null;
+            if (body == null)
+                return false;
+
+            var hasIngredients = body.Ingredients != null
+                && body.Ingredients.Any(t => !string.IsNullOrWhiteSpace(t));
+
+            if (hasIngredients)
+            {
+                var terms = body.Ingredients
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Select(t => t.Trim())
+                    .ToList();
+                if (terms.Count == 0)
+                    return false;
+
+                var mode = ParseCombine(body.Combine);
+                segmentGroups = mode == IngredientCombineMode.Any
+                    ? terms.Select(t => (IReadOnlyList<string>)new[] { t }).ToList()
+                    : new List<IReadOnlyList<string>> { terms };
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(body.Query))
+            {
+                segmentGroups = IngredientQueryParser.Parse(body.Query);
+                return segmentGroups != null && segmentGroups.Count > 0;
+            }
+
+            return false;
+        }
+
+        private static IngredientCombineMode ParseCombine(string combine)
+        {
+            if (string.IsNullOrWhiteSpace(combine))
+                return IngredientCombineMode.All;
+            return combine.Equals("Any", StringComparison.OrdinalIgnoreCase)
+                ? IngredientCombineMode.Any
+                : IngredientCombineMode.All;
         }
     }
 }
