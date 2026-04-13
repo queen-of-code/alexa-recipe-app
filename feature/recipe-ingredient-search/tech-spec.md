@@ -1,6 +1,6 @@
-# Tech Spec — `recipe-ingredient-search`
+# Tech Spec — `<feature-slug>`
 
-> Fill with `/plan` after Product Spec approval. Structure follows AIDLC Design phase: [docs/AIDLC.md — Phase 2 Design](../../docs/AIDLC.md).
+> Fill with `/plan` after Product Spec approval. Structure follows AIDLC Design phase: [docs/AIDLC.md — Phase 2 Design](../docs/AIDLC.md).
 
 ## Units / scope
 

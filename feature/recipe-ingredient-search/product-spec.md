@@ -1,61 +1,38 @@
 # Product Spec — `recipe-ingredient-search`
 
-> AIDLC Plan phase: [docs/AIDLC.md — Phase 1 Plan](../../docs/AIDLC.md).
+> AIDLC Plan phase: [docs/AIDLC.md](../../docs/AIDLC.md) — Phase 1 Plan.
 
 ## Problem and audience
 
-Home cooks using the recipe app accumulate many saved recipes. When they want to cook with what they already have (or avoid buying something), they need a fast way to see **which recipes use specific ingredients** instead of opening each recipe one by one.
+**Problem:** People accumulate many saved recipes. When they have specific ingredients on hand (or are shopping for something), scanning the full list to see which recipes use those ingredients is slow and error-prone.
 
-**Primary audience:** Authenticated users managing their own recipe library in the app.
+**Audience:** Authenticated users of the recipe web app who maintain a personal recipe library (same users who already create and browse recipes today).
 
 ## Customer outcomes
 
-- Users can **narrow the recipe list** using ingredient-based criteria (for example, “show recipes that include X” or “only recipes that contain all of these ingredients”).
-- Search or filter is **discoverable** from the main recipe browsing experience (users understand how to use it without training).
-- Results **feel trustworthy**: what the user asked for matches what they see (clear empty states when nothing matches).
-- The experience stays **pleasant on typical personal libraries** (responsive, no confusing delays for normal use).
+- Users can **narrow the recipe list** using ingredient-related input (search and/or filters—exact UX is left to Design).
+- Matching behavior is **predictable**: users understand why a recipe appears or does not appear for a given query.
+- The experience remains **responsive** for typical personal library sizes (dozens to hundreds of recipes per user).
 
 ## Success criteria (for Validate / scorecard)
 
-- [ ] From the recipe list, a user can apply ingredient-based filter and/or search and see a **subset of recipes** that match the criteria.
-- [ ] The user can **clear or reset** the ingredient criteria and return to the full list.
-- [ ] When no recipes match, the user sees a **clear message** (not a blank screen or generic error).
-- [ ] Behavior is covered by **automated tests** at the appropriate level (per team practice for UI + API).
-- [ ] Success is demonstrable in **staging or local** with realistic sample recipes.
+- From the main recipe list flow, a user can apply ingredient-based criteria and see a **filtered subset** of their recipes (or a clear empty state when nothing matches).
+- Product-approved rules for **multi-ingredient queries** (e.g. whether multiple terms mean “all” vs “any”) are documented and reflected in behavior.
+- Automated tests prove the filtering/search behavior against those rules (exact layer covered in Tech Spec).
 
 ## Out of scope
 
-- Public or cross-user recipe discovery (this remains **per-user** recipe data only).
-- Nutrition, allergens, or diet labels unless they are **already** represented as plain ingredient text (no new regulatory or medical claims).
-- A full **canonical ingredient database** or grocery taxonomy (synonyms, brands, units) unless explicitly pulled into a later phase.
-- Voice-only (Alexa) flows **unless** the Product Spec is later amended; this spec targets the **web app** recipe experience first.
+- Public or social discovery of recipes across users.
+- Structured nutrition data, allergens-as-first-class filters, or substitution engines (unless we explicitly expand scope later).
+- OCR, barcode, or photo-based ingredient capture.
+- Changing how ingredients are **entered** when creating/editing a recipe (free-text lines remain unless a separate feature says otherwise).
 
 ## Constraints
 
-- Must respect **existing authentication and data ownership** (users only see their own recipes).
-- Ingredient data in the product today is **free-text lines** per recipe; matching behavior should be honest about limitations (e.g. spelling and wording variations) in UX copy or help, without overpromising “smart pantry” semantics unless we add them in Design.
-
-## Grounding review (repo context)
-
-Reviewed against the current codebase **without** rewriting scope. Severity: **blocking** stops Plan until resolved; **advisory** informs Design.
-
-| Finding | Severity | Notes |
-|--------|----------|--------|
-| Recipes already store **ingredients as a list of strings** per user recipe; no separate ingredient catalog. | Advisory | Aligns the feature with existing data; fuzzy matching and normalization are product/Design choices, not assumed. |
-| The API today **lists all recipes** for a user; there is no dedicated ingredient query yet. | Advisory | Filtering may be implemented in more than one way; Tech Spec will choose (e.g. client vs server) against non-functional goals. |
-| Frontend is a **React** app with a recipe list; feature will touch list UX and possibly API contracts. | Advisory | Consistent with [AIDLC](https://github.com/queen-of-code/alexa-recipe-app) multi-surface app layout. |
-
-**Blocking issues:** none identified for Plan.
-
-## Open questions (for Product owner before Design)
-
-1. **Match mode:** Should “chicken, rice” mean *any* of those ingredients, *all* of them, or should the user **choose** (e.g. toggle)? Default assumption for v1 should be explicit in approval.
-2. **Text behavior:** Is **substring** search enough (e.g. “tom” matches “tomato”), or do we want **whole-word** / token rules only for v1?
+- Recipes are **per-user**; results must only ever include the signed-in user’s recipes.
+- Ingredients are stored today as **human-entered strings** (not a global canonical ingredient catalog). Matching will work on that text—Design/Tech will spell out normalization (case, partial words, etc.).
+- Broader architecture and storage are defined in the repo; this spec does not prescribe Firestore vs other backends—Tech Spec must match implementation.
 
 ## Human approval
 
 - [ ] Product owner approved before Design
-
----
-
-**Tracking:** Create a **parent GitHub issue** for this Feature and set project status to **Plan** per [docs/github-queue.md](../../docs/github-queue.md). Issue body should link to `feature/recipe-ingredient-search/`.

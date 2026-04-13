@@ -1,4 +1,4 @@
-# Review report — `recipe-ingredient-search`
+# Review report — `<feature-slug>`
 
 > Fill with `/review`. See [.claude/skills/review/SKILL.md](../../.claude/skills/review/SKILL.md) for required sections.
 

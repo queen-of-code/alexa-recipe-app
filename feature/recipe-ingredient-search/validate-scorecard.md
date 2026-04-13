@@ -1,6 +1,6 @@
-# Validate — Scorecard — `recipe-ingredient-search`
+# Validate — Scorecard — `<feature-slug>`
 
-> Fill with `/ship`. See [docs/AIDLC.md — Phase 6 Validate](../../docs/AIDLC.md).
+> Fill with `/ship`. See [docs/AIDLC.md — Phase 6 Validate](../docs/AIDLC.md).
 
 ## Product Spec link
 
