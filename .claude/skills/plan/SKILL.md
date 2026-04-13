@@ -27,12 +27,14 @@ You are the **phase orchestrator** for AIDLC **Plan** and **Design**. Ground tru
 2. Use **`agent-product-manager`** bundle behavior for structured draft: problem, outcomes, success criteria for later Validate, out-of-scope, constraints — per AIDLC Plan phase in AIDLC.md.
 3. Run **`agent-grounding-reviewer`** against the **repo** (RecipeApp, CI, Docker) — flag blocking vs advisory; do not rewrite the whole spec silently.
 4. **Stop for human approval** of Product Spec before Design.
+5. DO NOT include technical implementation details or code architecture during this phase.
+6. Make sure to anchor on outcomes for how we will know this product feature is successful (with customers, behaviors in production, etc). 
 
 ### B — Tech Spec (`tech-spec.md`)
 
 1. Translate approved Product Spec into one or more **Units**; one Tech Spec document for this feature folder unless the user splits work across sub-issues (link related specs).
 2. Include: scope, architecture, API/UI contracts, data model, acceptance criteria for Review, **testing approach** (what Build+Test must cover), risks — per AIDLC Design phase.
-3. **Tech Spec review passes** (nested library skills — run in order, merge findings into the doc or a short `tech-spec-review.md` appendix):
+3. **Tech Spec review passes** (nested library skills — run in order, merge resolved findings into the doc + initial issues raised go at the end an appendix):
 
 | Pass | awesome-cursor library skill |
 |------|------------------------------|
@@ -48,7 +50,6 @@ You are the **phase orchestrator** for AIDLC **Plan** and **Design**. Ground tru
 
 - `feature/<slug>/product-spec.md`
 - `feature/<slug>/tech-spec.md`
-- Optional: `feature/<slug>/tech-spec-review.md` if reviews are long
 
 ## Rules
 
