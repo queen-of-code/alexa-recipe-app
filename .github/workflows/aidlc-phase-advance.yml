@@ -1,0 +1,25 @@
+name: AIDLC phase advance
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  advance:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: ./.claude/deps/ai-dlc/.github/actions/aidlc-phase-advance
+        with:
+          github-token:      ${{ secrets.GITHUB_TOKEN }}
+          aidlc-project-pat: ${{ secrets.AIDLC_PROJECT_PAT }}
+          project-owner:     ${{ vars.AIDLC_PROJECT_OWNER }}
+          project-number:    ${{ vars.AIDLC_PROJECT_NUMBER }}
