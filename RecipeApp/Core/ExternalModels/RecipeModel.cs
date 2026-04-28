@@ -35,5 +35,11 @@ namespace RecipeApp.Core.ExternalModels
 
         [JsonPropertyName("cookTimeMins")]
         public int CookTimeMins { get; set; }
+
+        /// <summary>
+        /// Optional Firebase Storage download URL for a completed-dish photo (same project as Storage rules).
+        /// </summary>
+        [JsonPropertyName("completedImageUrl")]
+        public string CompletedImageUrl { get; set; }
     }
 }

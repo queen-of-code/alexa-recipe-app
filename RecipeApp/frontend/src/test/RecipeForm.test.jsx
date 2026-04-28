@@ -10,11 +10,18 @@ vi.mock('../auth/AuthContext', () => ({
 const mockGetRecipe = vi.fn()
 const mockCreateRecipe = vi.fn()
 const mockUpdateRecipe = vi.fn()
+const mockUploadCompleted = vi.fn()
+const mockDeleteCompleted = vi.fn()
 
 vi.mock('../api/recipeApi', () => ({
   getRecipe: (...args) => mockGetRecipe(...args),
   createRecipe: (...args) => mockCreateRecipe(...args),
   updateRecipe: (...args) => mockUpdateRecipe(...args),
+}))
+
+vi.mock('../storage/completedRecipePhoto', () => ({
+  uploadCompletedRecipePhoto: (...args) => mockUploadCompleted(...args),
+  deleteCompletedRecipePhotoByUrl: (...args) => mockDeleteCompleted(...args),
 }))
 
 const mockNavigate = vi.fn()
@@ -96,15 +103,50 @@ describe('RecipeForm', () => {
     })
   })
 
-  it('calls createRecipe on save when creating new', async () => {
-    mockCreateRecipe.mockResolvedValue()
+  it('renders optional completed-dish photo file input on create', () => {
+    renderNew()
+    expect(screen.getByLabelText(/photo of finished dish/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/photo of finished dish/i)).toHaveAttribute(
+      'accept',
+      'image/jpeg,image/png,image/webp',
+    )
+  })
+
+  it('after create with image, uploads then PUTs completedImageUrl', async () => {
+    mockCreateRecipe.mockResolvedValue({
+      recipeId: 'server-id-99',
+      name: 'New Recipe',
+      prepTimeMins: 0,
+      cookTimeMins: 0,
+      servings: 0,
+      ingredients: ['a'],
+      steps: ['b'],
+    })
+    mockUploadCompleted.mockResolvedValue('https://storage.example.com/photo.jpg')
+    mockUpdateRecipe.mockResolvedValue()
     renderNew()
 
+    const file = new File([new Uint8Array([1, 2, 3])], 'dish.jpg', { type: 'image/jpeg' })
+    fireEvent.change(screen.getByLabelText(/photo of finished dish/i), { target: { files: [file] } })
+
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'New Recipe' } })
+    fireEvent.change(screen.getByLabelText(/ingredient 1/i), { target: { value: 'a' } })
+    fireEvent.change(screen.getByLabelText(/step 1/i), { target: { value: 'b' } })
+
     fireEvent.click(screen.getByRole('button', { name: /create/i }))
 
     await waitFor(() => {
       expect(mockCreateRecipe).toHaveBeenCalled()
+    })
+    await waitFor(() => {
+      expect(mockUploadCompleted).toHaveBeenCalledWith('test-uid', 'server-id-99', file)
+    })
+    await waitFor(() => {
+      expect(mockUpdateRecipe).toHaveBeenCalledWith(
+        'test-uid',
+        'server-id-99',
+        expect.objectContaining({ completedImageUrl: 'https://storage.example.com/photo.jpg' }),
+      )
     })
   })
 })

@@ -114,7 +114,8 @@ namespace RecipeAPI.Tests
             };
 
             var service = new Mock<IFirestoreRecipeService>();
-            service.Setup(s => s.SaveRecipe(It.IsAny<Recipe>())).ReturnsAsync(ok);
+            service.Setup(s => s.SaveRecipe(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe r) => ok ? r : null);
 
             var controller = new ValuesApiController(service.Object, logger.Object);
             SetFirebaseUser(controller, recipeModel.UserId);
@@ -221,6 +222,48 @@ namespace RecipeAPI.Tests
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<IEnumerable<RecipeModel>>(ok.Value);
             Assert.Single(list);
+        }
+
+        [Fact]
+        public async Task Post_Returns201_WithRecipeId()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var savedRecipe = new Recipe
+            {
+                Name = "New",
+                UserId = "u1",
+                Id = "generated-id-abc",
+                CookTimeMins = 0,
+                PrepTimeMins = 0,
+                Servings = 1,
+            };
+            savedRecipe.Ingredients.Add("a");
+            savedRecipe.Steps.Add("b");
+
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.SaveRecipe(It.IsAny<Recipe>())).ReturnsAsync(savedRecipe);
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "u1");
+
+            var body = new RecipeModel
+            {
+                Name = "New",
+                UserId = "u1",
+                PrepTimeMins = 0,
+                CookTimeMins = 0,
+                Servings = 1,
+            };
+            body.Ingredients.Add("a");
+            body.Steps.Add("b");
+
+            var result = await controller.Post("u1", body);
+
+            var created = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(201, created.StatusCode);
+            var model = Assert.IsType<RecipeModel>(created.Value);
+            Assert.Equal("generated-id-abc", model.RecipeId);
+            Assert.Equal("u1", model.UserId);
         }
     }
 }

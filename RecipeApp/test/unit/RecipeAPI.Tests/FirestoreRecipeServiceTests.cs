@@ -48,12 +48,12 @@ namespace RecipeAPI.Tests
         }
 
         [Fact]
-        public async Task SaveRecipe_NullRecipe_ReturnsFalse()
+        public async Task SaveRecipe_NullRecipe_ReturnsNull()
         {
             var mockService = new Mock<IFirestoreRecipeService>();
-            mockService.Setup(s => s.SaveRecipe(null)).ReturnsAsync(false);
+            mockService.Setup(s => s.SaveRecipe(null)).ReturnsAsync((Recipe)null);
             var result = await mockService.Object.SaveRecipe(null);
-            Assert.False(result);
+            Assert.Null(result);
         }
 
         [Theory]
@@ -62,10 +62,13 @@ namespace RecipeAPI.Tests
         public async Task SaveRecipe_DelegatesToService(bool expected)
         {
             var recipe = new Recipe { Id = "1", UserId = "u", Name = "Test" };
+            recipe.Ingredients.Add("x");
+            recipe.Steps.Add("y");
             var mockService = new Mock<IFirestoreRecipeService>();
-            mockService.Setup(s => s.SaveRecipe(recipe)).ReturnsAsync(expected);
+            mockService.Setup(s => s.SaveRecipe(recipe))
+                .ReturnsAsync(expected ? recipe : null);
             var result = await mockService.Object.SaveRecipe(recipe);
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result != null);
         }
 
         [Fact]
