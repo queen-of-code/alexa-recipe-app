@@ -156,3 +156,27 @@ Traceable to Product Spec success criteria:
 ## Human approval
 
 - [ ] Engineering approved before Build
+
+---
+
+## Retrospective (ship)
+
+Completed with merge of [PR #74](https://github.com/queen-of-code/alexa-recipe-app/pull/74) (2026-04-28).
+
+**Aligned with plan**
+
+- Firestore field **`completedImageUrl`**, Firebase Storage path layout, Storage rules, web-only UX (create/edit/list/detail), POST returns **201** with body including **`recipeId`** (`ValuesApiController.Post`), limits (5 MiB; JPEG/PNG/WebP).
+
+**Differed or tightened in implementation**
+
+- **`completedImageUrl`** holds the Firebase download URL (and paths are parsed for validation/deletion), matching the illustrative JSON in this spec.
+- **Recipe delete:** attempts Storage object removal when metadata maps to an object path (non-emulator); failures logged — as anticipated for orphan tolerance.
+- **CI / dev:** Firebase Storage emulator (9199) and docker-compose/`firebase.json` wiring landed during Build so integration tests and local dev stay aligned.
+
+**Testing**
+
+- Strong unit coverage on metadata + controller POST behavior; frontend tests cover create-with-photo flow. Replace/remove paths rely on code review for this tutorial tier; add tests if regressions appear.
+
+**Process**
+
+- Review flagged advisory items (e.g. manual Validate/E2E); scorecard in `validate-scorecard.md` documents evidence boundaries.

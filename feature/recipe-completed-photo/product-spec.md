@@ -5,7 +5,7 @@
 | Field | Value |
 |-------|-------|
 | **Feature** | Optional photo of the completed dish on a recipe |
-| **Status** | Draft — awaiting product approval |
+| **Status** | Shipped — validate/scorecard in [validate-scorecard.md](./validate-scorecard.md) |
 | **Tracker** | [queen-of-code/alexa-recipe-app#67](https://github.com/queen-of-code/alexa-recipe-app/issues/67) |
 | **AIDLC feature folder** | `feature/recipe-completed-photo/` |
 
