@@ -33,9 +33,21 @@ These **orchestrate** AIDLC phases and **pull in** **library** skills (`architec
 - **Features:** `feature/<kebab-slug>/` — copy from [feature/_template/](feature/_template/) for new work.
 - **App code:** `RecipeApp/` (dotnet API + frontend; see README for ports).
 
+## Issue tracker (AIDLC)
+
+| Field | Value |
+|--------|--------|
+| **System** | `github-projects-v2` |
+| **Work item for a Feature** | GitHub issue on `queen-of-code/alexa-recipe-app`; URL pattern `github.com/queen-of-code/alexa-recipe-app/issues/NNN` |
+| **Phase signal** | "AIDLC phase" single-select field on [project board #6](https://github.com/users/queen-of-code/projects/6); label `aidlc_work:unstarted` is the automation trigger; `aidlc_work:in_progress` means an agent run is active |
+| **Parent ↔ `feature/<slug>/`** | Issue body includes `AIDLC feature folder: feature/<kebab-slug>/` |
+| **Automation entry points** | [`.github/workflows/aidlc-launch.yml`](.github/workflows/aidlc-launch.yml) — triggered by `issues.labeled` (`aidlc_work:unstarted`); reads AIDLC phase from v2 board, launches Cursor Cloud Agent, tracks via issue comment |
+
+**Notes:** Uses GitHub Projects v2 (personal account — `projects_v2_item` events are org-only so the trigger is `issues.labeled` instead). To start automation: move the board card to the target phase column, then apply `aidlc_work:unstarted` to the issue. The Cursor agent clears `aidlc_work:in_progress` when done via `$AIDLC_GH_CALLBACK_TOKEN` (set in Cursor Cloud Agents dashboard, not in this repo). Do **not** commit tokens. See [docs/github-queue.md](docs/github-queue.md) for full setup.
+
 ## GitHub queue
 
-- Parent Feature issue + sub-issues OK. Link body to `feature/<slug>/`. Manual Project Status — [docs/github-queue.md](docs/github-queue.md).
+- Parent Feature issue + sub-issues OK. Link body to `feature/<slug>/`. AIDLC phase field on the board drives automation — [docs/github-queue.md](docs/github-queue.md).
 
 ## `/review` dimensions (orchestrator must cover all in scope)
 
