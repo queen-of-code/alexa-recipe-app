@@ -1,4 +1,4 @@
-name: AIDLC agent launch test
+name: AIDLC agent launch
 
 on:
   issues:
@@ -26,138 +26,15 @@ jobs:
       github.event.label.name == 'aidlc_work:unstarted'
     runs-on: ubuntu-latest
     steps:
-      - name: Launch AIDLC Cursor agent
-        uses: actions/github-script@v7
-        env:
-          CURSOR_API_KEY:      ${{ secrets.CURSOR_API_KEY }}
-          PROJECT_OWNER:       ${{ vars.AIDLC_PROJECT_OWNER }}
-          PROJECT_NUMBER:      ${{ vars.AIDLC_PROJECT_NUMBER }}
-          AIDLC_PROJECT_PAT:   ${{ secrets.AIDLC_PROJECT_PAT }}
+      - uses: actions/checkout@v4
         with:
-          github-token: ${{ github.token }}
-          script: |
-            const OWNER = 'queen-of-code';
-            const REPO  = 'alexa-recipe-app';
-            const REPO_FULL = OWNER + '/' + REPO;
+          submodules: true
 
-            const PHASE_MAP = { Plan: 'plan', Design: 'design', Build: 'build', Review: 'review', Ship: 'ship' };
-            const TERMINAL  = new Set(['Idea', 'Done', "Won't do"]);
-
-            // 1. Resolve issue number + phase
-            let issueNumber, phase;
-
-            if (context.eventName === 'workflow_dispatch') {
-              issueNumber = parseInt(context.payload.inputs.issue_number, 10);
-              phase = context.payload.inputs.phase;
-            } else {
-              issueNumber = context.payload.issue.number;
-              const projectOwner  = process.env.PROJECT_OWNER  || 'queen-of-code';
-              const projectNumber = parseInt(process.env.PROJECT_NUMBER || '6', 10);
-
-              // GITHUB_TOKEN does not have read:project scope for personal
-              // account Projects v2. Use AIDLC_PROJECT_PAT (repo secret, PAT
-              // with project scope) for this GraphQL call only.
-              const projectToken = process.env.AIDLC_PROJECT_PAT || process.env.GITHUB_TOKEN;
-              const gqlRes = await fetch('https://api.github.com/graphql', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + projectToken, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: `
-                  query($login: String!, $number: Int!) {
-                    user(login: $login) {
-                      projectV2(number: $number) {
-                        items(first: 100) {
-                          nodes {
-                            fieldValueByName(name: "AIDLC phase") {
-                              ... on ProjectV2ItemFieldSingleSelectValue { name }
-                            }
-                            content { ... on Issue { number } }
-                          }
-                        }
-                      }
-                    }
-                  }`, variables: { login: projectOwner, number: projectNumber } }),
-              });
-              const gqlJson = await gqlRes.json();
-              if (gqlJson.errors) { core.setFailed('GraphQL error: ' + JSON.stringify(gqlJson.errors)); return; }
-              const result = gqlJson.data;
-
-              const items = result?.user?.projectV2?.items?.nodes ?? [];
-              const item  = items.find(i => i.content?.number === issueNumber);
-              if (!item) { core.setFailed('Issue #' + issueNumber + ' not on the AIDLC board.'); return; }
-
-              const boardPhase = item?.fieldValueByName?.name ?? '';
-              if (TERMINAL.has(boardPhase) || !boardPhase) {
-                core.setFailed('Phase "' + boardPhase + '" is terminal or unset.'); return;
-              }
-              phase = PHASE_MAP[boardPhase];
-              if (!phase) { core.setFailed('Unknown phase "' + boardPhase + '".'); return; }
-            }
-
-            core.info('Issue #' + issueNumber + ' -> phase: ' + phase);
-
-            // 2. Immediate comment
-            const launchComment = await github.rest.issues.createComment({
-              owner: OWNER, repo: REPO, issue_number: issueNumber,
-              body: ':hourglass: **AIDLC `' + phase + '` phase - launching Cursor agent...**\n\nSwapping labels and calling the Cursor API now.',
-            });
-
-            // 3. Swap labels
-            await github.rest.issues.removeLabel({ owner: OWNER, repo: REPO, issue_number: issueNumber, name: 'aidlc_work:unstarted' }).catch(() => {});
-            await github.rest.issues.addLabels({ owner: OWNER, repo: REPO, issue_number: issueNumber, labels: ['aidlc_work:in_progress'] }).catch(e => { if (e.status !== 422) throw e; });
-
-            // 4. Build prompt. The only phase-specific content is the hard stop —
-            // everything else (sub-skills, orchestration steps) is in the SKILL.md.
-            const hardStops = {
-              plan:   'HARD STOP: deliver `feature/<slug>/product-spec.md` only. Open a draft PR. Do NOT write a Tech Spec.',
-              design: 'HARD STOP: deliver `feature/<slug>/tech-spec.md` only. Open a draft PR. Do NOT write code.',
-              build:  'HARD STOP: deliver a PR with passing CI. Do NOT run review.',
-              review: 'HARD STOP: post PR review comments only. Do NOT merge. Do NOT change code.',
-              ship:   'HARD STOP: deliver scorecard + learn notes. Close issue if all criteria are met.',
-            };
-
-            const clearLabelCmd = 'curl -s -X DELETE'
-              + ' -H "Authorization: Bearer $AIDLC_GH_CALLBACK_TOKEN"'
-              + ' -H "Accept: application/vnd.github+json"'
-              + ' https://api.github.com/repos/' + REPO_FULL + '/issues/' + issueNumber + '/labels/aidlc_work%3Ain_progress';
-
-            const prompt = [
-              'You are a headless Cursor Cloud Agent running AIDLC **' + phase + '** for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
-              '',
-              hardStops[phase],
-              '',
-              'Steps:',
-              '1. `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` -- read the issue and find the feature slug.',
-              '2. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
-              '3. Read `.claude/skills/' + phase + '/SKILL.md` and follow its Orchestration section.',
-              '   Headless override: skip all "ask in chat" / "conversation first" steps.',
-              '   Document assumptions in the output instead of asking.',
-              '4. Post a summary comment on issue #' + issueNumber + ' with results and next-phase instructions.',
-              '',
-              'When done, clear the in-progress label:',
-              clearLabelCmd,
-            ].join('\n');
-
-            // 5. Launch Cursor Cloud Agent
-            const autoCreatePr = phase === 'build';
-            const launchRes = await fetch('https://api.cursor.com/v0/agents', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + Buffer.from(process.env.CURSOR_API_KEY + ':').toString('base64') },
-              body: JSON.stringify({ prompt: { text: prompt }, source: { repository: 'https://github.com/' + REPO_FULL, ref: 'master' }, target: { autoCreatePr, openAsCursorGithubApp: autoCreatePr } }),
-            });
-
-            if (!launchRes.ok) {
-              const err = await launchRes.text();
-              await github.rest.issues.removeLabel({ owner: OWNER, repo: REPO, issue_number: issueNumber, name: 'aidlc_work:in_progress' }).catch(() => {});
-              await github.rest.issues.addLabels({ owner: OWNER, repo: REPO, issue_number: issueNumber, labels: ['aidlc_work:unstarted'] }).catch(() => {});
-              await github.rest.issues.updateComment({ owner: OWNER, repo: REPO, comment_id: launchComment.data.id,
-                body: ':x: **AIDLC `' + phase + '` - failed to launch agent.**\n\nCursor API ' + launchRes.status + ':\n```\n' + err + '\n```\nLabel reset to `aidlc_work:unstarted` - re-apply to retry.' });
-              core.setFailed('Cursor API error ' + launchRes.status + ': ' + err); return;
-            }
-
-            const agent = await launchRes.json();
-            const agentUrl = (agent.target && agent.target.url) ? agent.target.url : ('https://cursor.com/agents?id=' + agent.id);
-            core.info('Launched agent ' + agent.id + ' for #' + issueNumber);
-
-            // 6. Update comment with agent link
-            await github.rest.issues.updateComment({ owner: OWNER, repo: REPO, comment_id: launchComment.data.id,
-              body: ':robot: **AIDLC `' + phase + '` agent is running.**\n\n[Watch it here ->](' + agentUrl + ')\n\nThe agent will post a summary and clear `aidlc_work:in_progress` when done.\n\n<!-- cursor-agent-id: ' + agent.id + ' -->' });
+      - uses: ./.claude/deps/ai-dlc/.github/actions/aidlc-launch
+        with:
+          github-token:      ${{ secrets.GITHUB_TOKEN }}
+          cursor-api-key:    ${{ secrets.CURSOR_API_KEY }}
+          aidlc-project-pat: ${{ secrets.AIDLC_PROJECT_PAT }}
+          project-owner:     ${{ vars.AIDLC_PROJECT_OWNER }}
+          project-number:    ${{ vars.AIDLC_PROJECT_NUMBER }}
+          default-branch:    master
