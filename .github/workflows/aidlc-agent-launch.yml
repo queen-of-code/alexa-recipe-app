@@ -105,83 +105,37 @@ jobs:
             await github.rest.issues.removeLabel({ owner: OWNER, repo: REPO, issue_number: issueNumber, name: 'aidlc_work:unstarted' }).catch(() => {});
             await github.rest.issues.addLabels({ owner: OWNER, repo: REPO, issue_number: issueNumber, labels: ['aidlc_work:in_progress'] }).catch(e => { if (e.status !== 422) throw e; });
 
-            // 4. Build phase-scoped prompt.
-            // Each prompt names exactly ONE deliverable and a hard stop.
-            // This prevents the agent from running into the next AIDLC phase
-            // (e.g. plan -> design) since there is no human in the loop to
-            // provide the approval gate that the skills expect.
-            const phasePrompts = {
-              plan: [
-                'You are a headless Cursor Cloud Agent running the AIDLC **plan** phase (Product Spec only) for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
-                '',
-                'HARD STOP: your deliverable is `feature/<slug>/product-spec.md` ONLY.',
-                'Do NOT write a Tech Spec. Do NOT do architecture or API design. Do NOT open a PR.',
-                '',
-                'Steps:',
-                '1. Run `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` to read the issue body.',
-                '2. Determine the feature slug from the issue (look for "AIDLC feature folder: feature/<slug>/").',
-                '3. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
-                '4. Follow `.claude/skills/plan/SKILL.md` to draft `feature/<slug>/product-spec.md`.',
-                '   - Run the grounding reviewer (`agent-grounding-reviewer`) against the repo.',
-                '   - Because this is a headless run there is no human to ask questions; make reasonable assumptions and note them in the spec under an "Assumptions" section.',
-                '5. Commit `product-spec.md` to a branch and open a draft PR for human review.',
-                '6. Post a summary comment on issue #' + issueNumber + ' with: a link to the PR, a 2-3 sentence summary, and the instruction "Move the board card to Design and apply aidlc_work:unstarted when the Product Spec is approved to trigger the next phase."',
-              ],
-              design: [
-                'You are a headless Cursor Cloud Agent running the AIDLC **design** phase (Tech Spec only) for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
-                '',
-                'HARD STOP: your deliverable is `feature/<slug>/tech-spec.md` ONLY.',
-                'Do NOT write code. Do NOT open a build PR.',
-                '',
-                'Steps:',
-                '1. Run `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` to read the issue body.',
-                '2. Read `feature/<slug>/product-spec.md` (the approved Product Spec).',
-                '3. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
-                '4. Follow `.claude/skills/design/SKILL.md` to draft `feature/<slug>/tech-spec.md`.',
-                '   - Run relevant review passes (architecture, backend, frontend as applicable).',
-                '5. Commit `tech-spec.md` to a branch and open a draft PR.',
-                '6. Post a summary comment on issue #' + issueNumber + ' with: a link to the PR, key technical decisions, and "Move the board card to Build and apply aidlc_work:unstarted when the Tech Spec is approved."',
-              ],
-              build: [
-                'You are a headless Cursor Cloud Agent running the AIDLC **build** phase for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
-                '',
-                'HARD STOP: your deliverable is a PR with passing CI. Do NOT run review or ship.',
-                '',
-                'Steps:',
-                '1. Run `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` to read the issue body.',
-                '2. Read `feature/<slug>/tech-spec.md` for the implementation plan.',
-                '3. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
-                '4. Follow `.claude/skills/build/SKILL.md` — implement, write tests (TDD), open a PR.',
-                '5. Post a summary comment on issue #' + issueNumber + ' with: a link to the PR, what was built, and "Move the board card to Review and apply aidlc_work:unstarted to trigger the review phase."',
-              ],
-              review: [
-                'You are a headless Cursor Cloud Agent running the AIDLC **review** phase for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
-                '',
-                'HARD STOP: your job is review feedback only. Do NOT merge. Do NOT make code changes.',
-                '',
-                'Steps:',
-                '1. Run `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` to find the open PR.',
-                '2. Read `feature/<slug>/tech-spec.md` and the PR diff.',
-                '3. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
-                '4. Follow `.claude/skills/review/SKILL.md` — post review feedback as PR comments.',
-                '5. Post a summary comment on issue #' + issueNumber + ' and "Move the board card to Ship and apply aidlc_work:unstarted when review is resolved."',
-              ],
-              ship: [
-                'You are a headless Cursor Cloud Agent running the AIDLC **ship** phase (Validate + Learn) for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
-                '',
-                'Steps:',
-                '1. Run `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` to read the issue.',
-                '2. Read `feature/<slug>/` specs and the merged PR.',
-                '3. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
-                '4. Follow `.claude/skills/ship/SKILL.md` — scorecard vs Product Spec, write ADR and retro.',
-                '5. Post a summary comment on issue #' + issueNumber + ' and close the issue if all criteria are met.',
-              ],
+            // 4. Build prompt. The only phase-specific content is the hard stop —
+            // everything else (sub-skills, orchestration steps) is in the SKILL.md.
+            const hardStops = {
+              plan:   'HARD STOP: deliver `feature/<slug>/product-spec.md` only. Open a draft PR. Do NOT write a Tech Spec.',
+              design: 'HARD STOP: deliver `feature/<slug>/tech-spec.md` only. Open a draft PR. Do NOT write code.',
+              build:  'HARD STOP: deliver a PR with passing CI. Do NOT run review.',
+              review: 'HARD STOP: post PR review comments only. Do NOT merge. Do NOT change code.',
+              ship:   'HARD STOP: deliver scorecard + learn notes. Close issue if all criteria are met.',
             };
-            const phaseLines = phasePrompts[phase];
-            phaseLines.push('');
-            phaseLines.push('After completing the above, clear the in-progress label:');
-            phaseLines.push('curl -s -X DELETE -H "Authorization: Bearer $AIDLC_GH_CALLBACK_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/' + REPO_FULL + '/issues/' + issueNumber + '/labels/aidlc_work%3Ain_progress');
-            const prompt = phaseLines.join('\n');
+
+            const clearLabelCmd = 'curl -s -X DELETE'
+              + ' -H "Authorization: Bearer $AIDLC_GH_CALLBACK_TOKEN"'
+              + ' -H "Accept: application/vnd.github+json"'
+              + ' https://api.github.com/repos/' + REPO_FULL + '/issues/' + issueNumber + '/labels/aidlc_work%3Ain_progress';
+
+            const prompt = [
+              'You are a headless Cursor Cloud Agent running AIDLC **' + phase + '** for **' + REPO_FULL + '**, issue #' + issueNumber + '.',
+              '',
+              hardStops[phase],
+              '',
+              'Steps:',
+              '1. `gh issue view ' + issueNumber + ' --repo ' + REPO_FULL + '` -- read the issue and find the feature slug.',
+              '2. Read `AGENTS.md` and `docs/AIDLC.md` for process context.',
+              '3. Read `.claude/skills/' + phase + '/SKILL.md` and follow its Orchestration section.',
+              '   Headless override: skip all "ask in chat" / "conversation first" steps.',
+              '   Document assumptions in the output instead of asking.',
+              '4. Post a summary comment on issue #' + issueNumber + ' with results and next-phase instructions.',
+              '',
+              'When done, clear the in-progress label:',
+              clearLabelCmd,
+            ].join('\n');
 
             // 5. Launch Cursor Cloud Agent
             const autoCreatePr = phase === 'build';
