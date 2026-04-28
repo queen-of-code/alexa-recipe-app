@@ -26,7 +26,7 @@
 
 - **RecipeAPI** uses **Firestore** (`RecipeApp/RecipeAPI/FirestoreModels/Recipe.cs`, `FirestoreRecipeService`) under `users/{userId}/recipes/{recipeId}`, not DynamoDB (see `RecipeApp/specs/architecture.md` — treat Dynamo wording as legacy for recipe CRUD).
 - **Frontend** uses **Firebase Auth** (`RecipeApp/frontend/src/firebase.js`) and **JSON** calls to `RecipeAPI` with Bearer ID tokens (`RecipeApp/frontend/src/api/recipeApi.js`).
-- **Firebase Storage is not initialized** in the frontend today; `firebase` dependency is present and can be extended for Storage.
+- **Firebase Storage** is wired via `getStorage(app)` in `RecipeApp/frontend/src/firebase.js`, but the **`firebaseConfig` object omits `storageBucket`**. In production builds, `getStorage()` then fails with **`storage/no-default-bucket`** when the upload path runs ([queen-of-code/alexa-recipe-app#76](https://github.com/queen-of-code/alexa-recipe-app/issues/76)).
 
 ## Architecture and components
 
@@ -153,6 +153,111 @@ Traceable to Product Spec success criteria:
 - **Backend-saas:** JWT-bound CRUD unchanged; validate image metadata shape; cleanup on delete.
 - **Frontend-web:** Accessible list/detail; progressive enhancement when image missing; clear upload errors.
 
+---
+
+## Addendum — Unit: Default Firebase Storage bucket (production fix)
+
+> **Tracker:** [queen-of-code/alexa-recipe-app#76](https://github.com/queen-of-code/alexa-recipe-app/issues/76) — web-only; completes the Storage path assumed by this Tech Spec’s main unit.  
+> **Product input:** Same folder — [product-spec.md](./product-spec.md) (completed-photo outcomes); issue #76 is an **engineering defect** against those outcomes on hosted web.
+
+| Field | Value |
+|-------|-------|
+| **Unit / scope** | Ensure the SPA’s Firebase app is initialized with a **valid default Storage bucket** so `getStorage(app)` resolves and recipe image upload/save succeeds on production. |
+| **AIDLC feature folder** | `feature/recipe-completed-photo/` |
+
+### Context
+
+**Symptom:** On Firebase Hosting (`qoc-recipe-app`), after choosing an image on recipe create/edit, save fails with:
+
+`Firebase Storage: No default bucket found. Did you set the 'storageBucket' property when initializing the app? (storage/no-default-bucket)`
+
+**Root cause:** `RecipeApp/frontend/src/firebase.js` passes only `apiKey`, `authDomain`, `projectId`, and `appId` into `initializeApp()`. The Firebase JS SDK requires **`storageBucket`** (or a bucket passed explicitly to `getStorage`) to select the default bucket.
+
+**Non-goals for this unit:** Alexa/voice, API/Firestore schema changes, Storage security rules redesign, or new product behaviors beyond “upload works as already specified” in the main unit.
+
+### Architecture (design review)
+
+- **Single client config surface:** Continue one Firebase app for Auth + Storage; add **`storageBucket`** to the same `firebaseConfig` object so `getStorage(app)` uses the project’s default bucket.
+- **Bucket identity:** Must match the **default bucket** shown in Firebase Console → Project → Storage (typically `<project-id>.appspot.com` for the default bucket). For `projectId` `queen-of-code`, the conventional default is **`queen-of-code.appspot.com`** — **verify in console** before relying on convention alone (custom bucket names are possible).
+- **Configuration layering:** Prefer **`VITE_FIREBASE_STORAGE_BUCKET`** injected at build time (same pattern as other `VITE_FIREBASE_*` vars) so staging/custom projects can override without code changes. Optional fallback in code: if the env var is unset, derive `import.meta.env.VITE_FIREBASE_PROJECT_ID + '.appspot.com'` only if product/engineering agrees that convention is always valid for this app—**default recommendation is explicit env only** for predictability.
+
+```mermaid
+flowchart LR
+  subgraph build [CI / local build]
+    ENV[VITE_FIREBASE_STORAGE_BUCKET]
+  end
+  subgraph spa [React SPA]
+    CFG[firebaseConfig incl. storageBucket]
+    GS[getStorage app]
+  end
+  ENV --> CFG
+  CFG --> GS
+```
+
+### Integration points
+
+| System | Contract | Notes |
+|--------|----------|-------|
+| Firebase (client) | `initializeApp({ …, storageBucket })` | Required for default `getStorage(app)` |
+| GitHub Actions | `env` for `npm run build` in `RecipeApp/frontend` | Add `VITE_FIREBASE_STORAGE_BUCKET` to **`.github/workflows/main.yml`** (`build_frontend`) and **`.github/workflows/prod_deploy.yml`** (`Build frontend`) alongside existing `VITE_FIREBASE_*` keys |
+| Local dev | `RecipeApp/frontend/.env.local` (from **`.env.local.example`**) | Document example value; align with team Firebase project |
+| Secrets (optional) | GitHub `secrets.VITE_FIREBASE_STORAGE_BUCKET` | Bucket hostname is **not highly sensitive** (public in client bundle); a **repository variable** or **inline literal** matching console is acceptable if org policy allows—use a secret only for consistency with other Firebase web config |
+
+### Data & APIs
+
+- **No** Firestore or RecipeAPI changes for this unit.
+
+### UI / client (frontend design review)
+
+- **File:** `RecipeApp/frontend/src/firebase.js` — add `storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET` (or validated equivalent) to `firebaseConfig`.
+- **Emulator:** Existing `VITE_USE_STORAGE_EMULATOR` + `connectStorageEmulator` path remains; ensure production builds still set `storageBucket` so non-emulator uploads work.
+- **Failure mode:** If the env var is missing in a given environment, fail fast at runtime with a clear error—or document that CI must fail the build when required env is empty (Build choice; prefer CI guard so production never ships without bucket).
+
+### Security & privacy
+
+- **No new secrets requirement**; `storageBucket` is a public hostname in the client. Continue to rely on **Firebase Auth** and **Storage security rules** (defined in the main unit) for authorization.
+- Do **not** embed private keys or service accounts in the SPA.
+
+### Acceptance criteria (for Review) — addendum unit
+
+| # | Criterion | Review evidence |
+|---|-----------|-----------------|
+| B1 | Production (or staging) build includes `storageBucket` in compiled Firebase config | Built artifact inspection or documented env matrix |
+| B2 | Signed-in user can complete recipe save **with** image upload on hosted web without `storage/no-default-bucket` | Manual Validate step or screen recording; matches issue #76 repro gone |
+| B3 | Recipe save **without** image unchanged | Regression on existing flow |
+| B4 | CI frontend job supplies `VITE_FIREBASE_STORAGE_BUCKET` so `npm run build` does not regress | Green `build_frontend` on PR |
+| B5 | `.env.local.example` documents the new variable for local onboarding | Doc diff |
+
+### Testing approach (Build + Test)
+
+| Layer | What we prove | Notes |
+|-------|----------------|-------|
+| CI | Frontend production build succeeds with new env | `main.yml` `build_frontend` |
+| Manual | Upload on `qoc-recipe-app` (or release candidate URL) after deploy | Close loop for issue #76 |
+| Optional | Unit test or small module test that `firebaseConfig` includes `storageBucket` when env is set | Only if existing test patterns support env mocking without flakiness |
+
+### Rollout & operations
+
+- **Rollout:** Ship with the next frontend deploy (Firebase Hosting). Coordinate **GitHub Actions** / repository settings so `VITE_FIREBASE_STORAGE_BUCKET` is set **before** or **with** the deploy that contains the code change.
+- **Firebase Console:** Confirm **Storage** is enabled and the bucket name used in config matches the default bucket for the project.
+- **Rollback:** Revert the commit and redeploy prior Hosting version if misconfiguration causes client errors; no database migration.
+
+### Risks & edge cases
+
+| Risk | Mitigation |
+|------|------------|
+| Wrong bucket string | Copy from Firebase Console; smoke-test upload after deploy |
+| Typo in workflow env | CI build catches missing reference if code requires the var |
+| Multiple Firebase projects | Per-environment `VITE_FIREBASE_STORAGE_BUCKET` values |
+
+### Specialist review summary (addendum)
+
+- **Architecture:** Minimal change—complete Firebase web config; no new services.
+- **Backend-saas:** Not applicable; no API work.
+- **Frontend-web:** Align with Firebase JS v9+ modular init; keep emulator path intact.
+- **DevOps:** Extend `main.yml` and `prod_deploy.yml` frontend build `env`; document `.env.local.example`.
+
 ## Human approval
 
-- [ ] Engineering approved before Build
+- [ ] Engineering approved before Build (main unit — completed photo)
+- [ ] Engineering approved before Build (addendum unit — issue #76 Storage bucket config)
