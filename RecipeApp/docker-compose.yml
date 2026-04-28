@@ -13,6 +13,7 @@ services:
       - "9199:9199"  # Storage
     volumes:
       - ./frontend/firebase.json:/app/firebase.json
+      - ./frontend/storage.rules:/app/storage.rules
       - emulator_data:/data
     healthcheck:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 9099 && nc -z 127.0.0.1 8080 && nc -z 127.0.0.1 9199"]
