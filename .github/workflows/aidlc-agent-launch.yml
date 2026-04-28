@@ -112,7 +112,7 @@ jobs:
             const launchRes = await fetch('https://api.cursor.com/v0/agents', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + Buffer.from(process.env.CURSOR_API_KEY + ':').toString('base64') },
-              body: JSON.stringify({ prompt: { text: prompt }, source: { repository: 'https://github.com/' + REPO_FULL, ref: 'main' }, target: { autoCreatePr, openAsCursorGithubApp: autoCreatePr } }),
+              body: JSON.stringify({ prompt: { text: prompt }, source: { repository: 'https://github.com/' + REPO_FULL, ref: 'master' }, target: { autoCreatePr, openAsCursorGithubApp: autoCreatePr } }),
             });
 
             if (!launchRes.ok) {
