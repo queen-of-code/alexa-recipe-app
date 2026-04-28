@@ -2,7 +2,7 @@
 #
 # Trigger: issues.labeled (fires for personal repos, unlike projects_v2_item which
 # only fires for org-owned projects). Add the label aidlc_work:unstarted to an issue
-# after moving its card on the v2 board — this is the one manual step that replaces
+# after moving its card on the v2 board - this is the one manual step that replaces
 # the card-move webhook unavailable on a personal account.
 #
 # Flow:
@@ -14,21 +14,21 @@
 #   6. Updates the comment with the agent link.
 #   7. The agent runs the AIDLC phase skill, then calls back to GitHub to clear
 #      aidlc_work:in_progress using AIDLC_GH_CALLBACK_TOKEN from the Cursor
-#      Cloud Agents dashboard (cursor.com/dashboard/cloud-agents → Environment).
+#      Cloud Agents dashboard (cursor.com/dashboard/cloud-agents -> Environment).
 #
-# Required GitHub secret (Settings → Secrets → Actions):
-#   CURSOR_API_KEY  — from cursor.com/dashboard/integrations → API Keys
+# Required GitHub secret (Settings -> Secrets -> Actions):
+#   CURSOR_API_KEY  - from cursor.com/dashboard/integrations -> API Keys
 #
-# Required Cursor Cloud Agents dashboard secret — NOT a GitHub secret:
-#   AIDLC_GH_CALLBACK_TOKEN — GitHub PAT with repo scope; lets the agent
+# Required Cursor Cloud Agents dashboard secret - NOT a GitHub secret:
+#   AIDLC_GH_CALLBACK_TOKEN - GitHub PAT with repo scope; lets the agent
 #                              clear aidlc_work:in_progress when it finishes.
-#                              Set at cursor.com/dashboard/cloud-agents → Environment.
+#                              Set at cursor.com/dashboard/cloud-agents -> Environment.
 #
-# Optional repo variables (Settings → Variables → Actions):
+# Optional repo variables (Settings -> Variables -> Actions):
 #   AIDLC_PROJECT_OWNER   defaults to queen-of-code
 #   AIDLC_PROJECT_NUMBER  defaults to 6
 
-name: AIDLC — launch Cursor agent
+name: AIDLC - launch Cursor agent
 
 on:
   issues:
