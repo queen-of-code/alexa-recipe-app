@@ -1,13 +1,9 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
+import { getFirebaseWebConfig } from './firebase.config.js'
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-}
+const firebaseConfig = getFirebaseWebConfig(import.meta.env)
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
