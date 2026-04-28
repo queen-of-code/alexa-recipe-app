@@ -172,6 +172,7 @@ export default function RecipeList() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-medium w-16"></th>
               <th className="text-left px-4 py-3 font-medium">Name</th>
               <th className="text-left px-4 py-3 font-medium">Prep Time (mins)</th>
               <th className="text-left px-4 py-3 font-medium">Servings</th>
@@ -183,7 +184,7 @@ export default function RecipeList() {
           <tbody className="divide-y divide-gray-100">
             {recipes.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-4 py-12 text-center text-gray-500">
+                <td colSpan="7" className="px-4 py-12 text-center text-gray-500">
                   {filterActive
                     ? 'No recipes match your ingredients.'
                     : 'No recipes yet — create your first one!'}
@@ -192,6 +193,18 @@ export default function RecipeList() {
             ) : (
               recipes.map((r) => (
                 <tr key={r.recipeId} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 w-16">
+                    {r.completedImageUrl ? (
+                      <img
+                        src={r.completedImageUrl}
+                        alt=""
+                        className="h-10 w-10 rounded object-cover border border-gray-200"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="inline-block h-10 w-10 rounded bg-gray-100 border border-gray-100" aria-hidden />
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-900 font-medium">{r.name}</td>
                   <td className="px-4 py-3 text-gray-600">{r.prepTimeMins ?? r.prepTime}</td>
                   <td className="px-4 py-3 text-gray-600">{r.servings}</td>

@@ -31,12 +31,22 @@ export default function RecipeDetail() {
       <div className="bg-white rounded-xl shadow p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">{recipe.name}</h1>
 
+        {recipe.completedImageUrl ? (
+          <div className="mb-6">
+            <img
+              src={recipe.completedImageUrl}
+              alt=""
+              className="max-h-64 w-auto rounded-lg border border-gray-200 object-contain"
+            />
+          </div>
+        ) : null}
+
         <div className="flex gap-3 mb-6">
           <span className="text-xs bg-violet-100 text-violet-700 font-medium px-3 py-1 rounded-full">
-            Prep: {recipe.prepTime} mins
+            Prep: {recipe.prepTimeMins ?? recipe.prepTime} mins
           </span>
           <span className="text-xs bg-indigo-100 text-indigo-700 font-medium px-3 py-1 rounded-full">
-            Cook: {recipe.cookTime} mins
+            Cook: {recipe.cookTimeMins ?? recipe.cookTime} mins
           </span>
           <span className="text-xs bg-gray-100 text-gray-700 font-medium px-3 py-1 rounded-full">
             Servings: {recipe.servings}

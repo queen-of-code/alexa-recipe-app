@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { createRecipe, updateRecipe, getRecipe } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
+import {
+  uploadCompletedRecipePhoto,
+  deleteCompletedRecipePhotoByUrl,
+} from '../storage/completedRecipePhoto'
 
 export default function RecipeForm() {
   const { recipeId } = useParams()
@@ -16,16 +20,36 @@ export default function RecipeForm() {
   const [ingredients, setIngredients] = useState([''])
   const [steps, setSteps] = useState([''])
   const [error, setError] = useState('')
+  const [completedImageUrl, setCompletedImageUrl] = useState('')
+  const [photoDraft, setPhotoDraft] = useState(null)
+  const [removePhoto, setRemovePhoto] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [objectPreviewUrl, setObjectPreviewUrl] = useState(null)
+
+  useEffect(() => {
+    if (!photoDraft) {
+      setObjectPreviewUrl(null)
+      return undefined
+    }
+    const url = URL.createObjectURL(photoDraft)
+    setObjectPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [photoDraft])
+
+  const previewUrl = removePhoto ? null : photoDraft ? objectPreviewUrl : completedImageUrl || null
 
   useEffect(() => {
     if (isEditing && user) {
       getRecipe(user.uid, recipeId).then((r) => {
         setName(r.name ?? '')
-        setPrepTime(r.prepTime != null ? String(r.prepTime) : '')
-        setCookTime(r.cookTime != null ? String(r.cookTime) : '')
+        setPrepTime(r.prepTimeMins != null ? String(r.prepTimeMins) : r.prepTime != null ? String(r.prepTime) : '')
+        setCookTime(r.cookTimeMins != null ? String(r.cookTimeMins) : r.cookTime != null ? String(r.cookTime) : '')
         setServings(r.servings != null ? String(r.servings) : '')
         setIngredients(Array.isArray(r.ingredients) && r.ingredients.length ? r.ingredients : [''])
         setSteps(Array.isArray(r.steps) && r.steps.length ? r.steps : [''])
+        setCompletedImageUrl(r.completedImageUrl ?? '')
+        setPhotoDraft(null)
+        setRemovePhoto(false)
       })
     }
   }, [isEditing, user, recipeId])
@@ -50,26 +74,79 @@ export default function RecipeForm() {
     setSteps((prev) => prev.map((v, idx) => (idx === i ? val : v)))
   }
 
+  function buildPayload() {
+    return {
+      name,
+      prepTimeMins: parseInt(prepTime, 10) || 0,
+      cookTimeMins: parseInt(cookTime, 10) || 0,
+      servings: parseInt(servings, 10) || 0,
+      ingredients: ingredients.filter((s) => s.trim()),
+      steps: steps.filter((s) => s.trim()),
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    setUploading(true)
     try {
-      const payload = {
-        name,
-        prepTimeMins: parseInt(prepTime) || 0,
-        cookTimeMins: parseInt(cookTime) || 0,
-        servings: parseInt(servings) || 0,
-        ingredients: ingredients.filter((s) => s.trim()),
-        steps: steps.filter((s) => s.trim()),
-      }
+      const basePayload = buildPayload()
+
       if (isEditing) {
-        await updateRecipe(user.uid, recipeId, payload)
+        let imageField = completedImageUrl
+        if (removePhoto) {
+          imageField = null
+          if (completedImageUrl) {
+            try {
+              await deleteCompletedRecipePhotoByUrl(completedImageUrl)
+            } catch {
+              /* orphan acceptable; recipe will clear metadata */
+            }
+          }
+        } else if (photoDraft) {
+          if (completedImageUrl) {
+            try {
+              await deleteCompletedRecipePhotoByUrl(completedImageUrl)
+            } catch {
+              /* continue with replace */
+            }
+          }
+          imageField = await uploadCompletedRecipePhoto(user.uid, recipeId, photoDraft)
+        }
+
+        await updateRecipe(user.uid, recipeId, {
+          ...basePayload,
+          completedImageUrl: imageField,
+        })
       } else {
-        await createRecipe(user.uid, payload)
+        const created = await createRecipe(user.uid, basePayload)
+        if (photoDraft && created?.recipeId) {
+          try {
+            const url = await uploadCompletedRecipePhoto(user.uid, created.recipeId, photoDraft)
+            await updateRecipe(user.uid, created.recipeId, {
+              ...created,
+              name: created.name ?? basePayload.name,
+              prepTimeMins: created.prepTimeMins ?? basePayload.prepTimeMins,
+              cookTimeMins: created.cookTimeMins ?? basePayload.cookTimeMins,
+              servings: created.servings ?? basePayload.servings,
+              ingredients: created.ingredients?.length ? created.ingredients : basePayload.ingredients,
+              steps: created.steps?.length ? created.steps : basePayload.steps,
+              completedImageUrl: url,
+            })
+          } catch (uploadErr) {
+            setError(
+              `Recipe was created but the photo failed to upload: ${uploadErr.message}. You can edit the recipe to try again.`
+            )
+            setUploading(false)
+            return
+          }
+        }
       }
       navigate('/recipes')
     } catch (err) {
       setError(err.message)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -142,6 +219,61 @@ export default function RecipeForm() {
                 onChange={(e) => setServings(e.target.value)}
               />
             </div>
+          </div>
+
+          {/* Completed dish photo (optional) */}
+          <div>
+            <span id="completed-photo-label" className="block text-sm font-medium text-gray-700 mb-2">
+              Photo of finished dish (optional)
+            </span>
+            <p className="text-xs text-gray-500 mb-2">JPEG, PNG, or WebP, up to 5 MB.</p>
+            {previewUrl ? (
+              <div className="mb-3 flex items-start gap-4">
+                <img
+                  src={previewUrl}
+                  alt=""
+                  className="h-24 w-24 rounded-lg object-cover border border-gray-200"
+                />
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-violet-700 font-medium cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      onChange={(ev) => {
+                        const f = ev.target.files?.[0]
+                        setPhotoDraft(f || null)
+                        setRemovePhoto(false)
+                      }}
+                    />
+                    Replace image
+                  </label>
+                  <button
+                    type="button"
+                    className="text-left text-sm text-red-600 hover:underline"
+                    onClick={() => {
+                      setRemovePhoto(true)
+                      setPhotoDraft(null)
+                    }}
+                  >
+                    Remove image
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <input
+                id="completed-photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                aria-labelledby="completed-photo-label"
+                className="block w-full text-sm text-gray-600"
+                onChange={(ev) => {
+                  const f = ev.target.files?.[0]
+                  setPhotoDraft(f || null)
+                  setRemovePhoto(false)
+                }}
+              />
+            )}
           </div>
 
           {/* Ingredients */}
@@ -220,9 +352,10 @@ export default function RecipeForm() {
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="bg-violet-700 hover:bg-violet-800 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              disabled={uploading}
+              className="bg-violet-700 hover:bg-violet-800 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-60"
             >
-              {isEditing ? 'Save' : 'Create'}
+              {uploading ? 'Saving…' : isEditing ? 'Save' : 'Create'}
             </button>
             <Link
               to="/recipes"

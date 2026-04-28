@@ -44,6 +44,8 @@ export async function createRecipe(userId, recipe) {
     body: JSON.stringify({ ...recipe, userId }),
   })
   if (!res.ok) throw new Error('Failed to create recipe')
+  if (res.status === 204) return null
+  return res.json()
 }
 
 export async function updateRecipe(userId, recipeId, recipe) {
