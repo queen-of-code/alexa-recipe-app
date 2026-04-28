@@ -10,11 +10,12 @@ services:
       - "4000:4000"  # Emulator UI
       - "8080:8080"  # Firestore
       - "9099:9099"  # Auth
+      - "9199:9199"  # Storage
     volumes:
       - ./frontend/firebase.json:/app/firebase.json
       - emulator_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 9099 && nc -z 127.0.0.1 8080"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 9099 && nc -z 127.0.0.1 8080 && nc -z 127.0.0.1 9199"]
       interval: 5s
       timeout: 3s
       retries: 24
@@ -47,6 +48,7 @@ services:
       - recipeapi
     environment:
       VITE_USE_EMULATOR: 'true'
+      VITE_USE_STORAGE_EMULATOR: 'true'
       VITE_API_URL: 'http://localhost:8081'
     volumes:
       - ./frontend:/app

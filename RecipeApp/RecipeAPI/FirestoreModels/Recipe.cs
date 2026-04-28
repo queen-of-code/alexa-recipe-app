@@ -43,6 +43,9 @@ namespace RecipeAPI.FirestoreModels
         [FirestoreProperty]
         public int VersionNumber { get; set; }
 
+        [FirestoreProperty]
+        public string CompletedImageUrl { get; set; }
+
         public Recipe() { }
 
         public Recipe(RecipeModel external)
@@ -59,6 +62,7 @@ namespace RecipeAPI.FirestoreModels
             UserId = external.UserId;
             Steps = new List<string>(external.Steps);
             Ingredients = new List<string>(external.Ingredients);
+            CompletedImageUrl = external.CompletedImageUrl;
         }
 
         public RecipeModel GenerateExternalRecipe()
@@ -75,6 +79,7 @@ namespace RecipeAPI.FirestoreModels
             };
             recipe.Steps.AddRange(Steps.Select(s => s));
             recipe.Ingredients.AddRange(Ingredients.Select(s => s));
+            recipe.CompletedImageUrl = CompletedImageUrl;
             return recipe;
         }
 

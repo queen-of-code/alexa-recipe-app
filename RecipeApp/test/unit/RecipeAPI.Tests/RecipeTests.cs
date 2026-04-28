@@ -76,6 +76,46 @@ namespace RecipeAPI.Tests
             Assert.Equal(external.Ingredients.Count - 1, copy.Ingredients.Count);
         }
 
+        [Fact]
+        public void CopyConstructor_CopiesCompletedImageUrl()
+        {
+            var external = new RecipeModel
+            {
+                CookTimeMins = 1,
+                LastUpdateTime = DateTime.UtcNow,
+                Name = "N",
+                RecipeId = "rid",
+                Servings = 1,
+                UserId = "u",
+                CompletedImageUrl = "https://example.com/x.png",
+            };
+            external.Ingredients.Add("a");
+            external.Steps.Add("s");
+
+            var copy = new Recipe(external);
+            Assert.Equal("https://example.com/x.png", copy.CompletedImageUrl);
+        }
+
+        [Fact]
+        public void GenerateExternalRecipe_IncludesCompletedImageUrl()
+        {
+            var recipe = new Recipe
+            {
+                UserId = "u",
+                Id = "id",
+                Name = "N",
+                CookTimeMins = 1,
+                PrepTimeMins = 1,
+                Servings = 1,
+                CompletedImageUrl = "https://x/y",
+            };
+            recipe.Ingredients.Add("a");
+            recipe.Steps.Add("s");
+
+            var ext = recipe.GenerateExternalRecipe();
+            Assert.Equal("https://x/y", ext.CompletedImageUrl);
+        }
+
         public static IEnumerable<object[]> GetRecipes()
         {
             yield return new object[] { Recipe1, Recipe2, false };

@@ -188,5 +188,84 @@ namespace RecipeAPI.TestInt
                 await client.DeleteAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
             }
         }
+
+        [Fact]
+        public async Task Post_Create_ReturnsRecipeId_InBody()
+        {
+            var token = await GetTestTokenAsync();
+            var userId = GetUidFromIdToken(token);
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var testRecipe = new RecipeModel
+            {
+                Name = "POST create test " + Guid.NewGuid().ToString("N")[..8],
+                UserId = userId,
+                PrepTimeMins = 1,
+                CookTimeMins = 2,
+                Servings = 2,
+            };
+            testRecipe.Ingredients.Add("salt");
+            testRecipe.Steps.Add("mix");
+
+            var content = new StringContent(JsonSerializer.Serialize(testRecipe), Encoding.UTF8, "application/json");
+            var postResult = await client.PostAsync($"{ApiURL}/api/values/{userId}", content);
+            Assert.True(postResult.IsSuccessStatusCode, $"POST failed: {postResult.StatusCode}");
+            Assert.Equal(System.Net.HttpStatusCode.Created, postResult.StatusCode);
+
+            var body = await postResult.Content.ReadAsStringAsync();
+            var created = JsonSerializer.Deserialize<RecipeModel>(body,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(created);
+            Assert.False(string.IsNullOrWhiteSpace(created.RecipeId));
+            Assert.Equal(userId, created.UserId);
+
+            await client.DeleteAsync($"{ApiURL}/api/values/{userId}/{created.RecipeId}");
+        }
+
+        [Fact]
+        public async Task Put_WithCompletedImageUrl_RoundTrips()
+        {
+            var token = await GetTestTokenAsync();
+            var userId = GetUidFromIdToken(token);
+            var testRecipeId = "integration-img-" + Guid.NewGuid().ToString("N")[..8];
+            var allowedUrl =
+                $"https://firebasestorage.googleapis.com/v0/b/queen-of-code.appspot.com/o/users%2F{Uri.EscapeDataString(userId)}%2Frecipes%2F{testRecipeId}%2Fcompleted.jpg?alt=media";
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
+            {
+                var testRecipe = new RecipeModel
+                {
+                    RecipeId = testRecipeId,
+                    Name = "With image",
+                    UserId = userId,
+                    PrepTimeMins = 1,
+                    CookTimeMins = 1,
+                    Servings = 1,
+                    CompletedImageUrl = allowedUrl,
+                };
+                testRecipe.Ingredients.Add("a");
+                testRecipe.Steps.Add("b");
+
+                var saveContent = new StringContent(JsonSerializer.Serialize(testRecipe), Encoding.UTF8, "application/json");
+                var saveResult = await client.PutAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}", saveContent);
+                Assert.True(saveResult.IsSuccessStatusCode, saveResult.StatusCode.ToString());
+
+                var getResult = await client.GetAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
+                getResult.EnsureSuccessStatusCode();
+                var json = await getResult.Content.ReadAsStringAsync();
+                var got = JsonSerializer.Deserialize<RecipeModel>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                Assert.Equal(allowedUrl, got.CompletedImageUrl);
+            }
+            finally
+            {
+                await client.DeleteAsync($"{ApiURL}/api/values/{userId}/{testRecipeId}");
+            }
+        }
     }
 }

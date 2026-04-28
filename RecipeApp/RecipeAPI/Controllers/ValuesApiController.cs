@@ -99,8 +99,11 @@ namespace RecipeAPI.Controllers
 
             try
             {
-                var result = await RecipeService.SaveRecipe(new Recipe(value)).ConfigureAwait(false);
-                return result ? new OkResult() : new BadRequestResult();
+                var saved = await RecipeService.SaveRecipe(new Recipe(value)).ConfigureAwait(false);
+                if (saved == null)
+                    return new BadRequestResult();
+
+                return StatusCode(201, saved.GenerateExternalRecipe());
             }
 #pragma warning disable CA1031
             catch (Exception)
@@ -122,8 +125,8 @@ namespace RecipeAPI.Controllers
             if (string.IsNullOrWhiteSpace(converted.Id)) converted.Id = recipeId;
             if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
 
-            var result = await RecipeService.SaveRecipe(converted).ConfigureAwait(false);
-            return result ? new AcceptedResult() : new BadRequestResult();
+            var saved = await RecipeService.SaveRecipe(converted).ConfigureAwait(false);
+            return saved != null ? new AcceptedResult() : new BadRequestResult();
         }
 
         // DELETE api/values/{userId}/{recipeId}
