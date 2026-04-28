@@ -29,9 +29,10 @@ jobs:
       - name: Launch AIDLC Cursor agent
         uses: actions/github-script@v7
         env:
-          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          PROJECT_OWNER:  ${{ vars.AIDLC_PROJECT_OWNER }}
-          PROJECT_NUMBER: ${{ vars.AIDLC_PROJECT_NUMBER }}
+          CURSOR_API_KEY:      ${{ secrets.CURSOR_API_KEY }}
+          PROJECT_OWNER:       ${{ vars.AIDLC_PROJECT_OWNER }}
+          PROJECT_NUMBER:      ${{ vars.AIDLC_PROJECT_NUMBER }}
+          AIDLC_PROJECT_PAT:   ${{ secrets.AIDLC_PROJECT_PAT }}
         with:
           github-token: ${{ github.token }}
           script: |
@@ -53,21 +54,32 @@ jobs:
               const projectOwner  = process.env.PROJECT_OWNER  || 'queen-of-code';
               const projectNumber = parseInt(process.env.PROJECT_NUMBER || '6', 10);
 
-              const result = await github.graphql(`
-                query($login: String!, $number: Int!) {
-                  user(login: $login) {
-                    projectV2(number: $number) {
-                      items(first: 100) {
-                        nodes {
-                          fieldValueByName(name: "AIDLC phase") {
-                            ... on ProjectV2ItemFieldSingleSelectValue { name }
+              // GITHUB_TOKEN does not have read:project scope for personal
+              // account Projects v2. Use AIDLC_PROJECT_PAT (repo secret, PAT
+              // with project scope) for this GraphQL call only.
+              const projectToken = process.env.AIDLC_PROJECT_PAT || process.env.GITHUB_TOKEN;
+              const gqlRes = await fetch('https://api.github.com/graphql', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + projectToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: `
+                  query($login: String!, $number: Int!) {
+                    user(login: $login) {
+                      projectV2(number: $number) {
+                        items(first: 100) {
+                          nodes {
+                            fieldValueByName(name: "AIDLC phase") {
+                              ... on ProjectV2ItemFieldSingleSelectValue { name }
+                            }
+                            content { ... on Issue { number } }
                           }
-                          content { ... on Issue { number } }
                         }
                       }
                     }
-                  }
-                }`, { login: projectOwner, number: projectNumber });
+                  }`, variables: { login: projectOwner, number: projectNumber } }),
+              });
+              const gqlJson = await gqlRes.json();
+              if (gqlJson.errors) { core.setFailed('GraphQL error: ' + JSON.stringify(gqlJson.errors)); return; }
+              const result = gqlJson.data;
 
               const items = result?.user?.projectV2?.items?.nodes ?? [];
               const item  = items.find(i => i.content?.number === issueNumber);
