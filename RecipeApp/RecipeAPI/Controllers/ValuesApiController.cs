@@ -39,14 +39,14 @@ namespace RecipeAPI.Controllers
 
         // GET api/values/{userId}
         [HttpGet("{userId}")]
-        public async Task<IActionResult> Get(string userId)
+        public async Task<IActionResult> Get(string userId, [FromQuery] bool favoritesOnly = false)
         {
             var auth = EnsureRouteUserMatchesToken(userId);
             if (auth != null)
                 return auth;
 
             var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
-            return Ok(recipes?.Select(s => s.GenerateExternalRecipe()));
+            return Ok(RecipeListOrdering.Apply(recipes, favoritesOnly));
         }
 
         // GET api/values/{userId}/{recipeId}
@@ -74,7 +74,7 @@ namespace RecipeAPI.Controllers
 
             var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
             var filtered = IngredientMatcher.Filter(recipes, segmentGroups);
-            return Ok(filtered.Select(s => s.GenerateExternalRecipe()));
+            return Ok(RecipeListOrdering.Apply(filtered, favoritesOnly: false));
         }
 
         // POST api/values/{userId}
@@ -139,6 +139,38 @@ namespace RecipeAPI.Controllers
 
             var result = await RecipeService.DeleteRecipe(userId, recipeId).ConfigureAwait(false);
             return result ? new OkResult() : new BadRequestResult();
+        }
+
+        // PUT api/values/{userId}/{recipeId}/favorite
+        [HttpPut("{userId}/{recipeId}/favorite")]
+        public async Task<IActionResult> SetFavorite(string userId, string recipeId)
+        {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
+            var saved = await RecipeService.SetFavorite(userId, recipeId, isFavorite: true)
+                .ConfigureAwait(false);
+            if (saved == null)
+                return NotFound();
+
+            return Ok(saved.GenerateExternalRecipe());
+        }
+
+        // DELETE api/values/{userId}/{recipeId}/favorite
+        [HttpDelete("{userId}/{recipeId}/favorite")]
+        public async Task<IActionResult> ClearFavorite(string userId, string recipeId)
+        {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
+            var saved = await RecipeService.SetFavorite(userId, recipeId, isFavorite: false)
+                .ConfigureAwait(false);
+            if (saved == null)
+                return NotFound();
+
+            return Ok(saved.GenerateExternalRecipe());
         }
 
         /// <summary>

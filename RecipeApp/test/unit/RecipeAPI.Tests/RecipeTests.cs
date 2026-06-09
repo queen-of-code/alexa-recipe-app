@@ -116,6 +116,46 @@ namespace RecipeAPI.Tests
             Assert.Equal("https://x/y", ext.CompletedImageUrl);
         }
 
+        [Fact]
+        public void CopyConstructor_CopiesIsFavorite()
+        {
+            var external = new RecipeModel
+            {
+                CookTimeMins = 1,
+                LastUpdateTime = DateTime.UtcNow,
+                Name = "N",
+                RecipeId = "rid",
+                Servings = 1,
+                UserId = "u",
+                IsFavorite = true,
+            };
+            external.Ingredients.Add("a");
+            external.Steps.Add("s");
+
+            var copy = new Recipe(external);
+            Assert.True(copy.IsFavorite);
+        }
+
+        [Fact]
+        public void GenerateExternalRecipe_IncludesIsFavorite()
+        {
+            var recipe = new Recipe
+            {
+                UserId = "u",
+                Id = "id",
+                Name = "N",
+                CookTimeMins = 1,
+                PrepTimeMins = 1,
+                Servings = 1,
+                IsFavorite = true,
+            };
+            recipe.Ingredients.Add("a");
+            recipe.Steps.Add("s");
+
+            var ext = recipe.GenerateExternalRecipe();
+            Assert.True(ext.IsFavorite);
+        }
+
         public static IEnumerable<object[]> GetRecipes()
         {
             yield return new object[] { Recipe1, Recipe2, false };
