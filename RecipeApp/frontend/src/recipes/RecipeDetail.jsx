@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getRecipe, deleteRecipe } from '../api/recipeApi'
+import { getRecipe, deleteRecipe, setFavorite, clearFavorite } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
 
 export default function RecipeDetail() {
@@ -17,6 +17,18 @@ export default function RecipeDetail() {
       .catch((err) => setError(err.message))
   }, [user, recipeId])
 
+  async function handleToggleFavorite() {
+    if (!user || !recipe) return
+    try {
+      const updated = recipe.isFavorite
+        ? await clearFavorite(user.uid, recipeId)
+        : await setFavorite(user.uid, recipeId)
+      setRecipe((prev) => ({ ...prev, ...updated }))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   async function handleDelete() {
     if (!window.confirm('Delete this recipe?')) return
     await deleteRecipe(user.uid, recipeId)
@@ -26,10 +38,24 @@ export default function RecipeDetail() {
   if (error) return <p className="text-center mt-8 text-red-600">{error}</p>
   if (!recipe) return <p className="text-center mt-8 text-gray-500">Loading...</p>
 
+  const favoriteLabel = recipe.isFavorite ? 'Remove from favorites' : 'Add to favorites'
+
   return (
     <div className="max-w-3xl mx-auto mt-8 px-4">
       <div className="bg-white rounded-xl shadow p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{recipe.name}</h1>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h1 className="text-3xl font-bold text-gray-900">{recipe.name}</h1>
+          <button
+            type="button"
+            aria-pressed={Boolean(recipe.isFavorite)}
+            aria-label={favoriteLabel}
+            title={favoriteLabel}
+            className={`text-2xl leading-none shrink-0 ${recipe.isFavorite ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400'}`}
+            onClick={handleToggleFavorite}
+          >
+            {recipe.isFavorite ? '★' : '☆'}
+          </button>
+        </div>
 
         {recipe.completedImageUrl ? (
           <div className="mb-6">

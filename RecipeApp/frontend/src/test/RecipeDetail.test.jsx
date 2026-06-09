@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import RecipeDetail from '../recipes/RecipeDetail'
 
@@ -8,8 +9,13 @@ vi.mock('../auth/AuthContext', () => ({
 }))
 
 const mockGetRecipe = vi.fn()
+const mockSetFavorite = vi.fn()
+const mockClearFavorite = vi.fn()
 vi.mock('../api/recipeApi', () => ({
   getRecipe: (...args) => mockGetRecipe(...args),
+  setFavorite: (...args) => mockSetFavorite(...args),
+  clearFavorite: (...args) => mockClearFavorite(...args),
+  deleteRecipe: vi.fn().mockResolvedValue(),
 }))
 
 const sampleRecipe = {
@@ -26,6 +32,8 @@ describe('RecipeDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetRecipe.mockResolvedValue(sampleRecipe)
+    mockSetFavorite.mockResolvedValue({ ...sampleRecipe, isFavorite: true })
+    mockClearFavorite.mockResolvedValue({ ...sampleRecipe, isFavorite: false })
   })
 
   function renderPage() {
@@ -65,5 +73,17 @@ describe('RecipeDetail', () => {
     })
     const ul = document.querySelector('ul')
     expect(ul).toBeInTheDocument()
+  })
+
+  it('favorite toggle calls setFavorite', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Test Pasta')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /add to favorites/i }))
+
+    await waitFor(() => {
+      expect(mockSetFavorite).toHaveBeenCalledWith('test-uid', 'abc123')
+    })
   })
 })

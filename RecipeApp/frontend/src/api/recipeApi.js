@@ -10,9 +10,13 @@ async function getAuthHeaders() {
   }
 }
 
-export async function getAllRecipes(userId) {
+export async function getAllRecipes(userId, options = {}) {
   const headers = await getAuthHeaders()
-  const res = await fetch(`${API_BASE}/api/values/${userId}`, { headers })
+  const params = new URLSearchParams()
+  if (options.favoritesOnly) params.set('favoritesOnly', 'true')
+  const qs = params.toString()
+  const url = `${API_BASE}/api/values/${userId}${qs ? `?${qs}` : ''}`
+  const res = await fetch(url, { headers })
   if (!res.ok) throw new Error('Failed to fetch recipes')
   return res.json()
 }
@@ -65,4 +69,25 @@ export async function deleteRecipe(userId, recipeId) {
     headers,
   })
   if (!res.ok) throw new Error('Failed to delete recipe')
+}
+
+export async function setFavorite(userId, recipeId) {
+  const headers = await getAuthHeaders()
+  const res = await fetch(`${API_BASE}/api/values/${userId}/${recipeId}/favorite`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({ favorite: true }),
+  })
+  if (!res.ok) throw new Error('Failed to favorite recipe')
+  return res.json()
+}
+
+export async function clearFavorite(userId, recipeId) {
+  const headers = await getAuthHeaders()
+  const res = await fetch(`${API_BASE}/api/values/${userId}/${recipeId}/favorite`, {
+    method: 'DELETE',
+    headers,
+  })
+  if (!res.ok) throw new Error('Failed to unfavorite recipe')
+  return res.json()
 }
