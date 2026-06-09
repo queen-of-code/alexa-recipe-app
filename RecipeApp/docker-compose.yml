@@ -45,9 +45,8 @@ services:
     command: sh -c "npm install && npm run dev -- --host"
     depends_on:
       - recipeapi
-    environment:
-      VITE_USE_EMULATOR: 'true'
-      VITE_API_URL: 'http://localhost:8081'
+    env_file:
+      - ./frontend/.env.emulator
     volumes:
       - ./frontend:/app
       - /app/node_modules

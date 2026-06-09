@@ -1,4 +1,0 @@
-services:
-  website:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development

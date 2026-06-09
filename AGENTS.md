@@ -41,9 +41,9 @@ These **orchestrate** AIDLC phases and **pull in** **library** skills (`architec
 | **Work item for a Feature** | GitHub issue on `queen-of-code/alexa-recipe-app`; URL pattern `github.com/queen-of-code/alexa-recipe-app/issues/NNN` |
 | **Phase signal** | "AIDLC phase" single-select field on [project board #6](https://github.com/users/queen-of-code/projects/6); label `aidlc_work:unstarted` is the automation trigger; `aidlc_work:in_progress` means an agent run is active |
 | **Parent ↔ `feature/<slug>/`** | Issue body includes `AIDLC feature folder: feature/<kebab-slug>/` |
-| **Automation entry points** | [`.github/workflows/aidlc-launch.yml`](.github/workflows/aidlc-launch.yml) — triggered by `issues.labeled` (`aidlc_work:unstarted`); reads AIDLC phase from v2 board, launches Cursor Cloud Agent, tracks via issue comment |
+| **Automation entry points** | **[`aidlc-agent-launch.yml`](.github/workflows/aidlc-agent-launch.yml)** — **`issues.labeled`** (`aidlc_work:unstarted`) launches the Cursor Cloud Agent against the phase read from Projects v2. **[`aidlc-board-label-sync.yml`](.github/workflows/aidlc-board-label-sync.yml)** — optional **`workflow_dispatch`** / **`repository_dispatch`** to apply **`aidlc_work:unstarted`** after a board move ([docs/github-queue.md](docs/github-queue.md)). **[`aidlc-phase-advance.yml`](.github/workflows/aidlc-phase-advance.yml)** — on merged phase PRs, advances board + label. |
 
-**Notes:** Uses GitHub Projects v2 (personal account — `projects_v2_item` events are org-only so the trigger is `issues.labeled` instead). To start automation: move the board card to the target phase column, then apply `aidlc_work:unstarted` to the issue. The Cursor agent clears `aidlc_work:in_progress` when done via `$AIDLC_GH_CALLBACK_TOKEN` (set in Cursor Cloud Agents dashboard, not in this repo). Do **not** commit tokens. See [docs/github-queue.md](docs/github-queue.md) for full setup.
+**Notes:** GitHub Actions does **not** support **`on: projects_v2_item`**; org webhooks emit **`projects_v2_item`** per [official payloads](https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=edited#projects_v2_item). Cursor agents clear **`aidlc_work:in_progress`** via **`$AIDLC_GH_CALLBACK_TOKEN`** (Cursor dashboard only — never commit). See [docs/github-queue.md](docs/github-queue.md).
 
 ## GitHub queue
 

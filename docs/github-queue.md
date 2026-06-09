@@ -1,7 +1,8 @@
 # GitHub Issues + Projects v2 (AIDLC automation)
 
 Work is tracked on a **GitHub Projects v2** board with an **"AIDLC phase"** single-select field.
-Automation is **event-driven** — no cron. An agent launches the moment you signal readiness.
+
+**`aidlc_work:unstarted`** is what wakes **`issues.labeled`** → [`aidlc-agent-launch.yml`](../.github/workflows/aidlc-agent-launch.yml). You get that label by: applying it on the issue manually; running **[`aidlc-board-label-sync.yml`](#apply-unstarted-label-event-driven)** once per board move (no polling); letting **[`aidlc-phase-advance.yml`](../.github/workflows/aidlc-phase-advance.yml)** apply it after you merge a phase PR; or (organization Projects only) driving **`repository_dispatch`** from a **`projects_v2_item`** webhook relay. Actions does **not** support **`on: projects_v2_item`** in workflow YAML ([gh-aw#25336](https://github.com/github/gh-aw/issues/25336)); webhook availability is [org-only in the official schema](https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=edited#projects_v2_item).
 
 Board: [AIDLC — alexa-recipe-app (project #6)](https://github.com/users/queen-of-code/projects/6)
 
@@ -14,6 +15,7 @@ Board: [AIDLC — alexa-recipe-app (project #6)](https://github.com/users/queen-
 | Where | Name | Value |
 |-------|------|-------|
 | Repo Settings → Secrets → Actions | `CURSOR_API_KEY` | API key from [cursor.com/dashboard/integrations](https://cursor.com/dashboard/integrations) → **API Keys** |
+| Repo Settings → Secrets → Actions | `AIDLC_PROJECT_PAT` | Personal access token with **`repo`** and **`project`** (read/write). Used by **`aidlc-agent-launch.yml`** and **`aidlc-board-label-sync.yml`** to call GraphQL for your user-owned Projects v2 board (same limitation documented in the agent launch workflow comments). Not the same secret as **`AIDLC_GH_CALLBACK_TOKEN`**. |
 | Repo Settings → Variables → Actions (optional) | `AIDLC_PROJECT_OWNER` | `queen-of-code` |
 | Repo Settings → Variables → Actions (optional) | `AIDLC_PROJECT_NUMBER` | `6` |
 
@@ -74,10 +76,10 @@ Canonical phase definitions: [AIDLC.md](AIDLC.md).
 
 ### Trigger an agent run
 
-1. Move the board card to the target phase column (e.g. **Plan**).
-2. Apply the label **`aidlc_work:unstarted`** to the issue.
+1. Move the board card or set **AIDLC phase** so the issue is in **Plan**, **Design**, **Build**, **Review**, or **Ship**.
+2. Ensure **`aidlc_work:unstarted`** — see **[Apply unstarted label (event-driven)](#apply-unstarted-label-event-driven)** or add the label manually.
 
-That label fires the [`aidlc-launch.yml`](../.github/workflows/aidlc-launch.yml) workflow, which:
+That label fires **`aidlc-agent-launch.yml`**:
 - Reads the current AIDLC phase from the board
 - Swaps the label to `aidlc_work:in_progress`
 - Launches a Cursor Cloud Agent with the right skill prompt
@@ -96,20 +98,54 @@ For **Build** phase the agent auto-creates a PR. Review and merge that PR before
 
 ### Manual trigger
 
-To launch an agent without touching the label (e.g. for testing or re-runs):
+To launch an agent without waiting for labels (e.g. for testing or re-runs):
 
 ```bash
-gh workflow run aidlc-launch.yml \
+gh workflow run aidlc-agent-launch.yml \
   -f issue_number=123 \
   -f phase=plan
 ```
 
 ---
 
-## Why not `project_card` or `projects_v2_item`?
+## Apply unstarted label (event-driven)
 
-- **`project_card`** (Projects classic) — GitHub no longer allows creating classic projects on personal accounts (deprecated late 2023).
-- **`projects_v2_item`** (Projects v2) — only fires for **org-owned** projects. `queen-of-code` is a personal account, so this event never reaches repo Actions.
-- **`issues.labeled`** fires for all repos including personal accounts, making it the correct event-driven trigger here.
+Workflow: **[`aidlc-board-label-sync.yml`](../.github/workflows/aidlc-board-label-sync.yml)** — **`workflow_dispatch`** (input **`issue_number`**) or **`repository_dispatch`** (event type **`apply_aidlc_unstarted_if_actionable`**, **`client_payload.issue_number`**). Each run reads the linked issue’s **AIDLC phase** from Projects v2 via GraphQL; if the phase is actionable (Plan / Design / Build / Review / Ship), clears **`aidlc_work:in_progress`**, applies **`aidlc_work:unstarted`** (no cron, no snapshot file).
 
-This pattern is documented in [AI-DLC/docs/GITHUB-AIDLC-PROJECT.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/GITHUB-AIDLC-PROJECT.md) as the personal-account path.
+Patterns:
+
+### After moving a card (manual or script)
+
+```bash
+gh workflow run aidlc-board-label-sync.yml -f issue_number=123
+```
+
+### From automation (`repository_dispatch`)
+
+Uses a PAT with permission for **[repository dispatch events](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event)**:
+
+```bash
+curl -L -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer $GH_TOKEN_FOR_DISPATCH" \
+  https://api.github.com/repos/queen-of-code/alexa-recipe-app/dispatches \
+  -d '{"event_type":"apply_aidlc_unstarted_if_actionable","client_payload":{"issue_number":123}}'
+```
+
+### Organization Projects + webhook
+
+GitHub delivers **`projects_v2_item`** to **organization webhooks** ([availability](https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=edited#projects_v2_item)), not **`on:` Actions triggers**. Middleware can forward **`POST /repos/{owner}/{repo}/dispatches`** so each field edit becomes one dispatch — that is genuinely event-driven.
+
+### Merge path (already wired)
+
+**[`aidlc-phase-advance.yml`](../.github/workflows/aidlc-phase-advance.yml)** updates the board **and** **`aidlc_work:unstarted`** when you merge an AIDLC phase PR.
+
+---
+
+## Why not native Project events in Actions?
+
+- **`projects_v2_item` workflow trigger** — invalid YAML today ([discussion](https://github.com/github/gh-aw/issues/25336)).
+- **`project_card`** — classic Projects only ([docs](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#project_card)).
+- **`issues.labeled`** — reliable launcher once **`aidlc_work:unstarted`** exists.
+
+Further context: **[AI-DLC GitHub+AIDLC queue doc](https://github.com/queen-of-code/AI-DLC/blob/main/docs/GITHUB-AIDLC-PROJECT.md)** · template **[aidlc-board-label-sync.yml](https://github.com/queen-of-code/AI-DLC/blob/main/docs/templates/github-workflows/aidlc-board-label-sync.yml)**.
