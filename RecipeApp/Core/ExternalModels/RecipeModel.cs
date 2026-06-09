@@ -41,5 +41,8 @@ namespace RecipeApp.Core.ExternalModels
         /// </summary>
         [JsonPropertyName("completedImageUrl")]
         public string CompletedImageUrl { get; set; }
+
+        [JsonPropertyName("isFavorite")]
+        public bool IsFavorite { get; set; }
     }
 }
