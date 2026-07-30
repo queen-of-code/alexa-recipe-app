@@ -6,6 +6,6 @@
         Lunch,
         Dinner,
         Snack,
-        Other
+        Other,
     }
 }
