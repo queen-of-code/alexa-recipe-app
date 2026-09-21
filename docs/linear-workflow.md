@@ -39,7 +39,7 @@ For new work, specs are **Linear Documents** on the Feature issue:
 
 **ADRs** stay in `docs/adr/` in git.
 
-> **Migration note:** Older demo features may still have files under `feature/<slug>/` until Phase 2 migration completes. New work uses Linear Documents only.
+**Migrated demo features** (2026-09-21): [QUE-5](https://linear.app/queen-of-code/issue/QUE-5/recipe-ingredient-search) (Review), [QUE-6](https://linear.app/queen-of-code/issue/QUE-6/recipe-favoriting) (Design), [QUE-7](https://linear.app/queen-of-code/issue/QUE-7/recipe-completed-photo-optional) (Design). Index: [feature/README.md](../feature/README.md).
 
 ---
 

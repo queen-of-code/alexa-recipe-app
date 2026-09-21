@@ -13,8 +13,8 @@ This repository demonstrates **Melissa’s AIDLC** (AI Development Lifecycle) on
 
 | Slash | AIDLC phases | Artifacts (Linear-native) |
 |-------|----------------|---------------------------|
-| `/plan` | Plan | Linear Document `Product Spec — …` |
-| `/design` | Design | Linear Document `Tech Spec — …` + slice sub-issues |
+| `/plan` | Plan | Linear Document `Product Spec — …` on the Feature issue |
+| `/design` | Design | Linear Document `Tech Spec — …` + slice sub-issues (born inert) |
 | `/build` | Build + Test (TDD) | **Open PR + green CI** (`QUE-###` in title); triage review comments after `/review` |
 | `/review` | Test gate + Review | **PR comments** per dimension + Linear Document `Review report — …` |
 | `/ship` | Validate | Linear Document `Validate scorecard — …`; then **`/learn`** for ADRs |
