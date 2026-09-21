@@ -17,7 +17,9 @@ This repo doubles as a **hands-on demo** for the **AI Development Lifecycle (AID
 
 **What to run:** phase orchestrator skills **`/plan`**, **`/build`**, **`/review`**, **`/ship`** (Claude Code / Cursor Agent — see [.claude/skills/](.claude/skills/)). Those skills pull in domain skills (frontend, backend, testing, …) for you.
 
-**Docs:** [docs/aidlc-showcase.md](docs/aidlc-showcase.md) · [docs/github-queue.md](docs/github-queue.md) · [AGENTS.md](AGENTS.md) (for AI assistants only)
+**Docs:** [docs/aidlc-showcase.md](docs/aidlc-showcase.md) · [docs/linear-workflow.md](docs/linear-workflow.md) · [AGENTS.md](AGENTS.md) (for AI assistants only)
+
+**Work tracking:** [Linear — Alexa Recipe App](https://linear.app/queen-of-code/project/alexa-recipe-app-d26902350ffe) (team `QUE`). Specs live as Linear Documents on Feature issues; repo-specific phase skills in [`.cursor/skills/`](.cursor/skills/).
 
 **Git:** this repository’s default branch is **`master`** — open PRs against `master`, not `main`.
 
