@@ -1,0 +1,58 @@
+{
+  "name": "Agentic Linear - Design",
+  "prompts": [
+    {
+      "prompt": "GUARD — FIRST, silently: if {{issue.status}} != \"Design\", STOP. No action of any kind; no output.\nA wrong-state trigger is a SILENT no-op — never post an \"aborted\" message.\n\nOnly if status == \"Design\":\nIssue: {{issue.title}} — {{issue.description}} — {{issue.url}}\n\nRead `.cursor/skills/design/SKILL.md` + `docs/AIDLC.md` (Design; The slice rule). \n- Read the approved Product Spec Document on the issue.\n- Draft the Tech Spec as a LINEAR DOCUMENT \"Tech Spec — <name>\" on the issue (architecture,\n  interfaces, data model, per-section acceptance criteria, testing, risks). Run the review passes;\n  ground against the Product Spec. The Tech Spec is a Linear Document — NO feature/<slug>/, NO\n  tech-spec.md, NO spec PR.\n- ADRs are REPO FILES: write architectural ADRs to `docs/adr/NNNN-title.md` on a branch and open a\n  PR that contains ONLY `docs/adr/` files. (This is the one PR Design may open — ADR files, never a spec.)\n- Emit the slice plan. CRITICAL: a slice's STATE is the build trigger. Slices are born INERT.\n    1 slice  → NO sub-issue; the Feature itself is the build unit (keeps its Documents). Do NOT build\n               it now. Leave the Feature in Design — the human moving it to Build+Test starts the build,\n               exactly like a slice.\n    2–9      → create N slice sub-issues on the Feature in the team's BACKLOG state (\"Not Started\") —\n               NEVER \"Build+Test\". Chain them serially with blockedBy, UN-DELEGATED, UN-STARTED.\n               Creating (or moving) a slice in Build+Test is what auto-dispatches a build — never do it.\n    10+      → split the Feature into two, linked by \"related to\".\n- Post ONE @mention comment to the assignee: \"Tech Spec + slice plan ready — review in Linear and\n  move to Build+Test to approve.\"\n- Leave the issue in Design. The human moving it to Build+Test IS the approval gate; that gate is\n  what releases the first slice (or builds the 1-slice Feature). Design never enters Build+Test itself.\nDo NOT: write *.md spec files or open a spec PR; add \"needs-a-human\"; delegate the slices; start Build;\n  move THIS issue or ANY sub-issue into \"Build+Test\" (that state dispatches a build — the human gate\n  is the only path in).\n\nWhen you begin working on this ticket, set the 'bot-working' label on it in Linear and comment with the Cursor URL someone can click on to see the agent at work. When you are done working and have completed the last step, clear the label. "
+    }
+  ],
+  "model": "grok-4.7",
+  "triggers": [
+    {
+      "linear": {
+        "statusChanged": {
+          "statusIds": [
+            "411207af-f1c1-4cd8-a130-2a546c33f425"
+          ]
+        },
+        "projectIds": [
+          "e8693be3-5af1-4089-b908-944f9967d541"
+        ],
+        "teamIds": [
+          "5e36991d-7a2b-4776-a9fe-e7d6c4abc31a"
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "mcp": {
+        "server": {
+          "name": "Linear",
+          "id": "5424658"
+        }
+      }
+    }
+  ],
+  "agentOptions": {
+    "environmentPublicId": "6e835264-408a-4726-8cf9-fbd0c15f22af"
+  },
+  "memoryEnabled": true,
+  "modelSelection": {
+    "modelId": "grok-4.7",
+    "parameters": [
+      {
+        "id": "context",
+        "value": "256k"
+      },
+      {
+        "id": "reasoning_effort",
+        "value": "high"
+      },
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ],
+    "maxMode": true
+  }
+}

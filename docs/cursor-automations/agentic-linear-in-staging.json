@@ -1,0 +1,58 @@
+{
+  "name": "Agentic Linear - In Staging",
+  "prompts": [
+    {
+      "prompt": "GUARD — FIRST, silently: if {{issue.status}} != \"In Staging\", STOP. No action of any kind; no output.\nA wrong-state trigger is a SILENT no-op — never post an \"aborted\" message.\n\nOnly if status == \"In Staging\":\nIssue: {{issue.title}} — {{issue.description}} — {{issue.url}}\n\nRead `.cursor/skills/ship/SKILL.md` (Level 1) + `docs/AIDLC.md` (In Staging). Post-merge only.\nTools: Chrome DevTools MCP + AGENT_PROD_* creds\n0 — Orient: identify the merged PR + merge SHA; shape = slice / 1-slice Feature / reactive.\n1 — Deploy CI (HARD GATE): poll \"Deploy to Staging\" for the merge SHA to completion (15–45 min).\n    conclusion != success → FAIL(ci_deploy). Watch \"UI smoke (staging)\" if present → FAIL(ci_smoke).\n2 — Browser (Chrome DevTools MCP): log into AGENT_PROD_URL with AGENT_PROD_USERNAME and AGENT_PROD_PASSWORD credentials to exercise THIS\n    issue's acceptance criteria; screenshots for blocking mismatches. Backend-only: API instead.\n3 — Logs (staging): error/latency regressions on touched routes, merge→now → FAIL(observability).\n4 — Verdict (state moves via bot key):\n    PASS → validation-PASS comment on the issue; then by shape: slice → Done (if LAST slice, move the\n      parent to Ship); 1-slice Feature → Ship; reactive → Done.\n    FAIL → validation-FAIL comment (category + links + evidence) → move the issue to Build+Test +\n      @mention. No new issues, no rework labels.\n\nWhen you begin working on this ticket, set the 'bot-working' label on it in Linear and comment with the Cursor URL someone can click on to see the agent at work. When you are done working and have completed the last step, clear the label. "
+    }
+  ],
+  "model": "composer-2.5",
+  "triggers": [
+    {
+      "linear": {
+        "statusChanged": {
+          "statusIds": [
+            "d35f335f-45e4-45ec-8417-1cb395facabd"
+          ]
+        },
+        "projectIds": [
+          "e8693be3-5af1-4089-b908-944f9967d541"
+        ],
+        "teamIds": [
+          "5e36991d-7a2b-4776-a9fe-e7d6c4abc31a"
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "mcp": {
+        "server": {
+          "name": "Linear",
+          "id": "5424658"
+        }
+      }
+    },
+    {
+      "mcp": {
+        "server": {
+          "name": "Chrome-devtools",
+          "id": "5491420"
+        }
+      }
+    }
+  ],
+  "agentOptions": {
+    "environmentPublicId": "ad5b5006-b6a2-11f1-bb68-864e54d14197"
+  },
+  "memoryEnabled": true,
+  "modelSelection": {
+    "modelId": "composer-2.5",
+    "parameters": [
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ],
+    "maxMode": true
+  }
+}

@@ -61,11 +61,22 @@ For new work, specs are **Linear Documents** on the Feature issue:
 2. Move to **Plan** when ready.
 3. Open a **Cursor Cloud Agent** with the issue URL or `QUE-###` in the prompt and ask it to run the matching phase skill.
 
-### Agent dispatch (future)
+### Agent dispatch (Cursor Automations)
 
-When **Cursor ↔ Linear delegation** is wired, setting the issue **delegate** to the coding agent will dispatch a run. Until then, start agents manually from Cursor as above.
+Six **Cursor Cloud Agent automations** dispatch agents on Linear state changes (or PR open for Review). Config exports live in [docs/cursor-automations/](cursor-automations/):
 
-Interactive agents can **subscribe** to issue state changes (`cursor-subscriptions-subscribe_linear_issue`) instead of polling while waiting on a human gate.
+| Phase | Trigger |
+|-------|---------|
+| Plan | Linear status → **Plan** |
+| Design | Linear status → **Design** |
+| Build+Test | Linear status → **Build+Test** |
+| Review | GitHub PR **opened** on this repo |
+| In Staging | Linear status → **In Staging** |
+| Ship | Linear status → **Ship** |
+
+Import or recreate them in the [Cursor Automations dashboard](https://cursor.com/automations). Agents set/clear the Linear `bot-working` label and post a Cursor run URL while working.
+
+You can still start agents manually from Cursor (sections A/B above). Interactive agents can **subscribe** to issue state changes (`cursor-subscriptions-subscribe_linear_issue`) instead of polling while waiting on a human gate.
 
 ---
 
@@ -73,7 +84,7 @@ Interactive agents can **subscribe** to issue state changes (`cursor-subscriptio
 
 - Include the Linear ticket key in **PR title and body** (e.g. `QUE-12`).
 - Link the PR to the Linear issue (native GitHub integration when configured).
-- **PR → state sync** (Build+Test → Review on PR ready; → In Staging on merge) is planned for a later phase; move states manually for now.
+- **PR → state sync:** Build automation requests review on the PR and moves the issue to **Review**; Review automation triggers on PR open. Merge → **In Staging** is handled by native Linear/GitHub integration when configured; otherwise move states manually.
 
 ---
 

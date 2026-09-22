@@ -1,0 +1,60 @@
+{
+  "name": "Agentic Linear - Review",
+  "prompts": [
+    {
+      "prompt": "GUARD — FIRST, silently: if {{issue.status}} != \"Review\", STOP. No action of any kind; no output.\nA wrong-state trigger is a SILENT no-op — never post an \"aborted\" message.\n\nOnly if status == \"Review\":\nIssue: {{issue.title}} — {{issue.description}} — {{issue.url}}\n\nRead `.cursor/skills/review/SKILL.md` + `docs/AIDLC.md` (Review). Run the five passes; post findings\nas comments ON THIS LINEAR ISSUE (via the bot key), one per dimension, as ONE SINGLE COMMENT — NEVER as new issues or multiple comments.\nScope: do NOT report a missing Linear ticket (a separate CI check owns it); do NOT report CI pass/fail\n(handles itself). You MAY report test quality, coverage gaps (NO required %), and overall PR risk. IF a change is deployed to a preview environment (via the label - you MAY NOT add the label) then you must log in to the preview environment and actually test that the code matches the intention in the Linear item and validate in Honeycomb. DO NOT attempt to run the code yourself. \n\nOutcome:\n- ANY blocking finding → move this issue to \"Build+Test\" (the bounce) + ONE @mention to the assignee\n  on what's blocking. Do NOT add \"needs-a-human\". Do NOT say \"Re-Work\". Report detailed findings as PR comments, preferably inline on the problematic code. Post a SUMMARY of findings only to the Linear ticket. Medium or High Bugbot severity findings need to bounce back to Build+Test.\n- All advisory → leave in Review for the human to sign off + merge. On merge, native automation moves\n  it to In Staging (NOT Ship)."
+    }
+  ],
+  "model": "grok-4.7",
+  "triggers": [
+    {
+      "git": {
+        "pullRequest": {
+          "repo": "https://github.com/queen-of-code/alexa-recipe-app",
+          "repos": [
+            "https://github.com/queen-of-code/alexa-recipe-app"
+          ],
+          "ignoreDraftPrs": true,
+          "prAction": "GIT_PULL_REQUEST_ACTION_OPENED"
+        }
+      }
+    }
+  ],
+  "actions": [
+    {
+      "prComment": {
+        "allowApprove": true
+      }
+    },
+    {
+      "mcp": {
+        "server": {
+          "name": "Linear",
+          "id": "5424658"
+        }
+      }
+    }
+  ],
+  "memoryEnabled": true,
+  "disabledDefaultTools": [
+    "AUTOMATION_DEFAULT_TOOL_OPEN_GIT_PR"
+  ],
+  "modelSelection": {
+    "modelId": "grok-4.7",
+    "parameters": [
+      {
+        "id": "context",
+        "value": "256k"
+      },
+      {
+        "id": "reasoning_effort",
+        "value": "high"
+      },
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ],
+    "maxMode": true
+  }
+}

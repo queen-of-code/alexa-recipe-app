@@ -1,0 +1,58 @@
+{
+  "name": "Agentic Linear - Ship",
+  "prompts": [
+    {
+      "prompt": "GUARD — FIRST, silently: if {{issue.status}} != \"Ship\", STOP. No action of any kind; no output.\nA wrong-state trigger is a SILENT no-op — never post an \"aborted\" message.\n\nOnly if status == \"Ship\":\nIssue: {{issue.title}} — {{issue.description}} — {{issue.url}}\n\nRead `.cursor/skills/ship/SKILL.md` (Level 2) + `docs/AIDLC.md` (Ship; Two-level validation).\nFeature-level only (umbrella parent with all slices Done, or a 1-slice Feature from In Staging).\nTools: Chrome DevTools MCP + AGENT_PROD_*.\n0 — Orient: confirm all sub-issues Done (a 1-slice Feature has none). Open the Product & Tech Spec Docs.\n1 — Score each Product Spec success criterion on staging → Pass / Fail / \"Unmeasured (production-only)\"\n    (record with a note; never silently pass). ONLY MAKE ONE COMMENT THAT CONTAINS ALL ISSUES. DO NOT MAKE EACH ONE A SEPARATE COMMENT.\n2 — Write the Scorecard as a LINEAR DOCUMENT \"Scorecard — <name>\" on the issue. No repo file.\n3 — Verdict:\n    PASS (≥90% of measurable): run Learn — ADR(s) to docs/adr/ (repo files, ADR-only PR), doc updates,\n      a retrospective note. @mention the owners \"ready for acceptance.\" LEAVE in Ship — the human moves\n      it to Done (NEVER set Done yourself).\n    FAIL (no Learn): write the Scorecard with failures; then — a slice regressed → move the parent to\n      Build+Test AND reopen that slice; missing/mis-scoped → move the parent to Design; criteria wrong\n      → do NOT move it, leave in Ship + @mention (a Plan rewind needs explicit human authorization).\n\nWhen you begin working on this ticket, set the 'bot-working' label on it in Linear and comment with the Cursor URL someone can click on to see the agent at work. When you are done working and have completed the last step, clear the label. "
+    }
+  ],
+  "model": "composer-2.5",
+  "triggers": [
+    {
+      "linear": {
+        "statusChanged": {
+          "statusIds": [
+            "392d0ee6-0c37-4afa-a812-488900788f23"
+          ]
+        },
+        "projectIds": [
+          "e8693be3-5af1-4089-b908-944f9967d541"
+        ],
+        "teamIds": [
+          "5e36991d-7a2b-4776-a9fe-e7d6c4abc31a"
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "mcp": {
+        "server": {
+          "name": "Chrome-devtools",
+          "id": "5491420"
+        }
+      }
+    },
+    {
+      "mcp": {
+        "server": {
+          "name": "Linear",
+          "id": "5424658"
+        }
+      }
+    }
+  ],
+  "agentOptions": {
+    "environmentPublicId": "6e835264-408a-4726-8cf9-fbd0c15f22af"
+  },
+  "memoryEnabled": true,
+  "modelSelection": {
+    "modelId": "composer-2.5",
+    "parameters": [
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ],
+    "maxMode": true
+  }
+}
