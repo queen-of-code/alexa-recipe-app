@@ -46,8 +46,8 @@ These **orchestrate** AIDLC phases and **pull in** library skills (`architecture
 | **Phase signal** | Linear **workflow state** (Triage / Plan / Design / Build+Test / Review / In Staging / Ship / Done / Canceled) |
 | **Specs** | Linear **Documents** on the Feature issue (`Product Spec — …`, `Tech Spec — …`, etc.); ADRs in `docs/adr/` |
 | **Ticket key on every PR** | `QUE-###` in title and body |
-| **Agent dispatch** | Manual Cloud Agent + Linear MCP for now; **delegate** = coding agent when Cursor↔Linear delegation is wired |
-| **Automation entry points** | [docs/linear-workflow.md](docs/linear-workflow.md) — no GitHub Projects workflows |
+| **Agent dispatch** | [Cursor Automations](docs/cursor-automations/) on Linear state changes (+ PR open for Review); manual Cloud Agent still supported |
+| **Automation entry points** | [docs/cursor-automations/](docs/cursor-automations/) — six phase automations; see [docs/linear-workflow.md](docs/linear-workflow.md) |
 
 **Notes:** Use **Linear MCP** (`save_issue`, `save_document`, `list_documents`, `get_document`) for tracker I/O. Do not assume `feature/<slug>/` for new Features. Full playbook: [docs/linear-workflow.md](docs/linear-workflow.md) and [LINEAR-AIDLC-PROJECT.md](.claude/deps/ai-dlc/docs/LINEAR-AIDLC-PROJECT.md).
 
