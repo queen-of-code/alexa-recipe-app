@@ -39,11 +39,11 @@ For new work, specs are **Linear Documents** on the Feature issue:
 
 **ADRs** stay in `docs/adr/` in git.
 
-> **Migration note:** Older demo features may still have files under `feature/<slug>/` until Phase 2 migration completes. New work uses Linear Documents only.
+**Migrated demo features** (2026-09-21): [QUE-5](https://linear.app/queen-of-code/issue/QUE-5/recipe-ingredient-search) (Review), [QUE-6](https://linear.app/queen-of-code/issue/QUE-6/recipe-favoriting) (Design), [QUE-7](https://linear.app/queen-of-code/issue/QUE-7/recipe-completed-photo-optional) (Design). Index: [feature/README.md](../feature/README.md).
 
 ---
 
-## Starting work (two entry points)
+## Starting work
 
 ### A — From Cursor
 
@@ -55,17 +55,34 @@ For new work, specs are **Linear Documents** on the Feature issue:
 3. Run the phase skill with the issue id, e.g. `/plan QUE-12` or paste the Linear issue URL in chat.
 4. The agent reads/writes specs via Linear MCP (`list_documents`, `get_document`, `save_document`).
 
-### B — From Linear
+### B — From a GitHub issue
+
+Opening an issue on this repository runs [`.github/workflows/github-issue-to-linear.yml`](../.github/workflows/github-issue-to-linear.yml). The workflow creates a **Triage** issue on team `QUE` in the Alexa Recipe App project, comments the Linear URL on the GitHub issue, and closes the GitHub issue. Re-runs skip issues that already have a `github-actions` comment containing a `linear.app` URL.
+
+Add a Linear personal API key as the repository secret **`LINEAR_API_KEY`** (Settings → Secrets and variables → Actions). Do not commit the key.
+
+### C — From Linear
 
 1. Create an issue in **Triage** in the Alexa Recipe App project.
 2. Move to **Plan** when ready.
 3. Open a **Cursor Cloud Agent** with the issue URL or `QUE-###` in the prompt and ask it to run the matching phase skill.
 
-### Agent dispatch (future)
+### Agent dispatch (Cursor Automations)
 
-When **Cursor ↔ Linear delegation** is wired, setting the issue **delegate** to the coding agent will dispatch a run. Until then, start agents manually from Cursor as above.
+Six **Cursor Cloud Agent automations** dispatch agents on Linear state changes (or PR open for Review). Config exports live in [docs/cursor-automations/](cursor-automations/):
 
-Interactive agents can **subscribe** to issue state changes (`cursor-subscriptions-subscribe_linear_issue`) instead of polling while waiting on a human gate.
+| Phase | Trigger |
+|-------|---------|
+| Plan | Linear status → **Plan** |
+| Design | Linear status → **Design** |
+| Build+Test | Linear status → **Build+Test** |
+| Review | GitHub PR **opened** on this repo |
+| In Staging | Linear status → **In Staging** |
+| Ship | Linear status → **Ship** |
+
+Import or recreate them in the [Cursor Automations dashboard](https://cursor.com/automations). Agents set/clear the Linear `bot-working` label and post a Cursor run URL while working.
+
+You can still start agents manually from Cursor (sections A/B above). Interactive agents can **subscribe** to issue state changes (`cursor-subscriptions-subscribe_linear_issue`) instead of polling while waiting on a human gate.
 
 ---
 
@@ -73,7 +90,7 @@ Interactive agents can **subscribe** to issue state changes (`cursor-subscriptio
 
 - Include the Linear ticket key in **PR title and body** (e.g. `QUE-12`).
 - Link the PR to the Linear issue (native GitHub integration when configured).
-- **PR → state sync** (Build+Test → Review on PR ready; → In Staging on merge) is planned for a later phase; move states manually for now.
+- **PR → state sync:** Build automation requests review on the PR and moves the issue to **Review**; Review automation triggers on PR open. Merge → **In Staging** is handled by native Linear/GitHub integration when configured; otherwise move states manually.
 
 ---
 
@@ -81,11 +98,18 @@ Interactive agents can **subscribe** to issue state changes (`cursor-subscriptio
 
 | Secret | Where | Purpose |
 |--------|-------|---------|
-| *(none required for interactive agents)* | Linear MCP uses Cursor OAuth | Read/write issues and documents |
-| `LINEAR_API_KEY` | Cursor Cloud Agents dashboard (future) | Headless PR→state sync, automations |
+| *(none required for Linear MCP)* | Cursor OAuth | Read/write issues and documents |
+| `AGENT_PROD_URL` | Cursor Cloud Agents → Environment | Deployed app URL for **`/ship`** UI validation |
+| `AGENT_PROD_USERNAME` | Cursor Cloud Agents → Environment | Test account login (prod) |
+| `AGENT_PROD_PASSWORD` | Cursor Cloud Agents → Environment | Test account password (prod) |
+| `LINEAR_API_KEY` | GitHub Actions secret | Create a Linear ticket when a GitHub issue is opened (`.github/workflows/github-issue-to-linear.yml`) |
 | `CURSOR_API_KEY` | GitHub Actions (future) | Launch agents from Linear webhooks |
 
-Do **not** commit API keys. GitHub Projects / `aidlc_work:*` automation has been removed from this repo.
+Do **not** commit secrets. Full table: [AGENTS.md](../AGENTS.md) → **UI validation environments**.
+
+## Post-deploy testing
+
+No staging. After merge/deploy, move the issue to **Ship** and run **`/ship`**. Agents validate UI against **`$AGENT_PROD_URL`** per [INTERACTIVE-UI-VALIDATION.md](../.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md).
 
 ---
 

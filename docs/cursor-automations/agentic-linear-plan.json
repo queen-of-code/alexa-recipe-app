@@ -1,0 +1,54 @@
+{
+  "name": "Agentic Linear - Plan",
+  "triggers": [
+    {
+      "linear": {
+        "statusChanged": {
+          "statusIds": [
+            "9ab56a7a-291c-4c2f-b1e1-e1e3be5fe41a"
+          ]
+        },
+        "projectIds": [
+          "e8693be3-5af1-4089-b908-944f9967d541"
+        ],
+        "teamIds": [
+          "5e36991d-7a2b-4776-a9fe-e7d6c4abc31a"
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "mcp": {
+        "server": {
+          "name": "Linear",
+          "id": "5424658"
+        }
+      }
+    }
+  ],
+  "prompts": [
+    {
+      "prompt": "GUARD — do this FIRST, silently: if {{issue.status}} is NOT exactly \"Plan\", STOP. No draft,\nno PR, no @mention, no labels, no comment — end with no output. A wrong-state trigger is a\nSILENT no-op; never post an \"aborted\" message.\n\nOnly if status == \"Plan\":\n\nIssue: {{issue.title}}\nDescription: {{issue.description}}\nURL: {{issue.url}}\n\nRead the Vega Plan orchestrator `.cursor/skills/plan/SKILL.md` and `docs/AIDLC.md` (Plan\nphase; Specs as Linear Documents)\n\nExecute Plan (Product Spec) only:\n- This issue IS the Feature. Do not create a new issue.\n- Draft the Product Spec as a LINEAR DOCUMENT attached to this issue, titled\n  \"Product Spec — <name>\" (problem + who, outcomes, success criteria, out-of-scope,\n  constraints). The Linear Document is the ONLY copy — NO feature/<slug>/, NO product-spec.md,\n  NO PR.\n- Run the grounding pass against the repo; keep it product-language; then stop.\n- Post ONE @mention comment  to the assignee: \"Draft Product Spec ready —\n  review it in Linear and move the issue to Design to approve.\"\n- Leave the issue in Plan. The human moving it to Design IS the approval gate.\n\nDo NOT: open a PR, write any *.md spec file, or start the Tech Spec.\n\nWhen you begin working on this ticket, set the 'bot-working' label on it in Linear and comment with the Cursor URL someone can click on to see the agent at work. When you are done working and have completed the last step, clear the label. "
+    }
+  ],
+  "model": "composer-2.5",
+  "agentOptions": {
+    "environmentPublicId": "6e835264-408a-4726-8cf9-fbd0c15f22af"
+  },
+  "memoryEnabled": true,
+  "disabledDefaultTools": [
+    "AUTOMATION_DEFAULT_TOOL_OPEN_GIT_PR"
+  ],
+  "scope": "private",
+  "modelSelection": {
+    "modelId": "composer-2.5",
+    "parameters": [
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ],
+    "maxMode": true
+  }
+}

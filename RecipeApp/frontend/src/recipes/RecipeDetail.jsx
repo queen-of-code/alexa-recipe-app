@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getRecipe, deleteRecipe, setFavorite, clearFavorite } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
 import FavoriteButton from './FavoriteButton'
+import { listFilterSearch, parseListFilter } from './recipeListFilter'
 
 export default function RecipeDetail() {
   const { recipeId } = useParams()
+  const [searchParams] = useSearchParams()
+  const filterQuery = listFilterSearch(parseListFilter(searchParams))
+  const backTo = filterQuery ? `/recipes?${filterQuery}` : '/recipes'
   const user = useAuth()
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState(null)
@@ -45,19 +49,19 @@ export default function RecipeDetail() {
     }
   }
 
-  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>
-  if (!recipe) return <p className="text-center mt-8 text-gray-500">Loading...</p>
+  if (error) return <p className="text-center mt-8 text-red-600 dark:text-red-300">{error}</p>
+  if (!recipe) return <p className="text-center mt-8 text-gray-500 dark:text-gray-400">Loading...</p>
 
   return (
     <div className="max-w-3xl mx-auto mt-8 px-4">
-      <div className="bg-white rounded-xl shadow p-8">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">{recipe.name}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{recipe.name}</h1>
           <FavoriteButton isFavorite={recipe.isFavorite} onToggle={handleToggleFavorite} />
         </div>
 
         {actionError ? (
-          <p role="alert" className="mb-4 text-sm text-red-700">
+          <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-300">
             {actionError}
           </p>
         ) : null}
@@ -67,26 +71,26 @@ export default function RecipeDetail() {
             <img
               src={recipe.completedImageUrl}
               alt=""
-              className="max-h-64 w-auto rounded-lg border border-gray-200 object-contain"
+              className="max-h-64 w-auto rounded-lg border border-gray-200 dark:border-gray-700 object-contain"
             />
           </div>
         ) : null}
 
         <div className="flex gap-3 mb-6">
-          <span className="text-xs bg-violet-100 text-violet-700 font-medium px-3 py-1 rounded-full">
+          <span className="text-xs bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200 font-medium px-3 py-1 rounded-full">
             Prep: {recipe.prepTimeMins ?? recipe.prepTime} mins
           </span>
-          <span className="text-xs bg-indigo-100 text-indigo-700 font-medium px-3 py-1 rounded-full">
+          <span className="text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 font-medium px-3 py-1 rounded-full">
             Cook: {recipe.cookTimeMins ?? recipe.cookTime} mins
           </span>
-          <span className="text-xs bg-gray-100 text-gray-700 font-medium px-3 py-1 rounded-full">
+          <span className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-200 font-medium px-3 py-1 rounded-full">
             Servings: {recipe.servings}
           </span>
         </div>
 
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Ingredients</h2>
-          <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Ingredients</h2>
+          <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300 text-sm">
             {recipe.ingredients?.map((ing, i) => (
               <li key={i}>{ing}</li>
             ))}
@@ -94,12 +98,12 @@ export default function RecipeDetail() {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Steps</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Steps</h2>
           <ol className="space-y-2">
             {recipe.steps?.map((step, i) => (
               <li key={i} className="flex gap-3 items-start">
                 <span className="text-xs font-bold text-violet-700 mt-1 min-w-[1.5rem]">{i + 1}.</span>
-                <span className="p-3 bg-gray-50 rounded text-sm text-gray-700 flex-1">{step}</span>
+                <span className="p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm text-gray-700 dark:text-gray-200 flex-1">{step}</span>
               </li>
             ))}
           </ol>
@@ -113,8 +117,8 @@ export default function RecipeDetail() {
             Edit
           </Link>
           <Link
-            to="/recipes"
-            className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+            to={backTo}
+            className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium px-4 py-2 rounded-lg transition-colors text-sm"
           >
             Back to List
           </Link>

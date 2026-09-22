@@ -1,0 +1,62 @@
+{
+  "name": "Agentic Linear - Build",
+  "triggers": [
+    {
+      "linear": {
+        "statusChanged": {
+          "statusIds": [
+            "42e1bc33-b69a-4f75-a319-050a34e0b103"
+          ]
+        },
+        "projectIds": [
+          "e8693be3-5af1-4089-b908-944f9967d541"
+        ],
+        "teamIds": [
+          "5e36991d-7a2b-4776-a9fe-e7d6c4abc31a"
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "mcp": {
+        "server": {
+          "name": "Linear",
+          "id": "5424658"
+        }
+      }
+    },
+    {
+      "requestReviewers": {}
+    }
+  ],
+  "prompts": [
+    {
+      "prompt": "GUARD — FIRST, silently: if {{issue.status}} != \"Build+Test\", STOP. No action of any kind; no output.\nA wrong-state trigger is a SILENT no-op — never post an \"aborted\" message. If the immediate previous comment in your linear ticket is about a Cursor agent working on Build+Test. STOP. DO NOT DUPLICATE WORK ANOTHER AGENT IS DOING.\n\nOnly if status == \"Build+Test\":\nIssue: {{issue.title}} — {{issue.description}} — {{issue.url}}\n\nRead `.cursor/skills/build/SKILL.md` + `docs/AIDLC.md` (Build+Test; Bounce breaker; slice rule).\nStep 0 — Bounce breaker FIRST: fetch this issue's stateHistory, count entries INTO\n  Build+Test. If this is the 5th: post \"🛑 AIDLC bounce breaker: 5× Build+Test\", reassign to the\n  team lead, and STOP.\nStep 1 — Umbrella guard: if this issue HAS sub-issues, it's an umbrella parent — STOP (never built).\nStep 2 — Orient: shape = slice / 1-slice Feature / reactive. Read the Tech Spec Document (parent\n  Feature for a slice; THIS issue for a 1-slice Feature; a reactive item's contract is its description).\nStep 3 — Build: reuse an existing open PR if the branch carries this ticket ID; else implement per the\n  Tech Spec (TDD) via the specialist subagents. Branch MUST contain ticket ID. ONE PR; green CI.\n  Re-entry after /review: read the \"### AIDLC Review — …\" findings ON THE LINEAR ISSUE; fix valid,\n  reply+resolve invalid; push to green.\nStep 4 — Handoff: PR open + CI green → REQUEST REVIEW on the PR. Move the Linear issue to Review state.\n\nWhen you begin working on this ticket, set the 'bot-working' label on it in Linear and comment with the Cursor URL someone can click on to see the agent at work. When you are done working and have completed the last step, clear the label and link the PR into the Linear ticket so you can see it from Linear."
+    }
+  ],
+  "model": "grok-4.7",
+  "agentOptions": {
+    "environmentPublicId": "6e835264-408a-4726-8cf9-fbd0c15f22af"
+  },
+  "memoryEnabled": true,
+  "scope": "private",
+  "modelSelection": {
+    "modelId": "grok-4.7",
+    "parameters": [
+      {
+        "id": "context",
+        "value": "256k"
+      },
+      {
+        "id": "reasoning_effort",
+        "value": "high"
+      },
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ],
+    "maxMode": true
+  }
+}

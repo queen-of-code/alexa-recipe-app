@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext'
+import { ThemeProvider } from './theme/ThemeContext'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
@@ -19,21 +20,23 @@ function RequireAuth({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="about" element={<AboutPage />} />
-            <Route path="contact" element={<ContactPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="recipes" element={<RequireAuth><RecipeList /></RequireAuth>} />
-            <Route path="recipes/new" element={<RequireAuth><RecipeForm /></RequireAuth>} />
-            <Route path="recipes/:recipeId" element={<RequireAuth><RecipeDetail /></RequireAuth>} />
-            <Route path="recipes/:recipeId/edit" element={<RequireAuth><RecipeForm /></RequireAuth>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="about" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="recipes" element={<RequireAuth><RecipeList /></RequireAuth>} />
+              <Route path="recipes/new" element={<RequireAuth><RecipeForm /></RequireAuth>} />
+              <Route path="recipes/:recipeId" element={<RequireAuth><RecipeDetail /></RequireAuth>} />
+              <Route path="recipes/:recipeId/edit" element={<RequireAuth><RecipeForm /></RequireAuth>} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   )
 }
