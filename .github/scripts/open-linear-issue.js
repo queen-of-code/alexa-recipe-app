@@ -35,6 +35,10 @@ function pickTriageState(states) {
   )
 }
 
+function githubIssueMarker(issue) {
+  return issue.html_url
+}
+
 function buildDescription(issue) {
   const body = (issue.body || '').trim()
   const lines = []
@@ -43,9 +47,42 @@ function buildDescription(issue) {
   }
   lines.push(
     '---',
-    `Mirrored from GitHub issue #${issue.number} by @${issue.user.login}: ${issue.html_url}`
+    `Mirrored from GitHub issue #${issue.number} by @${issue.user.login}: ${githubIssueMarker(issue)}`
   )
   return lines.join('\n')
+}
+
+function hasMirrorComment(comments) {
+  return comments.some(
+    (comment) =>
+      comment.user?.login === 'github-actions[bot]' &&
+      comment.body?.includes('https://linear.app/')
+  )
+}
+
+function findMirroredLinearIssue(issues, marker) {
+  return issues.find((candidate) => candidate.description?.includes(marker)) ?? null
+}
+
+async function findExistingMirror(token, teamId, issue) {
+  const marker = githubIssueMarker(issue)
+  const data = await linear(
+    token,
+    `query($teamId: ID!, $marker: String!) {
+      issues(
+        filter: {
+          team: { id: { eq: $teamId } }
+          description: { contains: $marker }
+        }
+        first: 5
+      ) {
+        nodes { identifier url description }
+      }
+    }`,
+    { teamId, marker }
+  )
+
+  return findMirroredLinearIssue(data.issues.nodes, marker)
 }
 
 async function openLinearIssue({ github, context, core }) {
@@ -66,12 +103,7 @@ async function openLinearIssue({ github, context, core }) {
     issue_number: issueNumber,
     per_page: 100,
   })
-  const alreadyMirrored = comments.some(
-    (comment) =>
-      comment.user?.login === 'github-actions[bot]' &&
-      comment.body?.includes('https://linear.app/')
-  )
-  if (alreadyMirrored) {
+  if (hasMirrorComment(comments)) {
     core.info(`Issue #${issueNumber} already links a Linear ticket. Skipping.`)
     return
   }
@@ -109,31 +141,40 @@ async function openLinearIssue({ github, context, core }) {
     throw new Error(`Linear project "${PROJECT_NAME}" was not found for this API key.`)
   }
 
-  const created = await linear(
-    token,
-    `mutation($input: IssueCreateInput!) {
-      issueCreate(input: $input) {
-        success
-        issue { identifier url }
+  let linearIssue = await findExistingMirror(token, team.id, issue)
+  if (linearIssue) {
+    core.info(
+      `Found existing Linear mirror ${linearIssue.identifier}: ${linearIssue.url}`
+    )
+  } else {
+    const created = await linear(
+      token,
+      `mutation($input: IssueCreateInput!) {
+        issueCreate(input: $input) {
+          success
+          issue { identifier url }
+        }
+      }`,
+      {
+        input: {
+          teamId: team.id,
+          projectId: project.id,
+          stateId: triage.id,
+          title: issue.title,
+          description: buildDescription(issue),
+        },
       }
-    }`,
-    {
-      input: {
-        teamId: team.id,
-        projectId: project.id,
-        stateId: triage.id,
-        title: issue.title,
-        description: buildDescription(issue),
-      },
-    }
-  )
+    )
 
-  if (!created.issueCreate.success || !created.issueCreate.issue) {
-    throw new Error('Linear issueCreate did not succeed.')
+    if (!created.issueCreate.success || !created.issueCreate.issue) {
+      throw new Error('Linear issueCreate did not succeed.')
+    }
+
+    linearIssue = created.issueCreate.issue
+    core.info(`Created ${linearIssue.identifier}: ${linearIssue.url}`)
   }
 
-  const { identifier, url } = created.issueCreate.issue
-  core.info(`Created ${identifier}: ${url}`)
+  const { identifier, url } = linearIssue
 
   await github.rest.issues.createComment({
     owner,
@@ -155,4 +196,7 @@ module.exports = {
   openLinearIssue,
   pickTriageState,
   buildDescription,
+  githubIssueMarker,
+  hasMirrorComment,
+  findMirroredLinearIssue,
 }
