@@ -158,7 +158,7 @@ export default function RecipeForm() {
         </h2>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg" role="alert">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg" role="alert">
             {error}
           </div>
         )}
@@ -172,7 +172,7 @@ export default function RecipeForm() {
             <input
               id="name"
               type="text"
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -188,7 +188,7 @@ export default function RecipeForm() {
                 id="prepTime"
                 type="number"
                 min="0"
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={prepTime}
                 onChange={(e) => setPrepTime(e.target.value)}
               />
@@ -201,7 +201,7 @@ export default function RecipeForm() {
                 id="cookTime"
                 type="number"
                 min="0"
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={cookTime}
                 onChange={(e) => setCookTime(e.target.value)}
               />
@@ -214,7 +214,7 @@ export default function RecipeForm() {
                 id="servings"
                 type="number"
                 min="1"
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={servings}
                 onChange={(e) => setServings(e.target.value)}
               />
@@ -285,7 +285,7 @@ export default function RecipeForm() {
                   <input
                     type="text"
                     aria-label={`Ingredient ${i + 1}`}
-                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 flex-1 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     value={ing}
                     onChange={(e) => updateIngredient(i, e.target.value)}
                     placeholder={`Ingredient ${i + 1}`}
@@ -323,7 +323,7 @@ export default function RecipeForm() {
                     id={i === 0 ? 'step-0' : undefined}
                     type="text"
                     aria-label={`Step ${i + 1}`}
-                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 flex-1 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     value={step}
                     onChange={(e) => updateStep(i, e.target.value)}
                     placeholder={`Step ${i + 1}`}

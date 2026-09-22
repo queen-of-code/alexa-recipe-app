@@ -21,28 +21,33 @@ function Probe() {
   )
 }
 
+function stubMatchMedia(prefersDark) {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((query) => ({
+      matches: query === '(prefers-color-scheme: dark)' ? prefersDark : false,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+  )
+}
+
 describe('ThemeProvider', () => {
   beforeEach(() => {
     localStorage.clear()
     document.documentElement.classList.remove('dark')
     useAuthMock.mockReturnValue(null)
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn().mockImplementation((query) => ({
-        matches: query === '(prefers-color-scheme: dark)' ? false : false,
-        media: query,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      }))
-    )
+    stubMatchMedia(false)
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
-  it('does not add dark class when signed out', () => {
+  it('does not add dark class when signed out even if storage and OS are dark', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'dark')
+    stubMatchMedia(true)
     render(
       <ThemeProvider>
         <Probe />
@@ -51,9 +56,9 @@ describe('ThemeProvider', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 
-  it('adds dark class when signed in with stored dark preference', () => {
-    localStorage.setItem(THEME_STORAGE_KEY, 'dark')
-    useAuthMock.mockReturnValue({ uid: 'u1', email: 'a@b.com' })
+  it('adds dark class when signed in with no stored key and OS dark', () => {
+    stubMatchMedia(true)
+    useAuthMock.mockReturnValue({ email: 'a@b.com' })
     render(
       <ThemeProvider>
         <Probe />
@@ -62,9 +67,21 @@ describe('ThemeProvider', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true)
   })
 
-  it('removes dark class on sign-out', () => {
+  it('stays light when signed in with stored light and OS dark', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'light')
+    stubMatchMedia(true)
+    useAuthMock.mockReturnValue({ email: 'a@b.com' })
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>
+    )
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
+  it('removes dark class on sign-out and keeps the storage key', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'dark')
-    useAuthMock.mockReturnValue({ uid: 'u1', email: 'a@b.com' })
+    useAuthMock.mockReturnValue({ email: 'a@b.com' })
     const { rerender } = render(
       <ThemeProvider>
         <Probe />
@@ -79,16 +96,16 @@ describe('ThemeProvider', () => {
       </ThemeProvider>
     )
     expect(document.documentElement.classList.contains('dark')).toBe(false)
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
   })
 
-  it('toggle persists explicit preference', async () => {
-    useAuthMock.mockReturnValue({ uid: 'u1', email: 'a@b.com' })
-    const { getByRole, getByTestId } = render(
+  it('toggle from resolved light writes dark and adds the class', async () => {
+    useAuthMock.mockReturnValue({ email: 'a@b.com' })
+    const { getByRole } = render(
       <ThemeProvider>
         <Probe />
       </ThemeProvider>
     )
-    expect(getByTestId('resolved').textContent).toBe('light')
 
     await act(async () => {
       getByRole('button', { name: 'toggle' }).click()

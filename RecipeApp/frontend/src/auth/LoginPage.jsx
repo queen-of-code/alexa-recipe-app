@@ -38,7 +38,7 @@ export default function LoginPage() {
         </h2>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg" role="alert">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg" role="alert">
             {error}
           </div>
         )}
@@ -51,7 +51,7 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -64,7 +64,7 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

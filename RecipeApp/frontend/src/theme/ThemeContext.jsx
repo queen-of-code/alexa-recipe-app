@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { getStoredTheme, setStoredTheme } from './themeStorage'
 import { resolveTheme } from './resolveTheme'
@@ -10,27 +10,33 @@ function readPrefersDark() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
+function toPreference(stored) {
+  if (stored === 'light' || stored === 'dark') return stored
+  return 'system'
+}
+
 export function ThemeProvider({ children }) {
   const user = useAuth()
   const signedIn = Boolean(user)
   const [prefersDark, setPrefersDark] = useState(readPrefersDark)
-  const [preferenceTick, setPreferenceTick] = useState(0)
+  const [stored, setStored] = useState(() => getStoredTheme())
 
-  useEffect(() => {
+  const preference = toPreference(stored)
+  const systemActive = signedIn && preference === 'system'
+
+  useLayoutEffect(() => {
+    if (!systemActive) return undefined
     if (typeof window.matchMedia !== 'function') return undefined
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    setPrefersDark(mq.matches)
     const onChange = (event) => setPrefersDark(event.matches)
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
-  }, [])
+  }, [systemActive])
 
-  const resolved = useMemo(() => {
-    if (!signedIn) return 'light'
-    void preferenceTick
-    return resolveTheme(getStoredTheme(), prefersDark)
-  }, [signedIn, prefersDark, preferenceTick, user?.uid])
+  const resolved = signedIn ? resolveTheme(stored, prefersDark) : 'light'
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement
     if (signedIn && resolved === 'dark') {
       root.classList.add('dark')
@@ -40,19 +46,19 @@ export function ThemeProvider({ children }) {
   }, [signedIn, resolved])
 
   const toggleTheme = useCallback(() => {
-    const current = resolveTheme(getStoredTheme(), prefersDark)
-    const next = current === 'dark' ? 'light' : 'dark'
+    if (!signedIn) return
+    const next = resolved === 'dark' ? 'light' : 'dark'
     setStoredTheme(next)
-    setPreferenceTick((t) => t + 1)
-  }, [prefersDark])
+    setStored(next)
+  }, [signedIn, resolved])
 
   const value = useMemo(
     () => ({
       resolved,
-      preference: signedIn ? getStoredTheme() : null,
+      preference,
       toggleTheme,
     }),
-    [resolved, signedIn, toggleTheme, preferenceTick]
+    [resolved, preference, toggleTheme]
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

@@ -30,12 +30,11 @@ describe('Layout theme toggle', () => {
     expect(screen.queryByRole('button', { name: /switch to (dark|light) mode/i })).not.toBeInTheDocument()
   })
 
-  it('shows theme toggle before logout when signed in', () => {
-    useAuthMock.mockReturnValue({ uid: 'u1', email: 'chef@example.com' })
+  it('shows theme toggle before the Hello text when signed in', () => {
+    useAuthMock.mockReturnValue({ email: 'chef@example.com' })
     renderLayout()
-    const toggle = screen.getByRole('button', { name: /switch to dark mode/i })
-    expect(toggle).toBeInTheDocument()
-    const logout = screen.getByRole('button', { name: 'Logout' })
-    expect(toggle.compareDocumentPosition(logout) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const toggle = screen.getByRole('button', { name: 'Switch to dark mode' })
+    const hello = screen.getByText('Hello chef@example.com')
+    expect(toggle.compareDocumentPosition(hello) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })

@@ -94,12 +94,12 @@ export default function RecipeList() {
       {error ? (
         <div
           role="alert"
-          className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200"
+          className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300"
         >
           <span>{error}</span>
           <button
             type="button"
-            className="shrink-0 rounded font-medium text-red-700 underline hover:text-red-900"
+            className="shrink-0 rounded font-medium text-red-700 dark:text-red-300 underline hover:text-red-900 dark:hover:text-red-200"
             onClick={() => setError('')}
           >
             Dismiss
@@ -125,12 +125,12 @@ export default function RecipeList() {
               if (searchHint) setSearchHint('')
             }}
             placeholder="e.g. tomato, cheddar"
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             autoComplete="off"
             aria-describedby={searchHint ? 'recipe-search-hint' : undefined}
           />
           {searchHint ? (
-            <p id="recipe-search-hint" className="text-xs text-amber-700" role="status">
+            <p id="recipe-search-hint" className="text-xs text-amber-700 dark:text-amber-300" role="status">
               {searchHint}
             </p>
           ) : null}
@@ -143,7 +143,7 @@ export default function RecipeList() {
             id="recipe-ingredient-combine"
             value={combineMode}
             onChange={(e) => setCombineMode(e.target.value)}
-            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           >
             <option value="All">All (AND)</option>
             <option value="Any">Any (OR)</option>
@@ -215,14 +215,14 @@ export default function RecipeList() {
                       : ''}
                   </td>
                   <td className="px-4 py-3 flex gap-3 items-center">
-                    <Link to={`/recipes/${r.recipeId}/edit`} className="text-blue-600 hover:underline">
+                    <Link to={`/recipes/${r.recipeId}/edit`} className="text-blue-600 dark:text-blue-400 hover:underline">
                       Edit
                     </Link>
                     <Link to={`/recipes/${r.recipeId}`} className="text-gray-500 dark:text-gray-400 hover:underline">
                       Details
                     </Link>
                     <button
-                      className="text-red-600 hover:underline"
+                      className="text-red-600 dark:text-red-400 hover:underline"
                       onClick={() => handleDelete(r.recipeId)}
                     >
                       Delete

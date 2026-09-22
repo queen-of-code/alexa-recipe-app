@@ -42,13 +42,13 @@ export default function RecipeDetail() {
         ) : null}
 
         <div className="flex gap-3 mb-6">
-          <span className="text-xs bg-violet-100 text-violet-700 font-medium px-3 py-1 rounded-full">
+          <span className="text-xs bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200 font-medium px-3 py-1 rounded-full">
             Prep: {recipe.prepTimeMins ?? recipe.prepTime} mins
           </span>
-          <span className="text-xs bg-indigo-100 text-indigo-700 font-medium px-3 py-1 rounded-full">
+          <span className="text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 font-medium px-3 py-1 rounded-full">
             Cook: {recipe.cookTimeMins ?? recipe.cookTime} mins
           </span>
-          <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium px-3 py-1 rounded-full">
+          <span className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-200 font-medium px-3 py-1 rounded-full">
             Servings: {recipe.servings}
           </span>
         </div>
