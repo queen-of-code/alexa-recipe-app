@@ -17,12 +17,12 @@ function toPreference(stored) {
 
 export function ThemeProvider({ children }) {
   const user = useAuth()
-  const signedIn = Boolean(user)
+  const signedOut = user === null
   const [prefersDark, setPrefersDark] = useState(readPrefersDark)
   const [stored, setStored] = useState(() => getStoredTheme())
 
   const preference = toPreference(stored)
-  const systemActive = signedIn && preference === 'system'
+  const systemActive = !signedOut && preference === 'system'
 
   useLayoutEffect(() => {
     if (!systemActive) return undefined
@@ -34,23 +34,25 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener('change', onChange)
   }, [systemActive])
 
-  const resolved = signedIn ? resolveTheme(stored, prefersDark) : 'light'
+  const resolved = signedOut ? 'light' : resolveTheme(stored, prefersDark)
 
   useLayoutEffect(() => {
     const root = document.documentElement
-    if (signedIn && resolved === 'dark') {
+    if (signedOut) {
+      root.classList.remove('dark')
+    } else if (resolved === 'dark') {
       root.classList.add('dark')
     } else {
       root.classList.remove('dark')
     }
-  }, [signedIn, resolved])
+  }, [signedOut, resolved])
 
   const toggleTheme = useCallback(() => {
-    if (!signedIn) return
+    if (user == null) return
     const next = resolved === 'dark' ? 'light' : 'dark'
     setStoredTheme(next)
     setStored(next)
-  }, [signedIn, resolved])
+  }, [user, resolved])
 
   const value = useMemo(
     () => ({
