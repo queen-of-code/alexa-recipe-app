@@ -28,9 +28,9 @@ describe('RecipeDetail', () => {
     mockGetRecipe.mockResolvedValue(sampleRecipe)
   })
 
-  function renderPage() {
+  function renderPage(initialEntry = '/recipes/abc123') {
     return render(
-      <MemoryRouter initialEntries={['/recipes/abc123']}>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
           <Route path="/recipes/:recipeId" element={<RecipeDetail />} />
         </Routes>
@@ -65,5 +65,20 @@ describe('RecipeDetail', () => {
     })
     const ul = document.querySelector('ul')
     expect(ul).toBeInTheDocument()
+  })
+
+  it('points Back to List at the list with the same filter query', async () => {
+    renderPage('/recipes/abc123?ingredients=tomato&combine=Any')
+    const back = await screen.findByRole('link', { name: /back to list/i })
+    const href = new URL(back.getAttribute('href'), 'http://localhost')
+    expect(href.pathname).toBe('/recipes')
+    expect(href.searchParams.get('ingredients')).toBe('tomato')
+    expect(href.searchParams.get('combine')).toBe('Any')
+  })
+
+  it('points Back to List at /recipes when the detail URL has no filter', async () => {
+    renderPage()
+    const back = await screen.findByRole('link', { name: /back to list/i })
+    expect(back).toHaveAttribute('href', '/recipes')
   })
 })
