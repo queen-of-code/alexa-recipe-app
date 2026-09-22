@@ -1,15 +1,22 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import RecipeDetail from '../recipes/RecipeDetail'
 
 vi.mock('../firebase', () => ({ auth: {} }))
-vi.mock('../auth/AuthContext', () => ({
-  useAuth: () => ({ uid: 'test-uid', email: 'test@example.com' }),
-}))
+vi.mock('../auth/AuthContext', () => {
+  const user = { uid: 'test-uid', email: 'test@example.com' }
+  return { useAuth: () => user }
+})
 
 const mockGetRecipe = vi.fn()
+const mockSetFavorite = vi.fn()
+const mockClearFavorite = vi.fn()
 vi.mock('../api/recipeApi', () => ({
   getRecipe: (...args) => mockGetRecipe(...args),
+  deleteRecipe: vi.fn(),
+  setFavorite: (...args) => mockSetFavorite(...args),
+  clearFavorite: (...args) => mockClearFavorite(...args),
 }))
 
 const sampleRecipe = {
@@ -65,5 +72,32 @@ describe('RecipeDetail', () => {
     })
     const ul = document.querySelector('ul')
     expect(ul).toBeInTheDocument()
+  })
+
+  it('toggles favorite from detail and updates the pressed state', async () => {
+    const user = userEvent.setup()
+    mockSetFavorite.mockResolvedValue({ ...sampleRecipe, isFavorite: true })
+    mockClearFavorite.mockResolvedValue({ ...sampleRecipe, isFavorite: false })
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Test Pasta')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /add to favorites/i }))
+
+    await waitFor(() => expect(mockSetFavorite).toHaveBeenCalledWith('test-uid', 'abc123'))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /remove from favorites/i })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    )
+
+    await user.click(screen.getByRole('button', { name: /remove from favorites/i }))
+    await waitFor(() => expect(mockClearFavorite).toHaveBeenCalledWith('test-uid', 'abc123'))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /add to favorites/i })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      ),
+    )
   })
 })

@@ -11,10 +11,14 @@ vi.mock('../auth/AuthContext', () => {
 
 const mockGetAllRecipes = vi.fn()
 const mockSearchRecipes = vi.fn()
+const mockSetFavorite = vi.fn()
+const mockClearFavorite = vi.fn()
 vi.mock('../api/recipeApi', () => ({
   getAllRecipes: (...args) => mockGetAllRecipes(...args),
   searchRecipes: (...args) => mockSearchRecipes(...args),
   deleteRecipe: vi.fn().mockResolvedValue(),
+  setFavorite: (...args) => mockSetFavorite(...args),
+  clearFavorite: (...args) => mockClearFavorite(...args),
 }))
 
 describe('RecipeList', () => {
@@ -124,6 +128,65 @@ describe('RecipeList', () => {
     expect(
       screen.getByText(/enter at least one ingredient/i),
     ).toBeInTheDocument()
+  })
+
+  it('favorites-only toggle requests the favoritesOnly query', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockResolvedValue([])
+    renderPage()
+    await waitFor(() => expect(screen.getByText(/no recipes yet/i)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('checkbox', { name: /show favorites only/i }))
+
+    await waitFor(() => {
+      expect(mockGetAllRecipes).toHaveBeenCalledWith('test-uid', { favoritesOnly: true })
+    })
+    expect(screen.getByText(/no favorite recipes yet/i)).toBeInTheDocument()
+  })
+
+  it('favorite button saves and shows the pressed state after refresh', async () => {
+    const user = userEvent.setup()
+    const plain = {
+      recipeId: '1',
+      name: 'Pasta',
+      prepTimeMins: 10,
+      servings: 4,
+      cookTimeMins: 20,
+      isFavorite: false,
+    }
+    mockGetAllRecipes.mockResolvedValueOnce([plain]).mockResolvedValue([{ ...plain, isFavorite: true }])
+    mockSetFavorite.mockResolvedValue({ ...plain, isFavorite: true })
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Pasta')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /add to favorites/i }))
+
+    await waitFor(() => expect(mockSetFavorite).toHaveBeenCalledWith('test-uid', '1'))
+    expect(screen.getByRole('button', { name: /remove from favorites/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('favorites-only filters ingredient search results in memory', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockResolvedValue([])
+    mockSearchRecipes.mockResolvedValue([
+      { recipeId: '1', name: 'Fav Soup', isFavorite: true, prepTimeMins: 1, servings: 1, cookTimeMins: 1 },
+      { recipeId: '2', name: 'Weeknight Chili', isFavorite: false, prepTimeMins: 1, servings: 1, cookTimeMins: 1 },
+    ])
+    renderPage()
+    await waitFor(() => expect(screen.getByText(/no recipes yet/i)).toBeInTheDocument())
+
+    await user.type(screen.getByPlaceholderText(/tomato, cheddar/i), 'tomato')
+    await user.click(screen.getByRole('button', { name: /^search$/i }))
+    await waitFor(() => expect(screen.getByText('Weeknight Chili')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('checkbox', { name: /show favorites only/i }))
+
+    expect(screen.getByText('Fav Soup')).toBeInTheDocument()
+    expect(screen.queryByText('Weeknight Chili')).not.toBeInTheDocument()
+    expect(mockGetAllRecipes).toHaveBeenCalledTimes(1)
   })
 
   it('shows dismissible error banner without hiding the table', async () => {

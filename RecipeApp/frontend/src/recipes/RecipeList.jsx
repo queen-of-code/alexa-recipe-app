@@ -1,29 +1,38 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllRecipes, deleteRecipe, searchRecipes } from '../api/recipeApi'
+import { getAllRecipes, deleteRecipe, searchRecipes, setFavorite, clearFavorite } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
+import FavoriteButton from './FavoriteButton'
 
 export default function RecipeList() {
   const user = useAuth()
   const [recipes, setRecipes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadedOnce, setLoadedOnce] = useState(false)
   const [error, setError] = useState('')
   const [searchHint, setSearchHint] = useState('')
   const [ingredientInput, setIngredientInput] = useState('')
   const [combineMode, setCombineMode] = useState('All')
   const [filterActive, setFilterActive] = useState(false)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const favoritesOnlyRef = useRef(false)
+  favoritesOnlyRef.current = favoritesOnly
 
   const refreshFullList = useCallback(async () => {
     if (!user) return
     setLoading(true)
     setError('')
     try {
-      const data = await getAllRecipes(user.uid)
+      const only = favoritesOnlyRef.current
+      const data = only
+        ? await getAllRecipes(user.uid, { favoritesOnly: true })
+        : await getAllRecipes(user.uid)
       setRecipes(data)
       setFilterActive(false)
     } catch (err) {
       setError(err.message)
     } finally {
+      setLoadedOnce(true)
       setLoading(false)
     }
   }, [user])
@@ -75,7 +84,62 @@ export default function RecipeList() {
     setRecipes((r) => r.filter((x) => x.recipeId !== recipeId))
   }
 
-  if (loading && recipes.length === 0 && !filterActive) {
+  async function handleFavoritesOnlyChange(checked) {
+    setFavoritesOnly(checked)
+    if (filterActive || !user) return
+    if (checked) setRecipes((rows) => rows.filter((r) => r.isFavorite))
+    setLoading(true)
+    setError('')
+    try {
+      const data = checked
+        ? await getAllRecipes(user.uid, { favoritesOnly: true })
+        : await getAllRecipes(user.uid)
+      setRecipes(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Favorite toggles wait for the API, then refetch so favorites-first order
+  // stays server-authoritative. Ingredient-search rows are patched in memory
+  // because favorites-only is a client filter on that result set. A failed
+  // toggle leaves the previous list and uses the error banner.
+  async function handleToggleFavorite(recipe) {
+    const next = !recipe.isFavorite
+    setError('')
+    try {
+      if (next) await setFavorite(user.uid, recipe.recipeId)
+      else await clearFavorite(user.uid, recipe.recipeId)
+      if (filterActive) {
+        setRecipes((rows) =>
+          rows.map((row) =>
+            row.recipeId === recipe.recipeId ? { ...row, isFavorite: next } : row,
+          ),
+        )
+        return
+      }
+      const data = favoritesOnly
+        ? await getAllRecipes(user.uid, { favoritesOnly: true })
+        : await getAllRecipes(user.uid)
+      setRecipes(data)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const visibleRecipes =
+    filterActive && favoritesOnly ? recipes.filter((r) => r.isFavorite) : recipes
+
+  function emptyMessage() {
+    if (filterActive && favoritesOnly) return 'No favorite recipes match your ingredients.'
+    if (filterActive) return 'No recipes match your ingredients.'
+    if (favoritesOnly) return 'No favorite recipes yet.'
+    return 'No recipes yet — create your first one!'
+  }
+
+  if (loading && !loadedOnce && !filterActive) {
     return <p className="text-center mt-8 text-gray-500">Loading...</p>
   }
 
@@ -164,6 +228,15 @@ export default function RecipeList() {
         </button>
       </form>
 
+      <label className="mb-4 flex items-center gap-2 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={favoritesOnly}
+          onChange={(e) => handleFavoritesOnlyChange(e.target.checked)}
+        />
+        Show favorites only
+      </label>
+
       {loading && filterActive ? (
         <p className="mb-4 text-center text-sm text-gray-500">Searching…</p>
       ) : null}
@@ -182,16 +255,14 @@ export default function RecipeList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {recipes.length === 0 ? (
+            {visibleRecipes.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-4 py-12 text-center text-gray-500">
-                  {filterActive
-                    ? 'No recipes match your ingredients.'
-                    : 'No recipes yet — create your first one!'}
+                  {emptyMessage()}
                 </td>
               </tr>
             ) : (
-              recipes.map((r) => (
+              visibleRecipes.map((r) => (
                 <tr key={r.recipeId} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 w-16">
                     {r.completedImageUrl ? (
@@ -215,6 +286,10 @@ export default function RecipeList() {
                       : ''}
                   </td>
                   <td className="px-4 py-3 flex gap-3 items-center">
+                    <FavoriteButton
+                      isFavorite={r.isFavorite}
+                      onToggle={() => handleToggleFavorite(r)}
+                    />
                     <Link to={`/recipes/${r.recipeId}/edit`} className="text-blue-600 hover:underline">
                       Edit
                     </Link>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getRecipe, deleteRecipe } from '../api/recipeApi'
+import { getRecipe, deleteRecipe, setFavorite, clearFavorite } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
+import FavoriteButton from './FavoriteButton'
 
 export default function RecipeDetail() {
   const { recipeId } = useParams()
@@ -9,6 +10,7 @@ export default function RecipeDetail() {
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState(null)
   const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -23,13 +25,42 @@ export default function RecipeDetail() {
     navigate('/recipes')
   }
 
+  // Optimistic favorite toggle. A failed call restores the recipe shown before the click.
+  async function handleToggleFavorite() {
+    if (!recipe || !user) return
+    const previous = recipe
+    const next = !recipe.isFavorite
+    setActionError('')
+    setRecipe({ ...recipe, isFavorite: next })
+    try {
+      if (next) {
+        const updated = await setFavorite(user.uid, recipeId)
+        if (updated && typeof updated === 'object') setRecipe(updated)
+      } else {
+        await clearFavorite(user.uid, recipeId)
+      }
+    } catch (err) {
+      setRecipe(previous)
+      setActionError(err.message)
+    }
+  }
+
   if (error) return <p className="text-center mt-8 text-red-600">{error}</p>
   if (!recipe) return <p className="text-center mt-8 text-gray-500">Loading...</p>
 
   return (
     <div className="max-w-3xl mx-auto mt-8 px-4">
       <div className="bg-white rounded-xl shadow p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{recipe.name}</h1>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h1 className="text-3xl font-bold text-gray-900">{recipe.name}</h1>
+          <FavoriteButton isFavorite={recipe.isFavorite} onToggle={handleToggleFavorite} />
+        </div>
+
+        {actionError ? (
+          <p role="alert" className="mb-4 text-sm text-red-700">
+            {actionError}
+          </p>
+        ) : null}
 
         {recipe.completedImageUrl ? (
           <div className="mb-6">
