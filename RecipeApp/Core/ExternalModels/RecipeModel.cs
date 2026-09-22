@@ -41,5 +41,11 @@ namespace RecipeApp.Core.ExternalModels
         /// </summary>
         [JsonPropertyName("completedImageUrl")]
         public string CompletedImageUrl { get; set; }
+
+        /// <summary>
+        /// False when the Firestore field is absent on older recipe documents.
+        /// </summary>
+        [JsonPropertyName("isFavorite")]
+        public bool IsFavorite { get; set; }
     }
 }
