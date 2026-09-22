@@ -43,7 +43,7 @@ For new work, specs are **Linear Documents** on the Feature issue:
 
 ---
 
-## Starting work (two entry points)
+## Starting work
 
 ### A — From Cursor
 
@@ -55,7 +55,13 @@ For new work, specs are **Linear Documents** on the Feature issue:
 3. Run the phase skill with the issue id, e.g. `/plan QUE-12` or paste the Linear issue URL in chat.
 4. The agent reads/writes specs via Linear MCP (`list_documents`, `get_document`, `save_document`).
 
-### B — From Linear
+### B — From a GitHub issue
+
+Opening an issue on this repository runs [`.github/workflows/github-issue-to-linear.yml`](../.github/workflows/github-issue-to-linear.yml). The workflow creates a **Triage** issue on team `QUE` in the Alexa Recipe App project, comments the Linear URL on the GitHub issue, and closes the GitHub issue. Re-runs skip issues that already have a `github-actions` comment containing a `linear.app` URL.
+
+Add a Linear personal API key as the repository secret **`LINEAR_API_KEY`** (Settings → Secrets and variables → Actions). Do not commit the key.
+
+### C — From Linear
 
 1. Create an issue in **Triage** in the Alexa Recipe App project.
 2. Move to **Plan** when ready.
@@ -96,7 +102,7 @@ You can still start agents manually from Cursor (sections A/B above). Interactiv
 | `AGENT_PROD_URL` | Cursor Cloud Agents → Environment | Deployed app URL for **`/ship`** UI validation |
 | `AGENT_PROD_USERNAME` | Cursor Cloud Agents → Environment | Test account login (prod) |
 | `AGENT_PROD_PASSWORD` | Cursor Cloud Agents → Environment | Test account password (prod) |
-| `LINEAR_API_KEY` | Cursor Cloud Agents dashboard (future) | Headless PR→state sync, automations |
+| `LINEAR_API_KEY` | GitHub Actions secret | Create a Linear ticket when a GitHub issue is opened (`.github/workflows/github-issue-to-linear.yml`) |
 | `CURSOR_API_KEY` | GitHub Actions (future) | Launch agents from Linear webhooks |
 
 Do **not** commit secrets. Full table: [AGENTS.md](../AGENTS.md) → **UI validation environments**.

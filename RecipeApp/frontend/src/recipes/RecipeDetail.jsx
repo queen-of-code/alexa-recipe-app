@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getRecipe, deleteRecipe } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
+import { listFilterSearch, parseListFilter } from './recipeListFilter'
 
 export default function RecipeDetail() {
   const { recipeId } = useParams()
+  const [searchParams] = useSearchParams()
+  const filterQuery = listFilterSearch(parseListFilter(searchParams))
+  const backTo = filterQuery ? `/recipes?${filterQuery}` : '/recipes'
   const user = useAuth()
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState(null)
@@ -82,7 +86,7 @@ export default function RecipeDetail() {
             Edit
           </Link>
           <Link
-            to="/recipes"
+            to={backTo}
             className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium px-4 py-2 rounded-lg transition-colors text-sm"
           >
             Back to List

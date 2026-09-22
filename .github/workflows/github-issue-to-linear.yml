@@ -1,0 +1,24 @@
+name: Open Linear ticket from GitHub issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Linear issue, comment, and close
+        uses: actions/github-script@v7
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        with:
+          script: |
+            const { openLinearIssue } = require('./.github/scripts/open-linear-issue.js')
+            await openLinearIssue({ github, context, core })

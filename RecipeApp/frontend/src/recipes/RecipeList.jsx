@@ -1,39 +1,71 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getAllRecipes, deleteRecipe, searchRecipes } from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
+import { listFilterSearch, parseListFilter } from './recipeListFilter'
 
 export default function RecipeList() {
   const user = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const searchParamsRef = useRef(searchParams)
+  searchParamsRef.current = searchParams
+  const applied = parseListFilter(searchParams)
+  const appliedKey = listFilterSearch(applied)
+  const filterActive = applied.active
+
   const [recipes, setRecipes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchHint, setSearchHint] = useState('')
-  const [ingredientInput, setIngredientInput] = useState('')
-  const [combineMode, setCombineMode] = useState('All')
-  const [filterActive, setFilterActive] = useState(false)
-
-  const refreshFullList = useCallback(async () => {
-    if (!user) return
-    setLoading(true)
-    setError('')
-    try {
-      const data = await getAllRecipes(user.uid)
-      setRecipes(data)
-      setFilterActive(false)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
+  const [ingredientInput, setIngredientInput] = useState(
+    applied.active ? applied.ingredients.join(', ') : '',
+  )
+  const [combineMode, setCombineMode] = useState(applied.combine)
+  const requestFailedRef = useRef(false)
+  const [retryNonce, setRetryNonce] = useState(0)
 
   useEffect(() => {
     if (!user) return
-    refreshFullList()
-  }, [user, refreshFullList])
+    const current = parseListFilter(searchParamsRef.current)
+    let cancelled = false
+    setLoading(true)
+    setError('')
+    requestFailedRef.current = false
+    if (current.active) {
+      setIngredientInput(current.ingredients.join(', '))
+      setCombineMode(current.combine)
+    } else {
+      setIngredientInput('')
+      setCombineMode('All')
+    }
 
-  async function handleSearch(e) {
+    const request = current.active
+      ? searchRecipes(user.uid, {
+          ingredients: current.ingredients,
+          combine: current.combine,
+        })
+      : getAllRecipes(user.uid)
+
+    request
+      .then((data) => {
+        if (!cancelled) setRecipes(data)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          requestFailedRef.current = true
+          setError(err.message)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [user, appliedKey, retryNonce])
+
+  function handleSearch(e) {
     e.preventDefault()
     if (!user) return
     const terms = ingredientInput
@@ -45,28 +77,40 @@ export default function RecipeList() {
       return
     }
     setSearchHint('')
+    const next = listFilterSearch({
+      ingredients: terms,
+      combine: combineMode,
+      active: true,
+    })
+    if (next === appliedKey) {
+      if (requestFailedRef.current) setRetryNonce((n) => n + 1)
+      return
+    }
+    setSearchParams(new URLSearchParams(next))
+  }
 
+  async function handleClearFilter() {
+    const draftDirty = ingredientInput.trim() !== '' || combineMode !== 'All'
+    const hintShowing = searchHint !== ''
+    setIngredientInput('')
+    setCombineMode('All')
+    setSearchHint('')
+    if (applied.active) {
+      setSearchParams(new URLSearchParams())
+      return
+    }
+    if (!draftDirty && !hintShowing) return
+    if (!user) return
     setLoading(true)
     setError('')
     try {
-      const data = await searchRecipes(user.uid, {
-        ingredients: terms,
-        combine: combineMode,
-      })
+      const data = await getAllRecipes(user.uid)
       setRecipes(data)
-      setFilterActive(true)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }
-
-  function handleClearFilter() {
-    setIngredientInput('')
-    setCombineMode('All')
-    setSearchHint('')
-    refreshFullList()
   }
 
   async function handleDelete(recipeId) {
@@ -183,53 +227,72 @@ export default function RecipeList() {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {recipes.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
-                  {filterActive
-                    ? 'No recipes match your ingredients.'
-                    : 'No recipes yet — create your first one!'}
-                </td>
-              </tr>
-            ) : (
-              recipes.map((r) => (
-                <tr key={r.recipeId} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  <td className="px-4 py-3 w-16">
-                    {r.completedImageUrl ? (
-                      <img
-                        src={r.completedImageUrl}
-                        alt=""
-                        className="h-10 w-10 rounded object-cover border border-gray-200 dark:border-gray-700"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="inline-block h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-700" aria-hidden />
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-900 dark:text-gray-100 font-medium">{r.name}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.prepTimeMins ?? r.prepTime}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.servings}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.cookTimeMins ?? r.cookTime}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                    {r.lastUpdated || r.lastUpdateTime
-                      ? new Date(r.lastUpdated || r.lastUpdateTime).toLocaleDateString()
-                      : ''}
-                  </td>
-                  <td className="px-4 py-3 flex gap-3 items-center">
-                    <Link to={`/recipes/${r.recipeId}/edit`} className="text-blue-600 dark:text-blue-400 hover:underline">
-                      Edit
-                    </Link>
-                    <Link to={`/recipes/${r.recipeId}`} className="text-gray-500 dark:text-gray-400 hover:underline">
-                      Details
-                    </Link>
-                    <button
-                      className="text-red-600 dark:text-red-400 hover:underline"
-                      onClick={() => handleDelete(r.recipeId)}
-                    >
-                      Delete
-                    </button>
+              loading ? null : (
+                <tr>
+                  <td colSpan="7" className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                    {filterActive
+                      ? 'No recipes match your ingredients.'
+                      : 'No recipes yet — create your first one!'}
                   </td>
                 </tr>
-              ))
+              )
+            ) : (
+              recipes.map((r) => {
+                const query = listFilterSearch(applied)
+                const viewTo = query ? `/recipes/${r.recipeId}?${query}` : `/recipes/${r.recipeId}`
+                return (
+                  <tr key={r.recipeId} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <td className="px-4 py-3 w-16">
+                      <Link
+                        to={viewTo}
+                        aria-label={`View ${r.name}`}
+                        className="inline-flex rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+                      >
+                        {r.completedImageUrl ? (
+                          <img
+                            src={r.completedImageUrl}
+                            alt=""
+                            className="h-10 w-10 rounded object-cover border border-gray-200 dark:border-gray-700"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="inline-block h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-700" aria-hidden="true" />
+                        )}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        to={viewTo}
+                        className="text-gray-900 dark:text-gray-100 font-medium hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+                      >
+                        {r.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.prepTimeMins ?? r.prepTime}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.servings}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.cookTimeMins ?? r.cookTime}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      {r.lastUpdated || r.lastUpdateTime
+                        ? new Date(r.lastUpdated || r.lastUpdateTime).toLocaleDateString()
+                        : ''}
+                    </td>
+                    <td className="px-4 py-3 flex gap-3 items-center">
+                      <Link to={`/recipes/${r.recipeId}/edit`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                        Edit
+                      </Link>
+                      <Link to={viewTo} className="text-gray-500 dark:text-gray-400 hover:underline">
+                        Details
+                      </Link>
+                      <button
+                        className="text-red-600 dark:text-red-400 hover:underline"
+                        onClick={() => handleDelete(r.recipeId)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
