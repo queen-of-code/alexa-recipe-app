@@ -152,13 +152,13 @@ export default function RecipeForm() {
 
   return (
     <div className="max-w-2xl mx-auto mt-8 px-4 pb-8">
-      <div className="bg-white rounded-xl shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           {isEditing ? 'Edit Recipe' : 'Create Recipe'}
         </h2>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded-lg" role="alert">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg" role="alert">
             {error}
           </div>
         )}
@@ -166,13 +166,13 @@ export default function RecipeForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic info */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Recipe Name
             </label>
             <input
               id="name"
               type="text"
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -181,40 +181,40 @@ export default function RecipeForm() {
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label htmlFor="prepTime" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="prepTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Prep Time (mins)
               </label>
               <input
                 id="prepTime"
                 type="number"
                 min="0"
-                className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={prepTime}
                 onChange={(e) => setPrepTime(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="cookTime" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="cookTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Cook Time (mins)
               </label>
               <input
                 id="cookTime"
                 type="number"
                 min="0"
-                className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={cookTime}
                 onChange={(e) => setCookTime(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="servings" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="servings" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Servings
               </label>
               <input
                 id="servings"
                 type="number"
                 min="1"
-                className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={servings}
                 onChange={(e) => setServings(e.target.value)}
               />
@@ -223,16 +223,16 @@ export default function RecipeForm() {
 
           {/* Completed dish photo (optional) */}
           <div>
-            <span id="completed-photo-label" className="block text-sm font-medium text-gray-700 mb-2">
+            <span id="completed-photo-label" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Photo of finished dish (optional)
             </span>
-            <p className="text-xs text-gray-500 mb-2">JPEG, PNG, or WebP, up to 5 MB.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">JPEG, PNG, or WebP, up to 5 MB.</p>
             {previewUrl ? (
               <div className="mb-3 flex items-start gap-4">
                 <img
                   src={previewUrl}
                   alt=""
-                  className="h-24 w-24 rounded-lg object-cover border border-gray-200"
+                  className="h-24 w-24 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
                 />
                 <div className="flex flex-col gap-2">
                   <label className="text-sm text-violet-700 font-medium cursor-pointer">
@@ -266,7 +266,7 @@ export default function RecipeForm() {
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 aria-labelledby="completed-photo-label"
-                className="block w-full text-sm text-gray-600"
+                className="block w-full text-sm text-gray-600 dark:text-gray-300"
                 onChange={(ev) => {
                   const f = ev.target.files?.[0]
                   setPhotoDraft(f || null)
@@ -278,14 +278,14 @@ export default function RecipeForm() {
 
           {/* Ingredients */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">Ingredients</h3>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Ingredients</h3>
             <div className="space-y-2">
               {ingredients.map((ing, i) => (
                 <div key={i} className="flex gap-2 items-center">
                   <input
                     type="text"
                     aria-label={`Ingredient ${i + 1}`}
-                    className="border border-gray-300 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     value={ing}
                     onChange={(e) => updateIngredient(i, e.target.value)}
                     placeholder={`Ingredient ${i + 1}`}
@@ -312,7 +312,7 @@ export default function RecipeForm() {
 
           {/* Steps */}
           <div>
-            <label htmlFor="step-0" className="block text-sm font-semibold text-gray-800 mb-2">
+            <label htmlFor="step-0" className="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">
               Steps
             </label>
             <div className="space-y-2">
@@ -323,7 +323,7 @@ export default function RecipeForm() {
                     id={i === 0 ? 'step-0' : undefined}
                     type="text"
                     aria-label={`Step ${i + 1}`}
-                    className="border border-gray-300 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     value={step}
                     onChange={(e) => updateStep(i, e.target.value)}
                     placeholder={`Step ${i + 1}`}
@@ -359,7 +359,7 @@ export default function RecipeForm() {
             </button>
             <Link
               to="/recipes"
-              className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-6 rounded-lg transition-colors"
+              className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium py-2 px-6 rounded-lg transition-colors"
             >
               Back to List
             </Link>

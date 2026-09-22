@@ -76,13 +76,13 @@ export default function RecipeList() {
   }
 
   if (loading && recipes.length === 0 && !filterActive) {
-    return <p className="text-center mt-8 text-gray-500">Loading...</p>
+    return <p className="text-center mt-8 text-gray-500 dark:text-gray-400">Loading...</p>
   }
 
   return (
     <div className="max-w-5xl mx-auto mt-8 px-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Recipes</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Recipes</h1>
         <Link
           to="/recipes/new"
           className="bg-violet-700 hover:bg-violet-800 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
@@ -94,7 +94,7 @@ export default function RecipeList() {
       {error ? (
         <div
           role="alert"
-          className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200"
         >
           <span>{error}</span>
           <button
@@ -109,11 +109,11 @@ export default function RecipeList() {
 
       <form
         onSubmit={handleSearch}
-        className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+        className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm"
         aria-label="Filter recipes by ingredients"
       >
         <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
-          <label htmlFor="recipe-ingredient-filter" className="text-xs font-medium text-gray-600">
+          <label htmlFor="recipe-ingredient-filter" className="text-xs font-medium text-gray-600 dark:text-gray-300">
             Ingredients
           </label>
           <input
@@ -125,7 +125,7 @@ export default function RecipeList() {
               if (searchHint) setSearchHint('')
             }}
             placeholder="e.g. tomato, cheddar"
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900"
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             autoComplete="off"
             aria-describedby={searchHint ? 'recipe-search-hint' : undefined}
           />
@@ -136,14 +136,14 @@ export default function RecipeList() {
           ) : null}
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="recipe-ingredient-combine" className="text-xs font-medium text-gray-600">
+          <label htmlFor="recipe-ingredient-combine" className="text-xs font-medium text-gray-600 dark:text-gray-300">
             Match
           </label>
           <select
             id="recipe-ingredient-combine"
             value={combineMode}
             onChange={(e) => setCombineMode(e.target.value)}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           >
             <option value="All">All (AND)</option>
             <option value="Any">Any (OR)</option>
@@ -158,20 +158,20 @@ export default function RecipeList() {
         <button
           type="button"
           onClick={handleClearFilter}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           Clear
         </button>
       </form>
 
       {loading && filterActive ? (
-        <p className="mb-4 text-center text-sm text-gray-500">Searching…</p>
+        <p className="mb-4 text-center text-sm text-gray-500 dark:text-gray-400">Searching…</p>
       ) : null}
 
-      <div className="w-full bg-white shadow rounded-xl overflow-hidden">
+      <div className="w-full bg-white dark:bg-gray-900 shadow rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wide">
+            <tr className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3 font-medium w-16"></th>
               <th className="text-left px-4 py-3 font-medium">Name</th>
               <th className="text-left px-4 py-3 font-medium">Prep Time (mins)</th>
@@ -181,10 +181,10 @@ export default function RecipeList() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {recipes.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-4 py-12 text-center text-gray-500">
+                <td colSpan="7" className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                   {filterActive
                     ? 'No recipes match your ingredients.'
                     : 'No recipes yet — create your first one!'}
@@ -192,24 +192,24 @@ export default function RecipeList() {
               </tr>
             ) : (
               recipes.map((r) => (
-                <tr key={r.recipeId} className="hover:bg-gray-50 transition-colors">
+                <tr key={r.recipeId} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <td className="px-4 py-3 w-16">
                     {r.completedImageUrl ? (
                       <img
                         src={r.completedImageUrl}
                         alt=""
-                        className="h-10 w-10 rounded object-cover border border-gray-200"
+                        className="h-10 w-10 rounded object-cover border border-gray-200 dark:border-gray-700"
                         loading="lazy"
                       />
                     ) : (
-                      <span className="inline-block h-10 w-10 rounded bg-gray-100 border border-gray-100" aria-hidden />
+                      <span className="inline-block h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-700" aria-hidden />
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-900 font-medium">{r.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.prepTimeMins ?? r.prepTime}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.servings}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.cookTimeMins ?? r.cookTime}</td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-gray-900 dark:text-gray-100 font-medium">{r.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.prepTimeMins ?? r.prepTime}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.servings}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.cookTimeMins ?? r.cookTime}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                     {r.lastUpdated || r.lastUpdateTime
                       ? new Date(r.lastUpdated || r.lastUpdateTime).toLocaleDateString()
                       : ''}
@@ -218,7 +218,7 @@ export default function RecipeList() {
                     <Link to={`/recipes/${r.recipeId}/edit`} className="text-blue-600 hover:underline">
                       Edit
                     </Link>
-                    <Link to={`/recipes/${r.recipeId}`} className="text-gray-500 hover:underline">
+                    <Link to={`/recipes/${r.recipeId}`} className="text-gray-500 dark:text-gray-400 hover:underline">
                       Details
                     </Link>
                     <button
