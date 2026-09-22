@@ -51,6 +51,26 @@ These **orchestrate** AIDLC phases and **pull in** library skills (`architecture
 
 **Notes:** Use **Linear MCP** (`save_issue`, `save_document`, `list_documents`, `get_document`) for tracker I/O. Do not assume `feature/<slug>/` for new Features. Full playbook: [docs/linear-workflow.md](docs/linear-workflow.md) and [LINEAR-AIDLC-PROJECT.md](.claude/deps/ai-dlc/docs/LINEAR-AIDLC-PROJECT.md).
 
+## UI validation environments
+
+Procedure: [.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md](.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md) — **Chrome DevTools MCP** (`chrome-devtools`); not Playwright or `cursor-ide-browser` for agent UI evidence.
+
+There is **no staging environment**. After deploy (or for **`/ship`** / **In Staging** / **Ship** Validate), exercise UI success criteria against **production** only.
+
+| Field | Value |
+|--------|--------|
+| **Deployed test URL** | `$AGENT_PROD_URL` (Cursor Cloud Agent environment secret) |
+| **Test login username** | `$AGENT_PROD_USERNAME` (environment secret — never commit) |
+| **Test login password** | `$AGENT_PROD_PASSWORD` (environment secret — never commit) |
+| **Local dev URL (optional, pre-PR)** | `http://localhost:3000` (web), `http://localhost:8080` (API) — see [README.md](README.md) |
+
+**Agent rules:**
+
+1. Read URL and credentials from the environment variables above; do not ask the human to paste secrets in chat.
+2. Confirm **prod deploy / release CI** succeeded before browser-testing deployed behavior (`/ship` deploy gate).
+3. Sign in via Chrome DevTools MCP (`fill_form`, `click`, `wait_for`) then exercise Product Spec UI criteria; **`take_screenshot`** for blocking mismatches.
+4. Record evidence in the Linear **`Validate scorecard — …`** Document and/or PR comments.
+
 ## `/review` dimensions (orchestrator must cover all in scope)
 
 The **`/review`** phase skill is not a shallow CI check. It must drive evaluation of:
@@ -58,7 +78,7 @@ The **`/review`** phase skill is not a shallow CI check. It must drive evaluatio
 1. **Tech Spec compliance** — trace criteria and contracts to code/tests.
 2. **Practical testing sufficiency** — right behaviors proven, not coverage theater.
 3. **DevOps** — rollout, deploy path, rollback, monitoring/observability vs Tech Spec.
-4. **Frontend/UI** — when applicable: **`frontend-web`** skill plus **browser MCP** (e.g. Cursor IDE browser tools) to exercise flows, usability, and design compliance; if MCP unavailable, ship a manual browser script and mark gaps.
+4. **Frontend/UI** — when applicable: **`frontend-web`** skill plus **[INTERACTIVE-UI-VALIDATION.md](.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md)** (Chrome DevTools MCP). Pre-merge review may use **local dev** URLs from the table above; post-deploy Validate uses **`$AGENT_PROD_URL`** only.
 5. **Security** — lightweight pass via **`agent-security-review`** (and **`backend-saas`** for API/auth patterns); see [.claude/skills/agent-security-review/SKILL.md](.claude/skills/agent-security-review/SKILL.md).
 6. **Architectural soundness** — per [ARCHITECTURAL-SOUNDNESS.md](.claude/deps/ai-dlc/docs/ARCHITECTURAL-SOUNDNESS.md).
 

@@ -81,11 +81,18 @@ Interactive agents can **subscribe** to issue state changes (`cursor-subscriptio
 
 | Secret | Where | Purpose |
 |--------|-------|---------|
-| *(none required for interactive agents)* | Linear MCP uses Cursor OAuth | Read/write issues and documents |
+| *(none required for Linear MCP)* | Cursor OAuth | Read/write issues and documents |
+| `AGENT_PROD_URL` | Cursor Cloud Agents → Environment | Deployed app URL for **`/ship`** UI validation |
+| `AGENT_PROD_USERNAME` | Cursor Cloud Agents → Environment | Test account login (prod) |
+| `AGENT_PROD_PASSWORD` | Cursor Cloud Agents → Environment | Test account password (prod) |
 | `LINEAR_API_KEY` | Cursor Cloud Agents dashboard (future) | Headless PR→state sync, automations |
 | `CURSOR_API_KEY` | GitHub Actions (future) | Launch agents from Linear webhooks |
 
-Do **not** commit API keys. GitHub Projects / `aidlc_work:*` automation has been removed from this repo.
+Do **not** commit secrets. Full table: [AGENTS.md](../AGENTS.md) → **UI validation environments**.
+
+## Post-deploy testing
+
+No staging. After merge/deploy, move the issue to **Ship** and run **`/ship`**. Agents validate UI against **`$AGENT_PROD_URL`** per [INTERACTIVE-UI-VALIDATION.md](../.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md).
 
 ---
 
