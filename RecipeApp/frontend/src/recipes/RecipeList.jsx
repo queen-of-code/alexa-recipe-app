@@ -1,7 +1,32 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllRecipes, deleteRecipe, searchRecipes } from '../api/recipeApi'
+import {
+  getAllRecipes,
+  deleteRecipe,
+  searchRecipes,
+  setFavorite,
+  clearFavorite,
+} from '../api/recipeApi'
 import { useAuth } from '../auth/AuthContext'
+
+function FavoriteButton({ isFavorite, onToggle, labelPrefix = '' }) {
+  const label = isFavorite
+    ? `${labelPrefix}Remove from favorites`.trim()
+    : `${labelPrefix}Add to favorites`.trim()
+
+  return (
+    <button
+      type="button"
+      aria-pressed={isFavorite}
+      aria-label={label}
+      title={label}
+      className={`text-lg leading-none ${isFavorite ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400'}`}
+      onClick={onToggle}
+    >
+      {isFavorite ? '★' : '☆'}
+    </button>
+  )
+}
 
 export default function RecipeList() {
   const user = useAuth()
@@ -12,13 +37,19 @@ export default function RecipeList() {
   const [ingredientInput, setIngredientInput] = useState('')
   const [combineMode, setCombineMode] = useState('All')
   const [filterActive, setFilterActive] = useState(false)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+
+  const displayedRecipes = useMemo(() => {
+    if (!favoritesOnly || !filterActive) return recipes
+    return recipes.filter((r) => r.isFavorite)
+  }, [recipes, favoritesOnly, filterActive])
 
   const refreshFullList = useCallback(async () => {
     if (!user) return
     setLoading(true)
     setError('')
     try {
-      const data = await getAllRecipes(user.uid)
+      const data = await getAllRecipes(user.uid, { favoritesOnly })
       setRecipes(data)
       setFilterActive(false)
     } catch (err) {
@@ -26,12 +57,27 @@ export default function RecipeList() {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, favoritesOnly])
 
   useEffect(() => {
-    if (!user) return
-    refreshFullList()
-  }, [user, refreshFullList])
+    if (!user || filterActive) return
+    let cancelled = false
+    setLoading(true)
+    setError('')
+    getAllRecipes(user.uid, { favoritesOnly })
+      .then((data) => {
+        if (!cancelled) setRecipes(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user, favoritesOnly, filterActive])
 
   async function handleSearch(e) {
     e.preventDefault()
@@ -69,6 +115,29 @@ export default function RecipeList() {
     refreshFullList()
   }
 
+  async function handleFavoritesOnlyChange(checked) {
+    setFavoritesOnly(checked)
+  }
+
+  async function handleToggleFavorite(recipe) {
+    if (!user) return
+    const nextFavorite = !recipe.isFavorite
+    try {
+      const updated = nextFavorite
+        ? await setFavorite(user.uid, recipe.recipeId)
+        : await clearFavorite(user.uid, recipe.recipeId)
+      setRecipes((rows) => {
+        const next = rows.map((r) => (r.recipeId === recipe.recipeId ? { ...r, ...updated } : r))
+        if (favoritesOnly && !nextFavorite) {
+          return next.filter((r) => r.recipeId !== recipe.recipeId)
+        }
+        return next
+      })
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   async function handleDelete(recipeId) {
     if (!window.confirm('Delete this recipe?')) return
     await deleteRecipe(user.uid, recipeId)
@@ -78,6 +147,14 @@ export default function RecipeList() {
   if (loading && recipes.length === 0 && !filterActive) {
     return <p className="text-center mt-8 text-gray-500">Loading...</p>
   }
+
+  const emptyMessage = filterActive
+    ? favoritesOnly
+      ? 'No favorite recipes match your ingredients.'
+      : 'No recipes match your ingredients.'
+    : favoritesOnly
+      ? 'No favorites yet — star a recipe to see it here.'
+      : 'No recipes yet — create your first one!'
 
   return (
     <div className="max-w-5xl mx-auto mt-8 px-4">
@@ -106,6 +183,19 @@ export default function RecipeList() {
           </button>
         </div>
       ) : null}
+
+      <div className="mb-4 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+        <input
+          id="recipe-favorites-only"
+          type="checkbox"
+          checked={favoritesOnly}
+          onChange={(e) => handleFavoritesOnlyChange(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+        />
+        <label htmlFor="recipe-favorites-only" className="text-sm font-medium text-gray-700">
+          Show favorites only
+        </label>
+      </div>
 
       <form
         onSubmit={handleSearch}
@@ -172,6 +262,7 @@ export default function RecipeList() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-medium w-10"></th>
               <th className="text-left px-4 py-3 font-medium w-16"></th>
               <th className="text-left px-4 py-3 font-medium">Name</th>
               <th className="text-left px-4 py-3 font-medium">Prep Time (mins)</th>
@@ -182,17 +273,21 @@ export default function RecipeList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {recipes.length === 0 ? (
+            {displayedRecipes.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-4 py-12 text-center text-gray-500">
-                  {filterActive
-                    ? 'No recipes match your ingredients.'
-                    : 'No recipes yet — create your first one!'}
+                <td colSpan="8" className="px-4 py-12 text-center text-gray-500">
+                  {emptyMessage}
                 </td>
               </tr>
             ) : (
-              recipes.map((r) => (
+              displayedRecipes.map((r) => (
                 <tr key={r.recipeId} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 w-10">
+                    <FavoriteButton
+                      isFavorite={Boolean(r.isFavorite)}
+                      onToggle={() => handleToggleFavorite(r)}
+                    />
+                  </td>
                   <td className="px-4 py-3 w-16">
                     {r.completedImageUrl ? (
                       <img

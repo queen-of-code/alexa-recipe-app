@@ -11,15 +11,21 @@ vi.mock('../auth/AuthContext', () => {
 
 const mockGetAllRecipes = vi.fn()
 const mockSearchRecipes = vi.fn()
+const mockSetFavorite = vi.fn()
+const mockClearFavorite = vi.fn()
 vi.mock('../api/recipeApi', () => ({
   getAllRecipes: (...args) => mockGetAllRecipes(...args),
   searchRecipes: (...args) => mockSearchRecipes(...args),
   deleteRecipe: vi.fn().mockResolvedValue(),
+  setFavorite: (...args) => mockSetFavorite(...args),
+  clearFavorite: (...args) => mockClearFavorite(...args),
 }))
 
 describe('RecipeList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockSetFavorite.mockResolvedValue({ recipeId: '1', isFavorite: true })
+    mockClearFavorite.mockResolvedValue({ recipeId: '1', isFavorite: false })
   })
 
   function renderPage() {
@@ -134,5 +140,64 @@ describe('RecipeList', () => {
     expect(screen.getByText('My Recipes')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /^dismiss$/i }))
     expect(screen.queryByText(/network down/i)).not.toBeInTheDocument()
+  })
+
+  it('favorites-only toggle requests filtered list from API', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockResolvedValue([
+      {
+        recipeId: '1',
+        name: 'Favorite Pasta',
+        prepTimeMins: 10,
+        servings: 4,
+        cookTimeMins: 20,
+        lastUpdated: '2024-01-01T00:00:00Z',
+        isFavorite: true,
+      },
+    ])
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Favorite Pasta')).toBeInTheDocument())
+
+    await user.click(screen.getByLabelText(/show favorites only/i))
+
+    await waitFor(() => {
+      expect(mockGetAllRecipes).toHaveBeenLastCalledWith('test-uid', { favoritesOnly: true })
+    })
+  })
+
+  it('shows favorites-only empty state', async () => {
+    mockGetAllRecipes.mockResolvedValue([])
+    renderPage()
+    await waitFor(() => expect(screen.getByText('My Recipes')).toBeInTheDocument())
+
+    const user = userEvent.setup()
+    await user.click(screen.getByLabelText(/show favorites only/i))
+
+    await waitFor(() => {
+      expect(screen.getByText(/no favorites yet/i)).toBeInTheDocument()
+    })
+  })
+
+  it('favorite button calls setFavorite API', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockResolvedValue([
+      {
+        recipeId: '1',
+        name: 'Pasta',
+        prepTimeMins: 10,
+        servings: 4,
+        cookTimeMins: 20,
+        lastUpdated: '2024-01-01T00:00:00Z',
+        isFavorite: false,
+      },
+    ])
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Pasta')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /add to favorites/i }))
+
+    await waitFor(() => {
+      expect(mockSetFavorite).toHaveBeenCalledWith('test-uid', '1')
+    })
   })
 })

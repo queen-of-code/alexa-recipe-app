@@ -1,3 +1,4 @@
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -7,6 +8,7 @@ using RecipeAPI.FirestoreModels;
 using RecipeApp.Core.ExternalModels;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -38,6 +40,14 @@ namespace RecipeAPI.Tests
                 Servings = 1,
             };
             r.Ingredients.AddRange(ings);
+            return r;
+        }
+
+        private static Recipe RecipeWithFavorite(string id, bool isFavorite, DateTime lastUpdated)
+        {
+            var r = RecipeWithIngredients(id, id, "salt");
+            r.IsFavorite = isFavorite;
+            r.LastUpdateTime = Timestamp.FromDateTime(DateTime.SpecifyKind(lastUpdated, DateTimeKind.Utc));
             return r;
         }
 
@@ -83,6 +93,135 @@ namespace RecipeAPI.Tests
             Assert.Equal(TestingRecipe.PrepTimeMins, resultList[0].PrepTimeMins);
 
             service.Verify(s => s.GetAllRecipesForUser(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Get_OrdersFavoritesFirst()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var olderFavorite = RecipeWithFavorite("f-old", true, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            var newerNonFavorite = RecipeWithFavorite("n-new", false, new DateTime(2024, 12, 1, 0, 0, 0, DateTimeKind.Utc));
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.GetAllRecipesForUser("123"))
+                .ReturnsAsync(new List<Recipe> { newerNonFavorite, olderFavorite });
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "123");
+            var result = await controller.Get("123");
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var ids = Assert.IsAssignableFrom<IEnumerable<RecipeModel>>(ok.Value).Select(r => r.RecipeId).ToList();
+            Assert.Equal(new[] { "f-old", "n-new" }, ids);
+        }
+
+        [Fact]
+        public async Task Get_FavoritesOnly_ReturnsOnlyFavorites()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var favorite = RecipeWithFavorite("f1", true, new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc));
+            var notFavorite = RecipeWithFavorite("n1", false, new DateTime(2024, 12, 1, 0, 0, 0, DateTimeKind.Utc));
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.GetAllRecipesForUser("123"))
+                .ReturnsAsync(new List<Recipe> { favorite, notFavorite });
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "123");
+            var result = await controller.Get("123", favoritesOnly: true);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var list = Assert.IsAssignableFrom<IEnumerable<RecipeModel>>(ok.Value).ToList();
+            Assert.Single(list);
+            Assert.Equal("f1", list[0].RecipeId);
+            Assert.True(list[0].IsFavorite);
+        }
+
+        [Fact]
+        public async Task SetFavorite_ReturnsUpdatedRecipe()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var saved = RecipeWithFavorite("r1", true, DateTime.UtcNow);
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.SetFavorite("123", "r1", true)).ReturnsAsync(saved);
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "123");
+            var result = await controller.SetFavorite("123", "r1");
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var model = Assert.IsType<RecipeModel>(ok.Value);
+            Assert.True(model.IsFavorite);
+        }
+
+        [Fact]
+        public async Task SetFavorite_NotFound_WhenRecipeMissing()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.SetFavorite("123", "missing", true)).ReturnsAsync((Recipe)null);
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "123");
+            var result = await controller.SetFavorite("123", "missing");
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task ClearFavorite_ReturnsUpdatedRecipe()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var saved = RecipeWithFavorite("r1", false, DateTime.UtcNow);
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.SetFavorite("123", "r1", false)).ReturnsAsync(saved);
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "123");
+            var result = await controller.ClearFavorite("123", "r1");
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var model = Assert.IsType<RecipeModel>(ok.Value);
+            Assert.False(model.IsFavorite);
+        }
+
+        [Fact]
+        public async Task FavoriteEndpoints_UserId_Mismatch_Forbid()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var service = new Mock<IFirestoreRecipeService>();
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "999");
+
+            Assert.IsType<ForbidResult>(await controller.SetFavorite("123", "r1"));
+            Assert.IsType<ForbidResult>(await controller.ClearFavorite("123", "r1"));
+            service.Verify(s => s.SetFavorite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Search_OrdersFavoritesFirst()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var favorite = RecipeWithFavorite("f1", true, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            favorite.Ingredients.Clear();
+            favorite.Ingredients.Add("tomato");
+            var notFavorite = RecipeWithFavorite("n1", false, new DateTime(2024, 12, 1, 0, 0, 0, DateTimeKind.Utc));
+            notFavorite.Ingredients.Clear();
+            notFavorite.Ingredients.Add("tomato");
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.GetAllRecipesForUser("123"))
+                .ReturnsAsync(new List<Recipe> { notFavorite, favorite });
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "123");
+            var result = await controller.Search("123", new RecipeSearchRequest
+            {
+                Ingredients = new List<string> { "tomato" },
+                Combine = "All",
+            });
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var list = Assert.IsAssignableFrom<IEnumerable<RecipeModel>>(ok.Value).ToList();
+            Assert.Equal(2, list.Count);
+            Assert.Equal("f1", list[0].RecipeId);
+            Assert.True(list[0].IsFavorite);
         }
 
         [Fact]
