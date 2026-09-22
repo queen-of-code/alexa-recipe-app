@@ -14,4 +14,14 @@ describe('getFirebaseWebConfig', () => {
     expect(cfg.storageBucket).toBe('proj.appspot.com')
     expect(cfg.projectId).toBe('proj')
   })
+
+  it('fails fast when VITE_FIREBASE_STORAGE_BUCKET is missing', () => {
+    const env = {
+      VITE_FIREBASE_API_KEY: 'test-key',
+      VITE_FIREBASE_AUTH_DOMAIN: 'proj.firebaseapp.com',
+      VITE_FIREBASE_PROJECT_ID: 'proj',
+      VITE_FIREBASE_APP_ID: '1:1:web:abc',
+    }
+    expect(() => getFirebaseWebConfig(env)).toThrow(/VITE_FIREBASE_STORAGE_BUCKET/)
+  })
 })

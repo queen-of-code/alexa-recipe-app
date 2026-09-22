@@ -51,6 +51,7 @@ services:
       VITE_USE_EMULATOR: 'true'
       VITE_USE_STORAGE_EMULATOR: 'true'
       VITE_API_URL: 'http://localhost:8081'
+      VITE_FIREBASE_STORAGE_BUCKET: 'queen-of-code.appspot.com'
     volumes:
       - ./frontend:/app
       - /app/node_modules
