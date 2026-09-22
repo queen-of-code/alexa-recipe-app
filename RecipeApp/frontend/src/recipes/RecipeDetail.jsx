@@ -23,7 +23,7 @@ export default function RecipeDetail() {
     navigate('/recipes')
   }
 
-  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>
+  if (error) return <p className="text-center mt-8 text-red-600 dark:text-red-300">{error}</p>
   if (!recipe) return <p className="text-center mt-8 text-gray-500 dark:text-gray-400">Loading...</p>
 
   return (

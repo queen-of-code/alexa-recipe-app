@@ -56,6 +56,18 @@ describe('ThemeProvider', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 
+  it('does not add dark class while auth is still loading', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'dark')
+    stubMatchMedia(true)
+    useAuthMock.mockReturnValue(undefined)
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>
+    )
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
   it('adds dark class when signed in with no stored key and OS dark', () => {
     stubMatchMedia(true)
     useAuthMock.mockReturnValue({ email: 'a@b.com' })
@@ -97,6 +109,36 @@ describe('ThemeProvider', () => {
     )
     expect(document.documentElement.classList.contains('dark')).toBe(false)
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+  })
+
+  it('ignores an OS change when an explicit preference is stored', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'light')
+    let listener
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockImplementation((query) => ({
+        matches: false,
+        media: query,
+        addEventListener: vi.fn((_event, cb) => {
+          listener = cb
+        }),
+        removeEventListener: vi.fn(),
+      }))
+    )
+    useAuthMock.mockReturnValue({ email: 'a@b.com' })
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>
+    )
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+
+    act(() => {
+      listener?.({ matches: true })
+    })
+
+    expect(listener).toBeUndefined()
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 
   it('toggle from resolved light writes dark and adds the class', async () => {

@@ -17,12 +17,13 @@ function toPreference(stored) {
 
 export function ThemeProvider({ children }) {
   const user = useAuth()
-  const signedOut = user == null
+  // Auth loading is `undefined`; signed out is `null`. Only a Firebase user is signed in.
+  const signedIn = Boolean(user)
   const [prefersDark, setPrefersDark] = useState(readPrefersDark)
   const [stored, setStored] = useState(() => getStoredTheme())
 
   const preference = toPreference(stored)
-  const systemActive = !signedOut && preference === 'system'
+  const systemActive = signedIn && preference === 'system'
 
   useLayoutEffect(() => {
     if (!systemActive) return undefined
@@ -34,25 +35,23 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener('change', onChange)
   }, [systemActive])
 
-  const resolved = signedOut ? 'light' : resolveTheme(stored, prefersDark)
+  const resolved = signedIn ? resolveTheme(stored, prefersDark) : 'light'
 
   useLayoutEffect(() => {
     const root = document.documentElement
-    if (signedOut) {
-      root.classList.remove('dark')
-    } else if (resolved === 'dark') {
+    if (signedIn && resolved === 'dark') {
       root.classList.add('dark')
     } else {
       root.classList.remove('dark')
     }
-  }, [signedOut, resolved])
+  }, [signedIn, resolved])
 
   const toggleTheme = useCallback(() => {
-    if (user == null) return
+    if (!signedIn) return
     const next = resolved === 'dark' ? 'light' : 'dark'
     setStoredTheme(next)
     setStored(next)
-  }, [user, resolved])
+  }, [signedIn, resolved])
 
   const value = useMemo(
     () => ({
