@@ -84,7 +84,7 @@ You can still start agents manually from Cursor (sections A/B above). Interactiv
 
 - Include the Linear ticket key in **PR title and body** (e.g. `QUE-12`).
 - Link the PR to the Linear issue (native GitHub integration when configured).
-- **PR → state sync:** Build automation requests review on the PR; Review automation triggers on PR open. Merge → **In Staging** is handled by native Linear/GitHub integration when configured; otherwise move states manually.
+- **PR → state sync:** Build automation requests review on the PR and moves the issue to **Review**; Review automation triggers on PR open. Merge → **In Staging** is handled by native Linear/GitHub integration when configured; otherwise move states manually.
 
 ---
 
