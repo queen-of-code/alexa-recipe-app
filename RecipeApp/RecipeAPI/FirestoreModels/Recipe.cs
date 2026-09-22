@@ -46,6 +46,12 @@ namespace RecipeAPI.FirestoreModels
         [FirestoreProperty]
         public string CompletedImageUrl { get; set; }
 
+        /// <summary>
+        /// Missing on legacy documents. Firestore materializes an absent bool as false.
+        /// </summary>
+        [FirestoreProperty]
+        public bool IsFavorite { get; set; }
+
         public Recipe() { }
 
         public Recipe(RecipeModel external)
@@ -63,6 +69,7 @@ namespace RecipeAPI.FirestoreModels
             Steps = new List<string>(external.Steps);
             Ingredients = new List<string>(external.Ingredients);
             CompletedImageUrl = external.CompletedImageUrl;
+            IsFavorite = external.IsFavorite ?? false;
         }
 
         public RecipeModel GenerateExternalRecipe()
@@ -75,7 +82,8 @@ namespace RecipeAPI.FirestoreModels
                 LastUpdateTime = LastUpdateTime.ToDateTime(),
                 PrepTimeMins = PrepTimeMins,
                 CookTimeMins = CookTimeMins,
-                Servings = Servings
+                Servings = Servings,
+                IsFavorite = IsFavorite
             };
             recipe.Steps.AddRange(Steps.Select(s => s));
             recipe.Ingredients.AddRange(Ingredients.Select(s => s));

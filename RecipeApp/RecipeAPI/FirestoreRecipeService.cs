@@ -64,6 +64,17 @@ namespace RecipeAPI
         public async Task<Recipe> SaveRecipe(Recipe recipe) =>
             await SaveItemCoreAsync(recipe).ConfigureAwait(false);
 
+        public async Task<FavoriteUpdateResult> SetFavorite(string userId, string recipeId, bool isFavorite)
+        {
+            var recipe = await RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
+            if (recipe == null)
+                return new FavoriteUpdateResult(false, null);
+
+            recipe.IsFavorite = isFavorite;
+            var saved = await SaveRecipe(recipe).ConfigureAwait(false);
+            return new FavoriteUpdateResult(true, saved);
+        }
+
         public async Task<bool> DeleteRecipe(string userId, string recipeId)
         {
             var existing = await RetrieveRecipe(userId, recipeId).ConfigureAwait(false);

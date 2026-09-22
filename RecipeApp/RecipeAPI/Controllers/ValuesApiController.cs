@@ -37,16 +37,17 @@ namespace RecipeAPI.Controllers
             return new BadRequestResult();
         }
 
-        // GET api/values/{userId}
+        // GET api/values/{userId}?favoritesOnly={true|false}
         [HttpGet("{userId}")]
-        public async Task<IActionResult> Get(string userId)
+        public async Task<IActionResult> Get(string userId, [FromQuery] bool favoritesOnly = false)
         {
             var auth = EnsureRouteUserMatchesToken(userId);
             if (auth != null)
                 return auth;
 
             var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
-            return Ok(recipes?.Select(s => s.GenerateExternalRecipe()));
+            var ordered = RecipeListOrdering.OrderForList(recipes, favoritesOnly);
+            return Ok(ordered.Select(s => s.GenerateExternalRecipe()));
         }
 
         // GET api/values/{userId}/{recipeId}
@@ -74,7 +75,35 @@ namespace RecipeAPI.Controllers
 
             var recipes = await RecipeService.GetAllRecipesForUser(userId).ConfigureAwait(false);
             var filtered = IngredientMatcher.Filter(recipes, segmentGroups);
-            return Ok(filtered.Select(s => s.GenerateExternalRecipe()));
+            var ordered = RecipeListOrdering.OrderForList(filtered, favoritesOnly: false);
+            return Ok(ordered.Select(s => s.GenerateExternalRecipe()));
+        }
+
+        // PUT api/values/{userId}/{recipeId}/favorite
+        [HttpPut("{userId}/{recipeId}/favorite")]
+        public async Task<IActionResult> PutFavorite(string userId, string recipeId, [FromBody] FavoriteRequest body)
+        {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
+            if (body == null || body.Favorite != true)
+                return new BadRequestResult();
+
+            var result = await RecipeService.SetFavorite(userId, recipeId, true).ConfigureAwait(false);
+            return ToFavoriteResult(result);
+        }
+
+        // DELETE api/values/{userId}/{recipeId}/favorite
+        [HttpDelete("{userId}/{recipeId}/favorite")]
+        public async Task<IActionResult> DeleteFavorite(string userId, string recipeId)
+        {
+            var auth = EnsureRouteUserMatchesToken(userId);
+            if (auth != null)
+                return auth;
+
+            var result = await RecipeService.SetFavorite(userId, recipeId, false).ConfigureAwait(false);
+            return ToFavoriteResult(result);
         }
 
         // POST api/values/{userId}
@@ -120,6 +149,13 @@ namespace RecipeAPI.Controllers
             var auth = EnsureRouteUserMatchesToken(userId);
             if (auth != null)
                 return auth;
+
+            if (value != null && value.IsFavorite == null)
+            {
+                var existing = await RecipeService.RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
+                if (existing != null)
+                    value.IsFavorite = existing.IsFavorite;
+            }
 
             var converted = new Recipe(value);
             if (string.IsNullOrWhiteSpace(converted.Id)) converted.Id = recipeId;
@@ -185,6 +221,15 @@ namespace RecipeAPI.Controllers
             return combine.Equals("Any", StringComparison.OrdinalIgnoreCase)
                 ? IngredientCombineMode.Any
                 : IngredientCombineMode.All;
+        }
+
+        private static IActionResult ToFavoriteResult(FavoriteUpdateResult result)
+        {
+            if (result == null || !result.Found)
+                return new NotFoundResult();
+            if (result.Recipe == null)
+                return new BadRequestResult();
+            return new OkObjectResult(result.Recipe.GenerateExternalRecipe());
         }
 
         /// <summary>

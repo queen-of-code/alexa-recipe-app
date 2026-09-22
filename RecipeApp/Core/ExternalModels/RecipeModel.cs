@@ -41,5 +41,13 @@ namespace RecipeApp.Core.ExternalModels
         /// </summary>
         [JsonPropertyName("completedImageUrl")]
         public string CompletedImageUrl { get; set; }
+
+        /// <summary>
+        /// Favorite flag. Null when a JSON body omits the property, so an update can keep the stored value.
+        /// False when the Firestore field is absent on older recipe documents.
+        /// </summary>
+        [JsonPropertyName("isFavorite")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IsFavorite { get; set; }
     }
 }
