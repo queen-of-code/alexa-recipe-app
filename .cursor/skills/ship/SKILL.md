@@ -23,7 +23,11 @@ updated_at: 2026-09-21
 
 ## Orchestration
 
-Follow generic `/ship` (deploy gate, UI validation per INTERACTIVE-UI-VALIDATION when applicable, scorecard vs Product Spec success criteria, 90% default threshold).
+Follow generic `/ship` with these repo defaults:
+
+1. **Deploy gate:** Confirm production deploy succeeded (e.g. release / `prod_deploy` workflow) before UI testing.
+2. **UI validation:** [.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md](../../.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md) against **`$AGENT_PROD_URL`** with **`$AGENT_PROD_USERNAME`** / **`$AGENT_PROD_PASSWORD`** — see **`AGENTS.md` → UI validation environments**. No staging; prod only.
+3. **Scorecard:** Product Spec success criteria; 90% default threshold.
 
 ## Outputs
 

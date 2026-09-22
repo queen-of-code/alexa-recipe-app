@@ -4,7 +4,7 @@ using System.Linq;
 namespace RecipeAPI
 {
     /// <summary>
-    /// Validation and parsing for optional completed-dish image metadata (see feature/recipe-completed-photo/tech-spec.md).
+    /// Validation and parsing for optional completed-dish image metadata (see Linear QUE-7 Tech Spec).
     /// </summary>
     internal static class CompletedImageMetadata
     {

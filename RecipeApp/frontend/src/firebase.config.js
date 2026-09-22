@@ -1,9 +1,8 @@
 /**
- * Firebase web config for Auth + Storage.
- * storageBucket is required so getStorage(app) does not throw storage/no-default-bucket.
- * Tech Spec — recipe completed photo, addendum (QUE-7 / issue #76).
+ * Pure Firebase web config for tests and `firebase.js`.
+ * @param {ImportMeta['env']} env - typically `import.meta.env`
  */
-export function buildFirebaseConfig(env) {
+export function getFirebaseWebConfig(env) {
   const storageBucket = env.VITE_FIREBASE_STORAGE_BUCKET
   if (storageBucket == null || String(storageBucket).trim() === '') {
     throw new Error(

@@ -15,4 +15,6 @@ When the user is doing feature work, prefer walking them through the phase skill
 
 **Specs** for new work live as **Linear Documents** on the Feature issue (`QUE-###`). Use **Linear MCP** for tracker I/O.
 
+**Post-deploy UI testing:** prod only via **`AGENT_PROD_URL`**, **`AGENT_PROD_USERNAME`**, **`AGENT_PROD_PASSWORD`** — see **`AGENTS.md` → UI validation environments** and [INTERACTIVE-UI-VALIDATION.md](../.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md).
+
 **`/review`** posts **GitHub PR comments** per review dimension and mirrors to a Linear **Review report** Document. **`/build`** triages each thread: fix valid items, or reply why invalid and resolve.

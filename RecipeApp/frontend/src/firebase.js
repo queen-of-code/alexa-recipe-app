@@ -1,9 +1,9 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
-import { buildFirebaseConfig } from './firebaseConfig'
+import { getFirebaseWebConfig } from './firebase.config.js'
 
-const firebaseConfig = buildFirebaseConfig(import.meta.env)
+const firebaseConfig = getFirebaseWebConfig(import.meta.env)
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
