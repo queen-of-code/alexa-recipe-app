@@ -17,7 +17,7 @@ function toPreference(stored) {
 
 export function ThemeProvider({ children }) {
   const user = useAuth()
-  const signedOut = user === null
+  const signedOut = user == null
   const [prefersDark, setPrefersDark] = useState(readPrefersDark)
   const [stored, setStored] = useState(() => getStoredTheme())
 
