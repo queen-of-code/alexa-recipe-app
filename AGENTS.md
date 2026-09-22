@@ -31,10 +31,9 @@ These **orchestrate** AIDLC phases and **pull in** library skills (`architecture
 
 ## Repo layout
 
-- **Specs (new work):** Linear **Documents** on the Feature issue — see Issue tracker below.
+- **Specs:** Linear **Documents** on the Feature issue — see Issue tracker below. Migrated features: [feature/README.md](feature/README.md).
 - **ADRs:** `docs/adr/`
 - **App code:** `RecipeApp/` (dotnet API + frontend; see README for ports)
-- **Legacy (migration pending):** `feature/<slug>/` — git copies being retired; do not create new folders for new Features.
 
 ## Issue tracker (AIDLC)
 
