@@ -29,6 +29,8 @@ updated_at: 2026-09-21
 
 Run all **six dimensions** from the generic skill (spec, testing, DevOps, UI/browser, security, architectural soundness).
 
+**Frontend/UX pass:** [.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md](../../.claude/deps/ai-dlc/docs/INTERACTIVE-UI-VALIDATION.md) — Chrome DevTools MCP. Pre-merge: optional **local** URLs from **`AGENTS.md` → UI validation environments**. Do not use prod for review unless the change is already deployed and the human explicitly asks.
+
 ## Handoff
 
 Tell the human to run **`/build`** to triage review threads, then move to **In Staging** / **Ship** per [docs/linear-workflow.md](../../docs/linear-workflow.md) when review is resolved.
