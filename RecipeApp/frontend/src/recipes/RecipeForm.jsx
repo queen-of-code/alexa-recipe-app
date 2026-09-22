@@ -21,6 +21,7 @@ export default function RecipeForm() {
   const [steps, setSteps] = useState([''])
   const [error, setError] = useState('')
   const [completedImageUrl, setCompletedImageUrl] = useState('')
+  const [isFavorite, setIsFavorite] = useState(false)
   const [photoDraft, setPhotoDraft] = useState(null)
   const [removePhoto, setRemovePhoto] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -48,6 +49,7 @@ export default function RecipeForm() {
         setIngredients(Array.isArray(r.ingredients) && r.ingredients.length ? r.ingredients : [''])
         setSteps(Array.isArray(r.steps) && r.steps.length ? r.steps : [''])
         setCompletedImageUrl(r.completedImageUrl ?? '')
+        setIsFavorite(Boolean(r.isFavorite))
         setPhotoDraft(null)
         setRemovePhoto(false)
       })
@@ -117,6 +119,7 @@ export default function RecipeForm() {
         await updateRecipe(user.uid, recipeId, {
           ...basePayload,
           completedImageUrl: imageField,
+          isFavorite,
         })
       } else {
         const created = await createRecipe(user.uid, basePayload)

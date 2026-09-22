@@ -41,6 +41,7 @@ const sampleRecipe = {
   cookTime: 20,
   ingredients: ['pasta', 'sauce'],
   steps: ['Boil water', 'Cook pasta'],
+  isFavorite: true,
 }
 
 describe('RecipeForm', () => {
@@ -99,7 +100,11 @@ describe('RecipeForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }))
 
     await waitFor(() => {
-      expect(mockUpdateRecipe).toHaveBeenCalled()
+      expect(mockUpdateRecipe).toHaveBeenCalledWith(
+        'test-uid',
+        'abc123',
+        expect.objectContaining({ isFavorite: true }),
+      )
     })
   })
 

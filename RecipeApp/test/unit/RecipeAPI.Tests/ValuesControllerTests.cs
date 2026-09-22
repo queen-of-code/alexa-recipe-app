@@ -99,6 +99,65 @@ namespace RecipeAPI.Tests
             service.Verify(s => s.GetAllRecipesForUser(It.IsAny<string>()), Times.Never);
         }
 
+        [Fact]
+        public async Task Put_WithoutIsFavorite_PreservesStoredFavorite()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            var existing = RecipeAt("recipe-11111", true, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            Recipe saved = null;
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.RetrieveRecipe("userId", "recipe-11111")).ReturnsAsync(existing);
+            service.Setup(s => s.SaveRecipe(It.IsAny<Recipe>()))
+                .Callback<Recipe>(r => saved = r)
+                .ReturnsAsync((Recipe r) => r);
+
+            var incoming = new RecipeModel
+            {
+                CookTimeMins = 60,
+                Name = "Renamed",
+                RecipeId = "recipe-11111",
+                UserId = "userId",
+            };
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "userId");
+            var result = await controller.Put("userId", "recipe-11111", incoming);
+
+            Assert.IsType<AcceptedResult>(result);
+            Assert.NotNull(saved);
+            Assert.True(saved.IsFavorite);
+            Assert.Equal("Renamed", saved.Name);
+        }
+
+        [Fact]
+        public async Task Put_ExplicitIsFavoriteFalse_ClearsStoredFavorite()
+        {
+            var logger = new Mock<ILogger<ValuesApiController>>();
+            Recipe saved = null;
+            var service = new Mock<IFirestoreRecipeService>();
+            service.Setup(s => s.SaveRecipe(It.IsAny<Recipe>()))
+                .Callback<Recipe>(r => saved = r)
+                .ReturnsAsync((Recipe r) => r);
+
+            var incoming = new RecipeModel
+            {
+                CookTimeMins = 60,
+                Name = "Renamed",
+                RecipeId = "recipe-11111",
+                UserId = "userId",
+                IsFavorite = false,
+            };
+
+            var controller = new ValuesApiController(service.Object, logger.Object);
+            SetFirebaseUser(controller, "userId");
+            var result = await controller.Put("userId", "recipe-11111", incoming);
+
+            Assert.IsType<AcceptedResult>(result);
+            Assert.NotNull(saved);
+            Assert.False(saved.IsFavorite);
+            service.Verify(s => s.RetrieveRecipe(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

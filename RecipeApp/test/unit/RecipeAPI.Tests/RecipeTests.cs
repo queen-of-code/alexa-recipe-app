@@ -117,6 +117,14 @@ namespace RecipeAPI.Tests
         }
 
         [Fact]
+        public void OmittedIsFavorite_DeserializesAsNull()
+        {
+            var json = "{\"name\":\"N\",\"recipeId\":\"r\",\"userId\":\"u\"}";
+            var model = System.Text.Json.JsonSerializer.Deserialize<RecipeModel>(json);
+            Assert.Null(model.IsFavorite);
+        }
+
+        [Fact]
         public void MissingIsFavorite_DefaultsFalseOnExternalModel()
         {
             var recipe = new Recipe

@@ -69,7 +69,7 @@ namespace RecipeAPI.FirestoreModels
             Steps = new List<string>(external.Steps);
             Ingredients = new List<string>(external.Ingredients);
             CompletedImageUrl = external.CompletedImageUrl;
-            IsFavorite = external.IsFavorite;
+            IsFavorite = external.IsFavorite ?? false;
         }
 
         public RecipeModel GenerateExternalRecipe()

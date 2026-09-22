@@ -150,6 +150,13 @@ namespace RecipeAPI.Controllers
             if (auth != null)
                 return auth;
 
+            if (value != null && value.IsFavorite == null)
+            {
+                var existing = await RecipeService.RetrieveRecipe(userId, recipeId).ConfigureAwait(false);
+                if (existing != null)
+                    value.IsFavorite = existing.IsFavorite;
+            }
+
             var converted = new Recipe(value);
             if (string.IsNullOrWhiteSpace(converted.Id)) converted.Id = recipeId;
             if (string.IsNullOrWhiteSpace(converted.UserId)) converted.UserId = userId;
