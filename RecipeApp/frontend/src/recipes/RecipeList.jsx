@@ -4,6 +4,20 @@ import { getAllRecipes, deleteRecipe, searchRecipes, setFavorite, clearFavorite 
 import { useAuth } from '../auth/AuthContext'
 import FavoriteButton from './FavoriteButton'
 
+function updatedMillis(recipe) {
+  const raw = recipe.lastUpdated || recipe.lastUpdateTime
+  const parsed = raw ? Date.parse(raw) : 0
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+function orderFavoritesFirst(rows) {
+  return [...rows].sort((a, b) => {
+    const favoriteDelta = Number(Boolean(b.isFavorite)) - Number(Boolean(a.isFavorite))
+    if (favoriteDelta !== 0) return favoriteDelta
+    return updatedMillis(b) - updatedMillis(a)
+  })
+}
+
 export default function RecipeList() {
   const user = useAuth()
   const [recipes, setRecipes] = useState([])
@@ -104,8 +118,9 @@ export default function RecipeList() {
 
   // Favorite toggles wait for the API, then refetch so favorites-first order
   // stays server-authoritative. Ingredient-search rows are patched in memory
-  // because favorites-only is a client filter on that result set. A failed
-  // toggle leaves the previous list and uses the error banner.
+  // (favorites-only is a client filter on that result set) and re-sorted
+  // favorites-first, then lastUpdated descending. A failed toggle leaves the
+  // previous list and uses the error banner.
   async function handleToggleFavorite(recipe) {
     const next = !recipe.isFavorite
     setError('')
@@ -114,8 +129,10 @@ export default function RecipeList() {
       else await clearFavorite(user.uid, recipe.recipeId)
       if (filterActive) {
         setRecipes((rows) =>
-          rows.map((row) =>
-            row.recipeId === recipe.recipeId ? { ...row, isFavorite: next } : row,
+          orderFavoritesFirst(
+            rows.map((row) =>
+              row.recipeId === recipe.recipeId ? { ...row, isFavorite: next } : row,
+            ),
           ),
         )
         return

@@ -189,6 +189,32 @@ describe('RecipeList', () => {
     expect(mockGetAllRecipes).toHaveBeenCalledTimes(1)
   })
 
+  it('re-sorts ingredient search results favorites-first after a toggle', async () => {
+    const user = userEvent.setup()
+    mockGetAllRecipes.mockResolvedValue([])
+    mockSearchRecipes.mockResolvedValue([
+      { recipeId: '1', name: 'Alpha', isFavorite: true, prepTimeMins: 1, servings: 1, cookTimeMins: 1, lastUpdated: '2024-01-03T00:00:00Z' },
+      { recipeId: '2', name: 'Beta', isFavorite: true, prepTimeMins: 1, servings: 1, cookTimeMins: 1, lastUpdated: '2024-01-02T00:00:00Z' },
+      { recipeId: '3', name: 'Gamma', isFavorite: false, prepTimeMins: 1, servings: 1, cookTimeMins: 1, lastUpdated: '2024-01-04T00:00:00Z' },
+    ])
+    mockClearFavorite.mockResolvedValue({ recipeId: '1', isFavorite: false })
+    renderPage()
+    await waitFor(() => expect(screen.getByText(/no recipes yet/i)).toBeInTheDocument())
+
+    await user.type(screen.getByPlaceholderText(/tomato, cheddar/i), 'tomato')
+    await user.click(screen.getByRole('button', { name: /^search$/i }))
+    await waitFor(() => expect(screen.getByText('Gamma')).toBeInTheDocument())
+
+    const removeButtons = screen.getAllByRole('button', { name: /remove from favorites/i })
+    await user.click(removeButtons[0])
+
+    await waitFor(() => expect(mockClearFavorite).toHaveBeenCalledWith('test-uid', '1'))
+    const names = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
+    expect(names[0]).toMatch(/Beta/)
+    expect(names[1]).toMatch(/Gamma/)
+    expect(names[2]).toMatch(/Alpha/)
+  })
+
   it('shows dismissible error banner without hiding the table', async () => {
     const user = userEvent.setup()
     mockGetAllRecipes.mockRejectedValue(new Error('Network down'))
