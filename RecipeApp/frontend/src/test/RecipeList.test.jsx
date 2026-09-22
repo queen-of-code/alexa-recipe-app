@@ -1,12 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom'
 import { deleteRecipe } from '../api/recipeApi'
 import RecipeList from '../recipes/RecipeList'
 
 function LocationProbe() {
   const location = useLocation()
-  return <div data-testid="location">{`${location.pathname}${location.search}`}</div>
+  const navigate = useNavigate()
+  return (
+    <>
+      <div data-testid="location">{`${location.pathname}${location.search}`}</div>
+      <button type="button" onClick={() => navigate(-1)}>
+        History back
+      </button>
+    </>
+  )
 }
 
 vi.mock('../firebase', () => ({ auth: {} }))
@@ -28,9 +36,11 @@ describe('RecipeList', () => {
     vi.clearAllMocks()
   })
 
-  function renderPage(initialEntry = '/recipes') {
+  function renderPage(initialEntry = '/recipes', initialEntries) {
+    const entries = initialEntries ?? [initialEntry]
+    const initialIndex = entries.length - 1
     return render(
-      <MemoryRouter initialEntries={[initialEntry]}>
+      <MemoryRouter initialEntries={entries} initialIndex={initialIndex}>
         <RecipeList />
         <LocationProbe />
       </MemoryRouter>
@@ -232,9 +242,63 @@ describe('RecipeList', () => {
     await user.click(screen.getByRole('button', { name: /^clear$/i }))
 
     await waitFor(() => expect(mockGetAllRecipes).toHaveBeenCalledWith('test-uid'))
-    expect(screen.getByTestId('location').textContent).toBe('/recipes')
+    const location = new URL(screen.getByTestId('location').textContent, 'http://localhost')
+    expect(location.pathname).toBe('/recipes')
+    expect(location.searchParams.has('ingredients')).toBe(false)
+    expect(location.searchParams.has('combine')).toBe(false)
     expect(screen.getByLabelText(/^ingredients$/i)).toHaveValue('')
     expect(screen.getByLabelText(/^match$/i)).toHaveValue('All')
+  })
+
+  it('clears the draft when browser Back returns to an unfiltered list', async () => {
+    const user = userEvent.setup()
+    mockSearchRecipes.mockResolvedValue([pasta])
+    mockGetAllRecipes.mockResolvedValue([pasta])
+    renderPage('/recipes', ['/recipes', '/recipes?ingredients=tomato,cheese&combine=Any'])
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^ingredients$/i)).toHaveValue('tomato, cheese')
+    })
+    expect(screen.getByLabelText(/^match$/i)).toHaveValue('Any')
+
+    await user.click(screen.getByRole('button', { name: /history back/i }))
+
+    await waitFor(() => expect(mockGetAllRecipes).toHaveBeenCalledWith('test-uid'))
+    expect(screen.getByLabelText(/^ingredients$/i)).toHaveValue('')
+    expect(screen.getByLabelText(/^match$/i)).toHaveValue('All')
+  })
+
+  it('retries the same filter after search fails', async () => {
+    const user = userEvent.setup()
+    mockSearchRecipes.mockRejectedValueOnce(new Error('Network down'))
+    mockSearchRecipes.mockResolvedValueOnce([pasta])
+    renderPage('/recipes?ingredients=tomato&combine=All')
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/network down/i))
+    expect(mockSearchRecipes).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: /^search$/i }))
+
+    await waitFor(() => expect(mockSearchRecipes).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText('Pasta')).toBeInTheDocument())
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('does not refetch when Search repeats a filter that already succeeded', async () => {
+    const user = userEvent.setup()
+    mockSearchRecipes.mockResolvedValue([pasta])
+    renderPage('/recipes?ingredients=tomato&combine=All')
+    await screen.findByText('Pasta')
+    expect(mockSearchRecipes).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: /^search$/i }))
+
+    expect(mockSearchRecipes).toHaveBeenCalledTimes(1)
+  })
+
+  it('hides the empty-match line while a filtered load is in flight', () => {
+    mockSearchRecipes.mockReturnValue(new Promise(() => {}))
+    renderPage('/recipes?ingredients=tomato&combine=All')
+    expect(screen.getByText(/searching/i)).toBeInTheDocument()
+    expect(screen.queryByText(/no recipes match your ingredients/i)).not.toBeInTheDocument()
   })
 
   it('keeps Edit on the edit route without the filter query', async () => {

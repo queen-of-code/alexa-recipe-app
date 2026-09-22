@@ -21,6 +21,8 @@ export default function RecipeList() {
     applied.active ? applied.ingredients.join(', ') : '',
   )
   const [combineMode, setCombineMode] = useState(applied.combine)
+  const requestFailedRef = useRef(false)
+  const [retryNonce, setRetryNonce] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -28,9 +30,13 @@ export default function RecipeList() {
     let cancelled = false
     setLoading(true)
     setError('')
+    requestFailedRef.current = false
     if (current.active) {
       setIngredientInput(current.ingredients.join(', '))
       setCombineMode(current.combine)
+    } else {
+      setIngredientInput('')
+      setCombineMode('All')
     }
 
     const request = current.active
@@ -45,7 +51,10 @@ export default function RecipeList() {
         if (!cancelled) setRecipes(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) {
+          requestFailedRef.current = true
+          setError(err.message)
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -54,7 +63,7 @@ export default function RecipeList() {
     return () => {
       cancelled = true
     }
-  }, [user, appliedKey])
+  }, [user, appliedKey, retryNonce])
 
   function handleSearch(e) {
     e.preventDefault()
@@ -73,7 +82,10 @@ export default function RecipeList() {
       combine: combineMode,
       active: true,
     })
-    if (next === appliedKey) return
+    if (next === appliedKey) {
+      if (requestFailedRef.current) setRetryNonce((n) => n + 1)
+      return
+    }
     setSearchParams(new URLSearchParams(next))
   }
 
@@ -215,13 +227,15 @@ export default function RecipeList() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {recipes.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="px-4 py-12 text-center text-gray-500">
-                  {filterActive
-                    ? 'No recipes match your ingredients.'
-                    : 'No recipes yet — create your first one!'}
-                </td>
-              </tr>
+              loading ? null : (
+                <tr>
+                  <td colSpan="7" className="px-4 py-12 text-center text-gray-500">
+                    {filterActive
+                      ? 'No recipes match your ingredients.'
+                      : 'No recipes yet — create your first one!'}
+                  </td>
+                </tr>
+              )
             ) : (
               recipes.map((r) => {
                 const query = listFilterSearch(applied)
