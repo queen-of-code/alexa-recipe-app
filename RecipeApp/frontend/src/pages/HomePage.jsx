@@ -45,9 +45,9 @@ export default function HomePage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto my-12 px-4">
         {features.map((feature) => (
-          <div key={feature.title} className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h2>
-            <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+          <div key={feature.title} className="bg-white dark:bg-gray-900 rounded-xl shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{feature.title}</h2>
+            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{feature.description}</p>
           </div>
         ))}
       </section>

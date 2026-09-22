@@ -88,6 +88,10 @@ jobs:
         working-directory: RecipeApp/frontend
         run: npm ci
 
+      - name: Test frontend
+        working-directory: RecipeApp/frontend
+        run: npm test -- --run
+
       - name: Build frontend
         working-directory: RecipeApp/frontend
         env:
