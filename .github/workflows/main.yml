@@ -90,7 +90,7 @@ jobs:
 
       - name: Test frontend
         working-directory: RecipeApp/frontend
-        run: npm test
+        run: npm test -- --run
 
       - name: Build frontend
         working-directory: RecipeApp/frontend
